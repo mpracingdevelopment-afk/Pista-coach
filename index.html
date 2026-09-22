@@ -134,15 +134,19 @@ function loadUser(){
   try{
     if(!localStorage.getItem(USERS_KEY)){
       let migrated=null;
-      // Migrate account/profile data, not authentication state, from the previous namespace.
-      for(const key of ['pista_coach_v16_users','pista_coach_v15_users','pista_coach_v14_users','pista_coach_v13_users']){
+      for(const key of ['pista_coach_v17_users','pista_coach_v16_users','pista_coach_v15_users','pista_coach_v14_users','pista_coach_v13_users']){
         const raw=localStorage.getItem(key);
         if(raw){try{migrated=JSON.parse(raw);break}catch(e){}}
       }
       const list=Array.isArray(migrated)?migrated:defaultUsers();
-      // Ensure the known test accounts exist without deleting real registered pilot accounts.
       for(const d of defaultUsers()) if(!list.some(u=>String(u.id)===String(d.id))) list.push(d);
       localStorage.setItem(USERS_KEY,JSON.stringify(list));
+    }
+    const rawAuth=localStorage.getItem(AUTH_KEY);
+    if(rawAuth){
+      const auth=JSON.parse(rawAuth);
+      const fresh=JSON.parse(localStorage.getItem(USERS_KEY)||'[]').find(u=>String(u.id)===String(auth.id));
+      return fresh||null;
     }
   }catch(e){}
   return null;
@@ -190,8 +194,18 @@ function login(){
   currentUser=u;sessionStorage.setItem('pista_coach_v17_user',JSON.stringify(u));
   ui.page=isAdmin()?'dashboard':(profileComplete(u)?'my-events':'profile');render();
 }
-function restoreUser(){try{const raw=sessionStorage.getItem('pista_coach_v17_user');if(raw)currentUser=JSON.parse(raw)}catch(e){}}
-function logout(){currentUser=null;sessionStorage.removeItem('pista_coach_v17_user');ui.page='login';render()}
+function restoreUser(){
+  try{
+    const raw=localStorage.getItem(AUTH_KEY)||sessionStorage.getItem(AUTH_KEY);
+    if(raw){
+      const auth=JSON.parse(raw);
+      const fresh=users().find(u=>String(u.id)===String(auth.id));
+      if(fresh){currentUser=fresh;sessionStorage.setItem(AUTH_KEY,JSON.stringify(fresh));return;}
+    }
+  }catch(e){}
+  currentUser=null;
+}
+function logout(){currentUser=null;localStorage.removeItem(AUTH_KEY);sessionStorage.removeItem(AUTH_KEY);ui.page='login';render()}
 function registerPilot(){
   const name=document.getElementById('regName').value.trim(),email=document.getElementById('regEmail').value.trim().toLowerCase(),password=document.getElementById('regPassword').value;
   if(!name||!email||password.length<4){toast('Preenche nome, email e uma password com pelo menos 4 caracteres');return}
@@ -199,7 +213,7 @@ function registerPilot(){
   if(list.some(u=>u.email.toLowerCase()===email)){toast('Já existe uma conta com esse email');return}
   const u={id:'pilot_'+Date.now(),name,email,password,role:'pilot',pilotId:null,profile:null};
   list.push(u);localStorage.setItem('pista_coach_v17_users',JSON.stringify(list));
-  currentUser=u;sessionStorage.setItem('pista_coach_v17_user',JSON.stringify(u));ui.page='profile';render();
+  currentUser=u;localStorage.setItem(AUTH_KEY,JSON.stringify(u));sessionStorage.setItem(AUTH_KEY,JSON.stringify(u));ui.page='profile';render();
 }
 function profilePage(){
   const p=currentUser?.profile||{};
@@ -214,20 +228,43 @@ function profilePage(){
   </div>`;
 }
 function saveProfile(){
-  const u=users().find(x=>x.id===currentUser.id);if(!u)return;
-  const profile={name:document.getElementById('profileName').value.trim(),age:document.getElementById('profileAge').value,kartingStartYear:document.getElementById('profileKartingYear').value,category:document.getElementById('profileCategory').value.trim(),team:document.getElementById('profileTeam').value.trim(),number:document.getElementById('profileNumber').value.trim(),location:document.getElementById('profileLocation').value.trim(),notes:document.getElementById('profileNotes').value.trim()};
-  if(!profile.name||profile.age===''||profile.kartingStartYear===''){toast('Preenche nome, idade e ano de início no karting');return}
-  u.name=profile.name;u.profile=profile;
-  localStorage.setItem(USERS_KEY,JSON.stringify(users()));
-  if(u.pilotId){
-    const d=db.drivers.find(x=>String(x.id)===String(u.pilotId)&&String(x.userId)===String(u.id));
-    if(d) Object.assign(d,{name:profile.name,age:profile.age,kartingStartYear:profile.kartingStartYear,category:profile.category,team:profile.team,number:profile.number,location:profile.location,notes:profile.notes});
+  try{
+    const all=users();
+    const u=all.find(x=>String(x.id)===String(currentUser?.id));
+    if(!u){toast('A conta do piloto não foi encontrada.');return;}
+    const profile={
+      name:document.getElementById('profileName').value.trim(),
+      age:document.getElementById('profileAge').value,
+      kartingStartYear:document.getElementById('profileKartingYear').value,
+      category:document.getElementById('profileCategory').value.trim(),
+      team:document.getElementById('profileTeam').value.trim(),
+      number:document.getElementById('profileNumber').value.trim(),
+      location:document.getElementById('profileLocation').value.trim(),
+      notes:document.getElementById('profileNotes').value.trim()
+    };
+    if(!profile.name||profile.age===''||profile.kartingStartYear===''){toast('Preenche nome, idade e ano de início no karting');return;}
+    u.name=profile.name;
+    u.profile=profile;
+    localStorage.setItem(USERS_KEY,JSON.stringify(all));
+
+    // If the pilot is already in the team, update the single linked record.
+    if(u.pilotId){
+      const d=db.drivers.find(x=>String(x.id)===String(u.pilotId)&&String(x.userId)===String(u.id));
+      if(d) Object.assign(d,{name:profile.name,age:profile.age,kartingStartYear:profile.kartingStartYear,category:profile.category,team:profile.team,number:profile.number,location:profile.location,notes:profile.notes});
+    }
+
+    currentUser=u;
+    localStorage.setItem(AUTH_KEY,JSON.stringify(u));
+    sessionStorage.setItem(AUTH_KEY,JSON.stringify(u));
+    syncPilotLinks();
+    save();
+    ui.page='my-events';
+    render();
+    toast('Perfil guardado.');
+  }catch(e){
+    console.error(e);
+    toast('Erro ao guardar o perfil.');
   }
-  syncPilotLinks();
-  currentUser=users().find(x=>String(x.id)===String(u.id))||u;
-  sessionStorage.setItem(AUTH_KEY,JSON.stringify(currentUser));
-  save();
-  ui.page='my-events';render();
 }
 function syncPilotLinks(){
   const us=users();
@@ -710,7 +747,7 @@ document.addEventListener('click',event=>{
 
   const action=event.target.closest('[data-action]');
   if(!action)return;
-  const protectedActions=['new-track','create-track','delete','new-championship','create-championship','new-race','create-race','new-day','create-day','new-session','create-session','configure-session','save-session','edit','image','remove'];
+  const protectedActions=['new-track','create-track','delete','add-registered-pilot','new-championship','create-championship','new-race','create-race','new-day','create-day','new-session','create-session','configure-session','save-session','edit','image','remove'];
   if(!isAdmin()&&protectedActions.includes(action.dataset.action)){toast('Acesso reservado ao administrador');return;}
 
   switch(action.dataset.action){
@@ -753,6 +790,7 @@ document.addEventListener('click',event=>{
     case 'new-track':newTrack();break;
     case 'create-track':createTrack();break;
     case 'new-driver':newDriver();break;
+    case 'add-registered-pilot':addRegisteredPilot(action.dataset.userId);break;
     case 'create-driver':addRegisteredPilot();break;
     case 'close':closeModal();break;
     case 'edit':
@@ -795,6 +833,7 @@ document.addEventListener('click',event=>{
 
 restoreUser();
 syncPilotLinks();
+currentUser=freshCurrentUser();
 if(currentUser)ui.page=isAdmin()?'dashboard':(profileComplete(freshCurrentUser())?'my-events':'profile');else ui.page='login';
 render();
 hydrateImages().then(()=>{if(currentUser)render();});
