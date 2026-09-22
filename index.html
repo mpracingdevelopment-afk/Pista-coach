@@ -86,7 +86,9 @@ main{margin-left:238px;padding:34px 38px 50px;min-height:100vh;max-width:1500px}
 
 const SUPABASE_URL='https://untypzlxsscrabhqryga.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY='sb_publishable_jKsTUVb5fbCoYkXEFkCKdw_Z3hGxUdu';
-const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,flowType:'pkce'}});
+const AUTH_REDIRECT_URL=window.location.origin + window.location.pathname;
+function cleanAuthUrl(){ try { const u=new URL(window.location.href); if(u.searchParams.has('code')||u.hash.includes('access_token')||u.hash.includes('type=signup')||u.hash.includes('error_description')){ history.replaceState({},document.title,u.origin+u.pathname); } } catch(e){} }
 const KEY='mpracingdevelopment_cloud';
 const LEGACY_KEYS=['mpracingdevelopment_v27','mpracingdevelopment_v26','mpracingdevelopment_v25','pista_coach_v24','pista_coach_v23','pista_coach_v22','pista_coach_v21','pista_coach_v20','pista_coach_v19','pista_coach_v18','pista_coach_v17','pista_coach_v16'];
 let db=normalize({});
@@ -243,6 +245,7 @@ async function autoLinkPilot(){
 async function bootCloud(){
   localLegacyLoad();
   const {data:{session}}=await sb.auth.getSession();
+  cleanAuthUrl();
   if(session?.user){
     currentUser={id:session.user.id,email:session.user.email||'',role:'pilot',name:session.user.email||'Piloto',pilotId:null,profile:null};
     await loadProfiles();
@@ -260,8 +263,9 @@ async function bootCloud(){
 
 function subscribeAuth(){
   sb.auth.onAuthStateChange(async (event,session)=>{
-    if(event==='SIGNED_OUT'){currentUser=null;profileCache=[];db=normalize({});ui.page='login';render();return;}
+    if(event==='SIGNED_OUT'){cleanAuthUrl();currentUser=null;profileCache=[];db=normalize({});ui.page='login';render();return;}
     if(session?.user && ['INITIAL_SESSION','SIGNED_IN','TOKEN_REFRESHED','USER_UPDATED'].includes(event)){
+      cleanAuthUrl();
       currentUser={id:session.user.id,email:session.user.email||'',role:'pilot',name:session.user.user_metadata?.name||session.user.email||'Piloto',pilotId:null,profile:null};
       await loadProfiles();
       await loadCloudState();
@@ -425,7 +429,7 @@ async function registerPilot(){
   if(button){button.disabled=true;button.textContent='A criar conta…'}
   setStatus('A criar conta…');
   try{
-    const {data,error}=await sb.auth.signUp({email,password,options:{data:{name}}});
+    const {data,error}=await sb.auth.signUp({email,password,options:{data:{name},emailRedirectTo:AUTH_REDIRECT_URL}});
     if(error){
       console.error('Supabase signUp error:',error);
       setStatus('Não foi possível criar a conta: '+(error.message||'erro desconhecido'));
