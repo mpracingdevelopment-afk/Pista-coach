@@ -37,13 +37,15 @@ let db=load(),state={page:'tracks',editorId:null,selected:0,mode:'image',drag:nu
 function load(){
  try{
   let x=localStorage.getItem(KEY);
+  if(!x){ const old=localStorage.getItem('pista_coach_v3') || localStorage.getItem('pista_coach_v2'); x=old; }
   let data=x?JSON.parse(x):initial;
   data.tracks=(data.tracks||[]).map(t=>normalizeTrack(t));
   return data;
  }catch(e){return initial}
 }
 function normalizeTrack(t){
- t.image=t.image||{src:'',x:80,y:55,w:840,h:540,opacity:.28};
+ t.image=(t.image && typeof t.image==='object')?t.image:{src:'',x:80,y:55,w:840,h:540,opacity:.28};
+ t.image.src=typeof t.image.src==='string'?t.image.src:''; t.image.x=Number(t.image.x)||80; t.image.y=Number(t.image.y)||55; t.image.w=Number(t.image.w)||840; t.image.h=Number(t.image.h)||540; t.image.opacity=Number(t.image.opacity)||.28;
  t.points=(t.points||base).map(p=>Array.isArray(p)?{x:p[0],y:p[1],hin:null,hout:null}:{x:Number(p.x),y:Number(p.y),hin:p.hin||null,hout:p.hout||null});
  t.corners=t.points.length;
  return t;
@@ -135,7 +137,7 @@ function closeModal(){document.getElementById('overlay').innerHTML=''}
 
 function newTrack(){modal('<h2>Nova pista</h2><div class="fields"><div class="field"><label>Nome</label><input id="new-name"></div><div class="field"><label>Variante</label><input id="new-variant" value="Karting"></div><div class="field"><label>Pontos iniciais</label><input id="new-corners" type="number" min="4" max="40" value="12"></div></div><div class="modal-actions"><button class="btn" data-action="close">Cancelar</button><button class="btn primary" data-action="create-track">Criar</button></div>')}
 function createTrack(){let n=Math.max(4,Math.min(40,Number(document.getElementById('new-corners').value)||12)),pts=[];for(let i=0;i<n;i++){let a=2*Math.PI*i/n-Math.PI/2;pts.push({x:500+330*Math.cos(a),y:325+230*Math.sin(a),hin:null,hout:null})}let t={id:Date.now(),name:document.getElementById('new-name').value.trim()||'Nova pista',variant:document.getElementById('new-variant').value.trim()||'Karting',points:pts,corners:n,image:{src:'',x:80,y:55,w:840,h:540,opacity:.28}};db.tracks.push(t);save();closeModal();state.editorId=t.id;state.selected=0;state.mode='image';render()}
-function editTrack(id){state.editorId=id;state.selected=0;state.mode='image';state.history=[];render()}
+function editTrack(id){const t=byId(db.tracks,id);if(!t){toast('Pista não encontrada');return;}state.editorId=t.id;state.selected=0;state.mode='image';state.history=[];render()}
 function deleteTrack(id){if(confirm('Apagar esta pista?')){db.tracks=db.tracks.filter(t=>String(t.id)!==String(id));save();render()}}
 function previewTrack(id){let t=byId(db.tracks,id);modal('<h2>'+esc(t.name)+'</h2><div class="canvas" style="height:480px">'+editorSvg(t)+'</div><div class="modal-actions"><button class="btn" data-action="close">Fechar</button></div>')}
 function newDriver(){modal('<h2>Novo piloto</h2><div class="fields"><div class="field"><label>Nome</label><input id="dn"></div><div class="field"><label>Número</label><input id="dnum"></div></div><div class="modal-actions"><button class="btn" data-action="close">Cancelar</button><button class="btn primary" data-action="create-driver">Criar</button></div>')}
@@ -195,16 +197,17 @@ function resetHandles(){let t=byId(db.tracks,state.editorId);pushHistory(t);t.po
 function setStart(){let t=byId(db.tracks,state.editorId);t.startPoint=state.selected;save();toast('Meta definida');render()}
 function uploadBg(){document.getElementById('bg-file').click()}
 function removeBg(){let t=byId(db.tracks,state.editorId);t.image.src='';save();render()}
-document.addEventListener('click',e=>{
+function handleClick(e){
  const nav=e.target.closest('[data-nav]');if(nav){state.page=nav.dataset.nav;state.editorId=null;render();return}
  const a=e.target.closest('[data-action]');if(!a)return;let x=a.dataset.action;
  if(x==='close'){closeModal();return}if(x==='new-track'){newTrack();return}if(x==='create-track'){createTrack();return}if(x==='edit-track'){editTrack(Number(a.dataset.id));return}if(x==='delete-track'){deleteTrack(Number(a.dataset.id));return}if(x==='preview-track'){previewTrack(Number(a.dataset.id));return}if(x==='back-tracks'){state.page='tracks';state.editorId=null;render();return}
  if(x==='mode-image'){state.mode='image';render();return}if(x==='mode-curve'){state.mode='curve';render();return}if(x==='mode-add'){state.mode='add';render();return}
  if(x==='upload-bg'){uploadBg();return}if(x==='remove-bg'){removeBg();return}if(x==='add-point'){addPoint();return}if(x==='delete-point'){deletePoint();return}if(x==='undo'){undo();return}if(x==='reset-handles'){resetHandles();return}if(x==='set-start'){setStart();return}if(x==='save-track'){save();toast('Pista guardada');return}
  if(x==='new-driver'){newDriver();return}if(x==='create-driver'){createDriver();return}if(x==='delete-driver'){if(confirm('Apagar este piloto?')){db.drivers=db.drivers.filter(d=>String(d.id)!==String(a.dataset.id));save();render()}return}
-});
+}
+document.body.addEventListener('click',handleClick);
 document.getElementById('overlay').addEventListener('click',e=>{if(e.target.dataset.close)closeModal()});
-render();
+try{render()}catch(err){console.error(err);document.getElementById('content').innerHTML='<div class="empty">Erro ao carregar a aplicação. Atualiza a página (Ctrl+F5).</div>'; }
 })();
 </script>
 </body>
