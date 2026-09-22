@@ -28,6 +28,42 @@ main{margin-left:238px;padding:34px 38px 50px;min-height:100vh;max-width:1500px}
 .breadcrumb{display:flex;gap:8px;align-items:center;color:var(--muted);font-size:12px;margin-bottom:14px}.breadcrumb [data-action]{cursor:pointer}.breadcrumb b{color:#fff}.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}.cardlink,.eventcard{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:15px;transition:.15s}.cardlink{cursor:pointer}.cardlink:hover{border-color:#55585c;transform:translateY(-1px)}.cardlink h3,.eventcard h3{margin:0 0 7px}.cardlink p,.eventmeta{margin:0;color:var(--muted);font-size:12px;line-height:1.5}.eventgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px}.links{display:grid;gap:6px;margin-top:10px}.links a{color:#eee;text-decoration:none;border:1px solid #303235;border-radius:6px;padding:8px 10px;background:#18191b;font-size:12px}.sessionrow{background:var(--panel);border:1px solid var(--line);border-radius:7px;padding:12px;display:flex;justify-content:space-between;gap:10px;align-items:center}.sectiontitle{font-size:15px;font-weight:850;margin:24px 0 10px}.readonly{background:#111213;border:1px solid var(--line);border-radius:8px;padding:15px}.kpi{font-size:31px;font-weight:900;letter-spacing:-.04em}.checklist{display:grid;gap:7px}.checklist label{padding:8px;border:1px solid #2d2f32;border-radius:6px;background:#151617}.userbar{display:flex;align-items:center;gap:10px}.rolebadge{font-size:10px;padding:4px 7px;border-radius:999px;background:#242629;color:#d9dbdd;text-transform:uppercase;letter-spacing:.07em}.loginbox{width:min(420px,100%)}.loginbox h1{margin-top:0}.account-card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:13px;margin-top:9px}
 .kpi-card{background:linear-gradient(145deg,#151617,#0f1011);border:1px solid #2c2e31;border-radius:8px;padding:18px;position:relative;overflow:hidden}.kpi-card:after{content:"";position:absolute;right:-25px;top:-35px;width:100px;height:100px;border:1px solid #3b3d40;transform:rotate(45deg);opacity:.25}.kpi-label{font-size:10px;color:#85898d;text-transform:uppercase;letter-spacing:.1em;font-weight:800}.kpi-value{font-size:32px;font-weight:900;margin-top:5px;letter-spacing:-.05em}
 @media(max-width:1000px){.score-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:850px){.sidebar{width:68px;padding:14px 7px}.logo{font-size:0;text-align:center}.logo:after{content:"MP";font-size:18px}.logo span{display:none}.nav button{font-size:0;text-align:center}.nav button:before{left:2px}main{margin-left:68px;padding:20px 16px 40px}.editor{grid-template-columns:1fr}.stage{height:65vh;min-height:430px}.comments{left:12px;right:12px;width:auto}}@media(max-width:600px){.score-grid{grid-template-columns:1fr}.header{align-items:flex-start;flex-direction:column}.title{font-size:24px}}
+
+/* MPRacingDevelopment mobile ergonomics */
+@media(max-width:700px){
+  .sidebar{position:fixed;left:0;right:0;bottom:0;top:auto;width:100%;height:66px;padding:6px 8px;background:rgba(8,9,10,.98);border-right:0;border-top:1px solid #2a2c2f;box-shadow:0 -12px 30px #0009;z-index:60}
+  .logo{display:none}
+  .nav{height:100%;grid-template-columns:repeat(5,minmax(0,1fr));gap:3px;align-items:stretch}
+  .nav button{font-size:9px!important;text-align:center;padding:8px 2px 7px;border-radius:6px;line-height:1.1;color:#8d9094}
+  .nav button:before{display:none}
+  .nav button.active,.nav button:hover{background:#1a1b1d;color:#fff}
+  main{margin-left:0;padding:18px 12px 88px;max-width:none}
+  .userbar{position:sticky;top:0;z-index:25;background:#080909e8;padding:7px 0;margin-bottom:12px!important;backdrop-filter:blur(10px)}
+  .header{gap:10px;margin-bottom:16px;padding-bottom:12px}
+  .title{font-size:22px}
+  .sub{font-size:11px;line-height:1.45}
+  .buttons{width:100%}
+  .buttons .btn{flex:1;min-width:0}
+  .row{align-items:flex-start;flex-direction:column}
+  .row>.buttons{display:grid;grid-template-columns:1fr 1fr}
+  .cards,.eventgrid{grid-template-columns:1fr}
+  .card,.cardlink,.eventcard{padding:12px}
+  .grid2{grid-template-columns:1fr!important}
+  .editor{grid-template-columns:1fr}
+  .stage{height:56vh;min-height:360px}
+  .comments{position:relative;left:auto;right:auto;top:auto;width:auto;max-height:none;margin-top:10px}
+  .score-grid{grid-template-columns:1fr 1fr;gap:6px}
+  .score-group{padding:7px}
+  .score-field label{font-size:11px}
+  .score-select{width:58px!important;min-width:58px;flex-basis:58px}
+  .analysis-comment textarea{min-height:110px}
+  .sessionrow{align-items:flex-start;flex-direction:column}
+  .sessionrow .buttons{display:grid;grid-template-columns:1fr}
+  .modalbg{padding:10px;align-items:flex-end}
+  .modal{width:100%;max-height:88vh;overflow:auto;border-radius:12px 12px 0 0;padding:16px}
+  .modalactions{position:sticky;bottom:0;background:#121314;padding-top:10px}
+  .loginbox{width:100%;max-width:420px}
+}
 </style>
 </head>
 <body>
@@ -44,19 +80,118 @@ main{margin-left:238px;padding:34px 38px 50px;min-height:100vh;max-width:1500px}
 </aside>
 <main id="app"></main><div id="modal"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 'use strict';
 
-const KEY='mpracingdevelopment_v26';
-const USERS_KEY='mpracingdevelopment_v26_users';
-const AUTH_KEY='mpracingdevelopment_v26_user';
-const MIGRATION_KEY='mpracingdevelopment_v26_migrated';
-const DELETED_TRACKS_KEY='mpracingdevelopment_v26_deleted_tracks';
-const LEGACY=['pista_coach_v12','pista_coach_v9','pista_coach_v8','pista_coach_v7','pista_coach_v6','pista_coach_v5','pista_coach_v4_1','pista_coach_v4','pista_coach_v3','pista_coach_v2','pista_coach_v1'];
-
-let db=load();
+const SUPABASE_URL='https://untypzlxsscrabhqryga.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY='sb_publishable_jKsTUVb5fbCoYkXEFkCKdw_Z3hGxUdu';
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+const KEY='mpracingdevelopment_cloud';
+const LEGACY_KEYS=['mpracingdevelopment_v27','mpracingdevelopment_v26','mpracingdevelopment_v25','pista_coach_v24','pista_coach_v23','pista_coach_v22','pista_coach_v21','pista_coach_v20','pista_coach_v19','pista_coach_v18','pista_coach_v17','pista_coach_v16'];
+let db=normalize({});
 let ui={page:'dashboard',editor:null,mode:'add',selected:null,championship:null,race:null,day:null,session:null};
-let currentUser=loadUser();
+let currentUser=null;
+let profileCache=[];
+let cloudReady=false;
+let cloudStateExists=false;
+let localLegacyDb=null;
+
+function normalizeProfile(row){
+  if(!row)return null;
+  const p=row.profile||{};
+  return {id:row.id,name:row.name||p.name||row.email?.split('@')[0]||'Utilizador',email:(row.email||'').toLowerCase(),role:row.role||'pilot',pilotId:row.pilot_id||null,profile:p};
+}
+function users(){return profileCache.slice()}
+function isAdmin(){return currentUser?.role==='admin'}
+function freshCurrentUser(){return currentUser}
+function currentPilotId(){return freshCurrentUser()?.pilotId||null}
+function profileComplete(u){return !!(u&&u.role==='pilot'&&u.profile&&u.profile.name&&u.profile.age!==''&&u.profile.kartingStartYear!=='')}
+
+function localLegacyLoad(){
+  try{
+    let legacyUsers=[];
+    for(const key of ['mpracingdevelopment_v26_users','pista_coach_v20_users','pista_coach_v19_users','pista_coach_v18_users','pista_coach_v17_users','pista_coach_v16_users','pista_coach_v15_users','pista_coach_v14_users','pista_coach_v13_users']){
+      const raw=localStorage.getItem(key);if(raw){try{legacyUsers=JSON.parse(raw);break}catch(e){}}
+    }
+    for(const key of LEGACY_KEYS){const raw=localStorage.getItem(key);if(raw){localLegacyDb=normalize(JSON.parse(raw));break;}}
+    if(localLegacyDb){
+      const byId=new Map((Array.isArray(legacyUsers)?legacyUsers:[]).map(u=>[String(u.id),u]));
+      (localLegacyDb.drivers||[]).forEach(d=>{const u=byId.get(String(d.userId));if(u)d.email=(u.email||'').toLowerCase();});
+    }
+  }catch(e){}
+  return localLegacyDb;
+}
+
+async function loadCloudState(){
+  const {data,error}=await sb.from('app_state').select('data').eq('id','main').maybeSingle();
+  if(error){console.error(error);toast('Erro a carregar os dados online. Verifica a configuração do Supabase.');return false;}
+  cloudStateExists=!!data;
+  db=normalize(data?.data||{});
+  return true;
+}
+async function loadProfiles(){
+  if(!currentUser)return;
+  const query=isAdmin()?sb.from('profiles').select('*').order('created_at',{ascending:true}):sb.from('profiles').select('*').eq('id',currentUser.id).maybeSingle();
+  const {data,error}=await query;
+  if(error){console.error(error);toast('Erro a carregar a conta.');return false;}
+  profileCache=Array.isArray(data)?data.map(normalizeProfile).filter(Boolean):[normalizeProfile(data)].filter(Boolean);
+  currentUser=profileCache.find(x=>String(x.id)===String(currentUser.id))||currentUser;
+  return true;
+}
+async function save(){
+  if(!isAdmin())return false;
+  try{
+    const payload=JSON.parse(JSON.stringify(db));
+    const {error}=await sb.from('app_state').upsert({id:'main',data:payload,updated_at:new Date().toISOString()});
+    if(error){console.error(error);toast('Não foi possível guardar os dados online.');return false;}
+    cloudStateExists=true;
+    return true;
+  }catch(e){console.error(e);toast('Não foi possível guardar os dados online.');return false;}
+}
+async function importLegacyIfNeeded(){
+  if(!isAdmin()||cloudStateExists||!localLegacyDb)return;
+  const imported=JSON.parse(JSON.stringify(localLegacyDb));
+  db=normalize(imported);
+  await save();
+  toast('Dados deste dispositivo importados para a nuvem.');
+}
+async function autoLinkPilot(){
+  if(!currentUser||isAdmin()||currentUser.pilotId||!db.drivers?.length)return;
+  const match=db.drivers.find(d=>d.email&&String(d.email).toLowerCase()===String(currentUser.email).toLowerCase());
+  if(!match)return;
+  const {error}=await sb.from('profiles').update({pilot_id:match.id,updated_at:new Date().toISOString()}).eq('id',currentUser.id);
+  if(error){console.error(error);return;}
+  await loadProfiles();
+}
+
+async function bootCloud(){
+  localLegacyLoad();
+  const {data:{session}}=await sb.auth.getSession();
+  if(session?.user){
+    currentUser={id:session.user.id,email:session.user.email||'',role:'pilot',name:session.user.email||'Piloto',pilotId:null,profile:null};
+    await loadProfiles();
+    await loadCloudState();
+    await importLegacyIfNeeded();
+    await autoLinkPilot();
+    ui.page=isAdmin()?'dashboard':(profileComplete(currentUser)?'my-events':'profile');
+  }else{
+    currentUser=null;db=normalize({});ui.page='login';
+  }
+  cloudReady=true;render();
+}
+
+function subscribeAuth(){
+  sb.auth.onAuthStateChange(async (event,session)=>{
+    if(event==='SIGNED_OUT'){currentUser=null;profileCache=[];db=normalize({});ui.page='login';render();return;}
+    if(session?.user){
+      currentUser={id:session.user.id,email:session.user.email||'',role:'pilot',name:session.user.email||'Piloto',pilotId:null,profile:null};
+      await loadProfiles();await loadCloudState();
+      await importLegacyIfNeeded();await autoLinkPilot();
+      ui.page=isAdmin()?'dashboard':(profileComplete(currentUser)?'my-events':'profile');render();
+    }
+  });
+}
 
 function normalize(raw){
   raw=raw||{};
@@ -175,7 +310,7 @@ function loginPage(){
     <div class="field"><label>Password</label><input id="loginPassword" type="password"></div>
     <button class="btn primary" style="width:100%" data-action="login">Entrar</button>
     <button class="btn" style="width:100%;margin-top:8px" data-action="go-register">Criar conta de piloto</button>
-    <div class="help" style="margin-top:14px">Teste admin: admin@pistacoach.pt / admin123<br>Teste piloto: piloto@pistacoach.pt / 1234</div>
+    <div class="help" style="margin-top:14px">A mesma conta funciona em qualquer dispositivo. Os dados são sincronizados online.</div>
   </div></div>`;
 }
 function registerPage(){
@@ -187,34 +322,22 @@ function registerPage(){
     <div class="modalactions"><button class="btn" data-action="back-login">Voltar</button><button class="btn primary" data-action="register-pilot">Criar conta</button></div>
   </div></div>`;
 }
-function login(){
+async function login(){
   const email=document.getElementById('loginEmail').value.trim().toLowerCase(),password=document.getElementById('loginPassword').value;
-  const u=users().find(x=>x.email.toLowerCase()===email&&x.password===password);
-  if(!u){toast('Email ou password incorretos');return}
-  currentUser=u;sessionStorage.setItem(AUTH_KEY,JSON.stringify(u));
-  ui.page=isAdmin()?'dashboard':(profileComplete(u)?'my-events':'profile');render();
+  if(!email||!password){toast('Preenche email e password');return;}
+  const {error}=await sb.auth.signInWithPassword({email,password});
+  if(error){toast('Email ou password incorretos');return;}
 }
-function restoreUser(){
-  try{
-    const raw=localStorage.getItem(AUTH_KEY)||sessionStorage.getItem(AUTH_KEY);
-    if(raw){
-      const auth=JSON.parse(raw);
-      const fresh=users().find(u=>String(u.id)===String(auth.id));
-      if(fresh){currentUser=fresh;sessionStorage.setItem(AUTH_KEY,JSON.stringify(fresh));return;}
-    }
-  }catch(e){}
-  currentUser=null;
+function restoreUser(){}
+async function logout(){await sb.auth.signOut();}
+async function registerPilot(){
+  const email=document.getElementById('regEmail').value.trim().toLowerCase(),password=document.getElementById('regPassword').value;
+  if(!email||password.length<6){toast('Usa um email válido e uma password com pelo menos 6 caracteres');return}
+  const {data,error}=await sb.auth.signUp({email,password});
+  if(error){toast(error.message||'Não foi possível criar a conta');return}
+  if(!data.session){toast('Conta criada. Confirma o email e depois entra na plataforma.');return;}
 }
-function logout(){currentUser=null;localStorage.removeItem(AUTH_KEY);sessionStorage.removeItem(AUTH_KEY);ui.page='login';render()}
-function registerPilot(){
-  const name=document.getElementById('regName').value.trim(),email=document.getElementById('regEmail').value.trim().toLowerCase(),password=document.getElementById('regPassword').value;
-  if(!name||!email||password.length<4){toast('Preenche nome, email e uma password com pelo menos 4 caracteres');return}
-  const list=users();
-  if(list.some(u=>u.email.toLowerCase()===email)){toast('Já existe uma conta com esse email');return}
-  const u={id:'pilot_'+Date.now(),name,email,password,role:'pilot',pilotId:null,profile:null};
-  list.push(u);localStorage.setItem(USERS_KEY,JSON.stringify(list));
-  currentUser=u;localStorage.setItem(AUTH_KEY,JSON.stringify(u));sessionStorage.setItem(AUTH_KEY,JSON.stringify(u));ui.page='profile';render();
-}
+
 function profilePage(){
   const p=currentUser?.profile||{};
   return header('Meu perfil','Identificação e contexto desportivo do piloto.','')+
@@ -227,11 +350,9 @@ function profilePage(){
     <button class="btn primary" data-action="save-profile">Guardar perfil</button>
   </div>`;
 }
-function saveProfile(){
+async function saveProfile(){
   try{
-    const all=users();
-    const u=all.find(x=>String(x.id)===String(currentUser?.id));
-    if(!u){toast('A conta do piloto não foi encontrada.');return;}
+    if(!currentUser)return;
     const profile={
       name:document.getElementById('profileName').value.trim(),
       age:document.getElementById('profileAge').value,
@@ -243,93 +364,32 @@ function saveProfile(){
       notes:document.getElementById('profileNotes').value.trim()
     };
     if(!profile.name||profile.age===''||profile.kartingStartYear===''){toast('Preenche nome, idade e ano de início no karting');return;}
-    u.name=profile.name;
-    u.profile=profile;
-    localStorage.setItem(USERS_KEY,JSON.stringify(all));
-
-    // If the pilot is already in the team, update the single linked record.
-    if(u.pilotId){
-      const d=db.drivers.find(x=>String(x.id)===String(u.pilotId)&&String(x.userId)===String(u.id));
-      if(d) Object.assign(d,{name:profile.name,age:profile.age,kartingStartYear:profile.kartingStartYear,category:profile.category,team:profile.team,number:profile.number,location:profile.location,notes:profile.notes});
-    }
-
-    currentUser=u;
-    localStorage.setItem(AUTH_KEY,JSON.stringify(u));
-    sessionStorage.setItem(AUTH_KEY,JSON.stringify(u));
-    syncPilotLinks();
-    save();
-    ui.page='my-events';
-    render();
-    toast('Perfil guardado.');
-  }catch(e){
-    console.error(e);
-    toast('Erro ao guardar o perfil.');
-  }
+    const {error}=await sb.from('profiles').update({name:profile.name,profile,updated_at:new Date().toISOString()}).eq('id',currentUser.id);
+    if(error){console.error(error);toast('Não foi possível guardar o perfil.');return;}
+    await loadProfiles();currentUser=profileCache.find(x=>x.id===currentUser.id)||currentUser;
+    ui.page='my-events';render();toast('Perfil guardado online.');
+  }catch(e){console.error(e);toast('Erro ao guardar o perfil.');}
 }
-function syncPilotLinks(){
-  const us=users();
-  const pilotIds=new Set(us.filter(u=>u.role==='pilot').map(u=>String(u.id)));
-
-  // Only real account-linked pilots are durable pilot records.
-  db.drivers=(db.drivers||[]).filter(d=>d.userId && pilotIds.has(String(d.userId)));
-
-  for(const u of us.filter(x=>x.role==='pilot')){
-    const linked=db.drivers.filter(d=>String(d.userId)===String(u.id));
-    if(linked.length){
-      const d=linked[0];
-      u.pilotId=d.id;
-      if(u.profile){
-        Object.assign(d,{
-          name:u.profile.name||d.name,
-          age:u.profile.age??d.age,
-          kartingStartYear:u.profile.kartingStartYear??d.kartingStartYear,
-          category:u.profile.category||'',
-          team:u.profile.team||'',
-          number:u.profile.number||'',
-          location:u.profile.location||'',
-          notes:u.profile.notes||''
-        });
-      }
-      // Remove duplicates for this same account and clean their references from sessions.
-      for(let i=1;i<linked.length;i++){
-        const duplicateId=linked[i].id;
-        db.drivers=db.drivers.filter(x=>String(x.id)!==String(duplicateId));
-        for(const c of db.championships||[])for(const r of c.races||[])for(const day of r.days||[])for(const s of day.sessions||[]){
-          s.pilotIds=(s.pilotIds||[]).filter(x=>String(x)!==String(duplicateId));
-          if(s.analyses)delete s.analyses[duplicateId];
-        }
-      }
-    }else{
-      u.pilotId=null;
-    }
-  }
-  localStorage.setItem(USERS_KEY,JSON.stringify(us));
-  save();
-}
-function registeredPilotUsers(){
-  syncPilotLinks();
-  return users().filter(u=>u.role==='pilot'&&u.profile&&!u.pilotId);
-}
+function syncPilotLinks(){return true}
+function registeredPilotUsers(){return users().filter(u=>u.role==='pilot'&&u.profile&&!u.pilotId)}
 function newDriver(){
-  syncPilotLinks();
   const available=registeredPilotUsers();
   if(!available.length){toast('Não existem contas de piloto registadas e disponíveis.');return}
   modal(`<h2>Adicionar piloto</h2><div class="help" style="margin-bottom:12px">Só aparecem contas de piloto que já estão registadas e ainda não foram adicionadas.</div>
     <div class="field"><label>Conta de piloto</label><select id="registeredPilot"><option value="">Selecionar</option>${available.map(u=>`<option value="${u.id}">${esc(u.profile.name)} · ${esc(u.email)}</option>`).join('')}</select></div>
     <div class="modalactions"><button class="btn" data-action="close">Cancelar</button><button class="btn primary" data-action="create-driver">Adicionar</button></div>`);
 }
-function addRegisteredPilot(userId){
+async function addRegisteredPilot(userId){
   const selectedUserId=userId||document.getElementById('registeredPilot')?.value;
   const u=users().find(x=>String(x.id)===String(selectedUserId));
   if(!u||!u.profile){toast('Seleciona uma conta registada');return}
   const p=u.profile,d={id:'d_'+Date.now(),name:p.name,userId:u.id,age:p.age,kartingStartYear:p.kartingStartYear,category:p.category||'',team:p.team||'',number:p.number||'',location:p.location||'',notes:p.notes||''};
   db.drivers.push(d);
-  const allUsers=users();
-  const linked=allUsers.find(x=>x.id===u.id);
-  if(linked)linked.pilotId=d.id;
-  localStorage.setItem(USERS_KEY,JSON.stringify(allUsers));
-  save();closeModal();render();
+  const {error}=await sb.from('profiles').update({pilot_id:d.id,updated_at:new Date().toISOString()}).eq('id',u.id);
+  if(error){console.error(error);toast('Não foi possível associar o piloto.');return}
+  await save();await loadProfiles();closeModal();render();
 }
+
 function driverCard(d){
   const u=users().find(x=>x.id===d.userId),p=u?.profile||d;
   return `<div class="card" style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;gap:16px"><div><h3 style="margin:0 0 6px">${esc(p.name||d.name)}</h3><div class="muted">${esc(p.category||'Categoria por definir')} · ${esc(p.team||'Equipa por definir')} · ${p.age?esc(p.age)+' anos':''}</div></div><span class="rolebadge">${u?'Conta registada':'Sem conta'}</span></div>
@@ -392,107 +452,13 @@ function saveCurrentAnalysis(){
 function sessionPilots(s){return (s.pilotIds||[]).map(id=>db.drivers.find(d=>String(d.id)===String(id))).filter(Boolean)}
 
 
-const IMAGE_DB='pista_coach_images_v1';
-function openImageDB(){
-  return new Promise((resolve,reject)=>{
-    if(!window.indexedDB){reject(new Error('IndexedDB indisponível'));return}
-    const req=indexedDB.open(IMAGE_DB,1);
-    req.onupgradeneeded=()=>req.result.createObjectStore('images');
-    req.onsuccess=()=>resolve(req.result);
-    req.onerror=()=>reject(req.error);
-  });
-}
-async function putImage(id,data){
-  try{
-    const dbi=await openImageDB();
-    await new Promise((resolve,reject)=>{
-      const tx=dbi.transaction('images','readwrite');tx.objectStore('images').put(data,id);
-      tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);
-    });
-    dbi.close();return true;
-  }catch(e){return false}
-}
-async function getImage(id){
-  try{
-    const dbi=await openImageDB();
-    const value=await new Promise((resolve,reject)=>{
-      const tx=dbi.transaction('images','readonly');const req=tx.objectStore('images').get(id);
-      req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);
-    });
-    dbi.close();return value||'';
-  }catch(e){return ''}
-}
-async function deleteImage(id){
-  if(!id)return;
-  try{
-    const dbi=await openImageDB();
-    await new Promise((resolve,reject)=>{
-      const tx=dbi.transaction('images','readwrite');tx.objectStore('images').delete(id);
-      tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);
-    });
-    dbi.close();
-  }catch(e){}
-}
-function compressImage(file){
-  return new Promise((resolve,reject)=>{
-    const reader=new FileReader();
-    reader.onload=()=>{
-      const img=new Image();
-      img.onload=()=>{
-        const max=1800;
-        const scale=Math.min(1,max/Math.max(img.width,img.height));
-        const c=document.createElement('canvas');
-        c.width=Math.max(1,Math.round(img.width*scale));
-        c.height=Math.max(1,Math.round(img.height*scale));
-        c.getContext('2d').drawImage(img,0,0,c.width,c.height);
-        resolve(c.toDataURL('image/jpeg',0.82));
-      };
-      img.onerror=reject;img.src=reader.result;
-    };
-    reader.onerror=reject;reader.readAsDataURL(file);
-  });
-}
 async function persistTrackImage(track,data){
-  const imageId=track.imageId||('img_'+track.id);
-  const ok=await putImage(imageId,data);
-  if(ok){
-    track.imageId=imageId;
-    track.image=data;       // keep it in memory so the editor shows it immediately
-    save();                 // save() strips the image bytes from localStorage
-    return true;
-  }
+  track.imageId=track.imageId||('img_'+track.id);
   track.image=data;
-  return save();
+  const ok=await save();
+  return ok;
 }
-async function hydrateImages(){
-  let changed=false;
-  for(const t of db.tracks||[]){
-    // Older versions sometimes lost imageId during normalization, while the actual
-    // image was already safely stored in IndexedDB under the deterministic track id.
-    const preferredId=t.imageId||('img_'+t.id);
-    if(preferredId){
-      const data=await getImage(preferredId);
-      if(data){t.image=data;t.imageId=preferredId;changed=true;continue;}
-    }
-    if(t.image && t.image.length>100000){
-      const id='img_'+t.id;
-      if(await putImage(id,t.image)){t.imageId=id;changed=true;}
-    }
-  }
-  if(changed)save();
-}
-
-function save(){
-  try{
-    const payload=JSON.parse(JSON.stringify(db));
-    (payload.tracks||[]).forEach(t=>{if(t.imageId)t.image='';});
-    localStorage.setItem(KEY,JSON.stringify(payload));
-    return true;
-  }catch(e){
-    toast('Não foi possível guardar os dados locais.');
-    return false;
-  }
-}
+async function hydrateImages(){return true}
 
 function esc(v){
   return String(v??'').replace(/[&<>"']/g,c=>({
@@ -574,25 +540,25 @@ function positionMapPoints(){
   const track=db.tracks.find(x=>String(x.id)===String(ui.editor));
   const s=getSession();
   const trackForSession=ui.page==='session'&&s?db.tracks.find(t=>String(t.id)===String(s.trackId)):null;
-  const t=track||trackForSession||db.tracks.find(x=>x.points?.length && x.image);
-  if(!t)return;
+  const pilotSession=getSession();
+  const trackForPilot=ui.page==='pilot-session'&&pilotSession?db.tracks.find(t=>String(t.id)===String(pilotSession.trackId)):null;
+  const t=track||trackForSession||trackForPilot||db.tracks.find(x=>x.points?.length&&x.image);
+  if(!t||!t.points?.length)return;
+  // Points are stored as percentages of the ORIGINAL rendered image, never of the stage.
+  // Calculate their position from the image's actual bounding box so Admin and Pilot use
+  // exactly the same reference rectangle even when the image is resized/centered.
   const ir=image.getBoundingClientRect(),sr=stage.getBoundingClientRect();
-  const points=[...stage.querySelectorAll('[data-map-point]')];
-  points.forEach((el,i)=>{
-    const p=t.points[i];if(!p)return;
-    let x,y;
-    if(t.pointSpace==='image'){x=(ir.left-sr.left)+(Number(p.x)/100)*ir.width;y=(ir.top-sr.top)+(Number(p.y)/100)*ir.height;}
-    else{x=(Number(p.x)/100)*sr.width;y=(Number(p.y)/100)*sr.height;}
-    el.style.left=x+'px';el.style.top=y+'px';
-  });
-  [...stage.querySelectorAll('[data-session-point]')].forEach(el=>{
-    const i=Number(el.dataset.sessionPoint),p=t.points[i];if(!p)return;
-    let x,y;
-    if(t.pointSpace==='image'){x=(ir.left-sr.left)+(Number(p.x)/100)*ir.width;y=(ir.top-sr.top)+(Number(p.y)/100)*ir.height;}
-    else{x=(Number(p.x)/100)*sr.width;y=(Number(p.y)/100)*sr.height;}
-    el.style.left=x+'px';el.style.top=y+'px';
-  });
+  if(!ir.width||!ir.height)return;
+  const ox=ir.left-sr.left,oy=ir.top-sr.top;
+  const place=(el,p)=>{
+    const x=ox+(Number(p.x)||0)/100*ir.width;
+    const y=oy+(Number(p.y)||0)/100*ir.height;
+    el.style.left=`${x}px`;
+    el.style.top=`${y}px`;
+  };
+  stage.querySelectorAll('[data-map-point]').forEach((el,i)=>{ if(t.points[i])place(el,t.points[i]); });
 }
+
 function migrateLegacyTrackPoints(t){
   if(!t||t.pointSpace==='image')return false;
   const stage=document.getElementById('stage'),image=document.getElementById('trackImage');
@@ -626,11 +592,11 @@ function sessionPage(){
 }
 
 function newChampionship(){modal(`<h2>Adicionar campeonato</h2><div class="field"><label>Nome</label><input id="champName"></div><div class="field"><label>Época</label><input id="champSeason" placeholder="2026"></div><div class="modalactions"><button class="btn" data-action="close">Cancelar</button><button class="btn primary" data-action="create-championship">Criar</button></div>`)}
-function createChampionship(){const n=document.getElementById('champName').value.trim();if(!n)return;db.championships.push({id:Date.now(),name:n,season:document.getElementById('champSeason').value.trim(),races:[]});save();closeModal();render()}
+async function createChampionship(){const n=document.getElementById('champName').value.trim();if(!n)return;db.championships.push({id:Date.now(),name:n,season:document.getElementById('champSeason').value.trim(),races:[]});await save();closeModal();render()}
 function newRace(){modal(`<h2>Adicionar corrida</h2><div class="field"><label>Nome</label><input id="raceName" placeholder="Ex.: Ronda 1"></div><div class="field"><label>Kartódromo / local</label><input id="raceLocation"></div><div class="field"><label>Data</label><input id="raceDate" type="date"></div><div class="field"><label>Live timing</label><input id="raceTiming"></div><div class="field"><label>Resultados</label><input id="raceResults"></div><div class="field"><label>Horários</label><input id="raceSchedule"></div><div class="modalactions"><button class="btn" data-action="close">Cancelar</button><button class="btn primary" data-action="create-race">Criar</button></div>`)}
-function createRace(){const c=getChamp(),n=document.getElementById('raceName').value.trim();if(!n)return;c.races.push({id:Date.now(),name:n,location:document.getElementById('raceLocation').value.trim(),date:document.getElementById('raceDate').value,links:{timing:document.getElementById('raceTiming').value.trim(),results:document.getElementById('raceResults').value.trim(),schedule:document.getElementById('raceSchedule').value.trim()},days:[],pilotIds:[]});save();closeModal();render()}
+async function createRace(){const c=getChamp(),n=document.getElementById('raceName').value.trim();if(!n)return;c.races.push({id:Date.now(),name:n,location:document.getElementById('raceLocation').value.trim(),date:document.getElementById('raceDate').value,links:{timing:document.getElementById('raceTiming').value.trim(),results:document.getElementById('raceResults').value.trim(),schedule:document.getElementById('raceSchedule').value.trim()},days:[],pilotIds:[]});await save();closeModal();render()}
 function newDay(){modal(`<h2>Adicionar dia</h2><div class="field"><label>Nome do dia</label><input id="dayName" placeholder="Ex.: Sexta-feira · Treinos"></div><div class="field"><label>Data</label><input id="dayDate" type="date"></div><div class="modalactions"><button class="btn" data-action="close">Cancelar</button><button class="btn primary" data-action="create-day">Criar</button></div>`)}
-function createDay(){const r=getRace(),n=document.getElementById('dayName').value.trim();if(!n)return;r.days.push({id:Date.now(),name:n,date:document.getElementById('dayDate').value,sessions:[]});save();closeModal();render()}
+async function createDay(){const r=getRace(),n=document.getElementById('dayName').value.trim();if(!n)return;r.days.push({id:Date.now(),name:n,date:document.getElementById('dayDate').value,sessions:[]});await save();closeModal();render()}
 function newSession(){
   const races=db.championships.flatMap(c=>c.races.map(r=>({c,r})));
   modal(`<h2>Criar sessão</h2>
@@ -644,7 +610,7 @@ function newSession(){
     <div class="help">A sessão fica ligada a campeonato → prova → dia → pista. Depois, dentro da sessão, podes selecionar o piloto e analisar cada curva.</div>
     <div class="modalactions"><button class="btn" data-action="close">Cancelar</button><button class="btn primary" data-action="create-session">Criar sessão</button></div>`);
 }
-function createSession(){
+async function createSession(){
   const champId=document.getElementById('sessionChamp').value,raceId=document.getElementById('sessionRace').value,dayId=document.getElementById('sessionDay').value,n=document.getElementById('sessionName').value.trim();
   if(!champId||!raceId||!dayId||!n){toast('Seleciona campeonato, prova, dia e nome da sessão');return}
   const c=db.championships.find(x=>String(x.id)===String(champId)),r=c?.races.find(x=>String(x.id)===String(raceId)),d=r?.days.find(x=>String(x.id)===String(dayId));
@@ -656,7 +622,7 @@ function createSession(){
   const racePilotIds=new Set((r.pilotIds||[]).map(x=>String(x)));
   pilotIds.forEach(id=>racePilotIds.add(String(id)));
   r.pilotIds=[...racePilotIds];
-  save();closeModal();ui.championship=c.id;ui.race=r.id;ui.day=d.id;ui.session=s.id;ui.page='session';render();
+  await save();closeModal();ui.championship=c.id;ui.race=r.id;ui.day=d.id;ui.session=s.id;ui.page='session';render();
 }
 function configureSession(){
   const s=getSession();
@@ -664,7 +630,7 @@ function configureSession(){
   <div class="field"><label>Pilotos desta sessão</label><div class="checklist">${db.drivers.map(d=>`<label><input type="checkbox" name="cfgPilot" value="${d.id}" ${(s.pilotIds||[]).some(id=>String(id)===String(d.id))?'checked':''}> ${esc(d.name)}</label>`).join('')||'<span class="muted">Adiciona primeiro um piloto.</span>'}</div></div>
   <div class="modalactions"><button class="btn" data-action="close">Cancelar</button><button class="btn primary" data-action="save-session">Guardar</button></div>`);
 }
-function saveSession(){
+async function saveSession(){
   const s=getSession();s.trackId=document.getElementById('cfgTrack').value||null;s.pilotIds=[...document.querySelectorAll('input[name="cfgPilot"]:checked')].map(x=>String(x.value));if(!s.analyses)s.analyses={};const r=getRace();if(r){const ids=new Set();for(const day of r.days||[])for(const ses of day.sessions||[])for(const id of ses.pilotIds||[])ids.add(String(id));r.pilotIds=[...ids];}save();closeModal();render();
 }
 function pilotRacePage(){
@@ -737,7 +703,17 @@ function render(){
     const b=side.querySelector('[data-page="my-events"]');if(b)b.remove();
   }
   if(ui.page==='editor')bindEditor();
-  if(ui.page==='session'||ui.page==='pilot-session'){const img=document.getElementById('trackImage');if(img){const p=()=>positionMapPoints();if(img.complete)p();else img.onload=p;}}
+  if(ui.page==='session'||ui.page==='pilot-session'||ui.page==='editor'){
+    const img=document.getElementById('trackImage');
+    if(img){
+      const p=()=>{positionMapPoints();requestAnimationFrame(()=>positionMapPoints());};
+      if(img.complete)p();else img.onload=p;
+      if(window._mpResizeObserver)window._mpResizeObserver.disconnect();
+      window._mpResizeObserver=new ResizeObserver(()=>positionMapPoints());
+      window._mpResizeObserver.observe(img);
+      window._mpResizeObserver.observe(document.getElementById('stage'));
+    }
+  }
 }
 function modal(content){
   document.getElementById('modal').innerHTML=`<div class="modalbg"><div class="modal">${content}</div></div>`;
@@ -751,7 +727,7 @@ function newTrack(){
     <div class="modalactions"><button class="btn" data-action="close">Cancelar</button><button class="btn primary" data-action="create-track">Criar</button></div>`);
 }
 
-function createTrack(){
+async function createTrack(){
   const name=document.getElementById('trackName').value.trim();
   if(!name)return;
   const t={
@@ -762,7 +738,7 @@ function createTrack(){
     pointSpace:'image',
     points:[]
   };
-  db.tracks.push(t);save();closeModal();
+  db.tracks.push(t);await save();closeModal();
   ui.page='editor';ui.editor=t.id;ui.mode='add';ui.selected=null;render();
 }
 
@@ -787,7 +763,7 @@ function bindEditor(){
 document.addEventListener('change',event=>{
   if(event.target.id==='activePilot'){ui.sessionPilot=event.target.value;ui.sessionPoint=0;render();}
 });
-document.addEventListener('click',event=>{
+document.addEventListener('click',async event=>{
 
   const page=event.target.closest('[data-page]');
   if(page){
@@ -823,10 +799,10 @@ document.addEventListener('click',event=>{
       if(!pid){toast('Seleciona um piloto');break}
       setAnalysis(s,pid,ui.sessionPoint||0,{comment:document.getElementById('analysisComment').value,braking:document.getElementById('analysisBraking').value,insertion:document.getElementById('analysisInsertion').value,inTrajectory:document.getElementById('analysisInTrajectory').value,midTrajectory:document.getElementById('analysisMidTrajectory').value,outTrajectory:document.getElementById('analysisOutTrajectory').value,acceleration:document.getElementById('analysisAcceleration').value,rotation:document.getElementById('analysisRotation').value});
       if(!s.generalAnalysis)s.generalAnalysis={};s.generalAnalysis[pid]={comment:document.getElementById('generalAnalysis')?.value||''};
-      save();toast('Análise guardada');render();break;
+      await save();toast('Análise guardada');render();break;
     }
     case 'finish-analysis':{
-      if(saveCurrentAnalysis()){toast('Sessão analisada e guardada');ui.page='sessions';ui.session=null;ui.sessionPoint=0;ui.sessionPilot=null;render();}
+      if(saveCurrentAnalysis()){await save();toast('Sessão analisada e guardada');ui.page='sessions';ui.session=null;ui.sessionPoint=0;ui.sessionPilot=null;render();}
       break;
     }
     case 'logout':logout();break;
@@ -844,7 +820,7 @@ document.addEventListener('click',event=>{
     case 'create-race':createRace();break;
     case 'open-race':ui.page='race';ui.race=action.dataset.id;render();break;
     case 'back-races':ui.page='championship';render();break;
-    case 'delete-championship':{const id=action.dataset.id;if(confirm('Apagar este campeonato e todas as suas corridas, dias e sessões?')){db.championships=db.championships.filter(c=>String(c.id)!==String(id));if(String(ui.championship)===String(id)){ui.championship=null;ui.race=null;ui.day=null;ui.session=null;ui.page='championships';}save();render();}break;}
+    case 'delete-championship':{const id=action.dataset.id;db.championships=db.championships.filter(c=>String(c.id)!==String(id));if(String(ui.championship)===String(id)){ui.championship=null;ui.race=null;ui.day=null;ui.session=null;ui.page='championships';}await save();render();break;}
     case 'delete-race':{const c=getChamp();if(c){c.races=c.races.filter(r=>String(r.id)!==String(action.dataset.id));save();render();}break;}
     case 'new-day':newDay();break;
     case 'create-day':createDay();break;
@@ -878,18 +854,10 @@ document.addEventListener('click',event=>{
     }
     case 'delete':{
       const id=String(action.dataset.id);
-      const doomed=db.tracks.find(t=>String(t.id)===id);
       db.tracks=db.tracks.filter(t=>String(t.id)!==id);
-      try{
-        const deleted=JSON.parse(localStorage.getItem(DELETED_TRACKS_KEY)||'[]');
-        if(!deleted.some(x=>String(x.id)===id)) deleted.push({id,name:doomed?.name||'',deletedAt:Date.now()});
-        localStorage.setItem(DELETED_TRACKS_KEY,JSON.stringify(deleted));
-      }catch(e){}
-      if(doomed?.imageId) deleteImage(doomed.imageId);
-      save();
-      render();
-      toast('Pista eliminada');
-      break;
+      await save();
+      if(String(ui.editor)===id){ui.editor=null;ui.selected=null;ui.page='tracks';}
+      render();toast('Pista eliminada');break;
     }
     case 'save-comment':{
       const t=db.tracks.find(x=>String(x.id)===String(ui.editor));
@@ -908,12 +876,9 @@ document.addEventListener('click',event=>{
   }
 });
 
-restoreUser();
-syncPilotLinks();
-currentUser=freshCurrentUser();
-if(currentUser)ui.page=isAdmin()?'dashboard':(profileComplete(freshCurrentUser())?'my-events':'profile');else ui.page='login';
 render();
-hydrateImages().then(()=>{if(currentUser)render();});
+subscribeAuth();
+bootCloud();
 </script>
 </body>
 </html>
