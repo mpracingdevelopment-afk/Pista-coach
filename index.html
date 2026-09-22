@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Pista Coach V21</title>
+<title>MPRacingDevelopment</title>
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#0b0d10;color:#f5f6f7;font-family:Arial,Helvetica,sans-serif}
 button,input,textarea{font:inherit}button{cursor:pointer}
 .sidebar{position:fixed;inset:0 auto 0 0;width:220px;background:#111419;border-right:1px solid #292e35;padding:22px 16px;z-index:20}
-.logo{font-size:20px;font-weight:800;margin:4px 8px 30px}.logo span{color:#87909a}
+.logo{font-size:18px;font-weight:800;margin:4px 8px 30px;white-space:nowrap}.logo span{color:#87909a;font-weight:500}
 .nav{display:grid;gap:5px}.nav button{border:0;background:transparent;color:#aeb5bd;text-align:left;padding:12px;border-radius:8px}
 .nav button.active,.nav button:hover{background:#20252c;color:#fff}
 main{margin-left:220px;padding:28px;min-height:100vh}
@@ -35,7 +35,7 @@ main{margin-left:220px;padding:28px;min-height:100vh}
 .click-layer{position:absolute;inset:0;z-index:2}
 .comments{position:absolute;right:12px;top:12px;width:290px;max-height:calc(100% - 24px);overflow:auto;background:#171b20ee;border:1px solid #3b424a;border-radius:10px;padding:12px;z-index:10}
 .comments h3{margin:0 0 10px}.field{display:grid;gap:5px;margin-bottom:8px}.field label{font-size:12px;color:#aeb5bd}
-.field input,.field textarea,.field select{width:100%;background:#0b0e12;color:#fff;border:1px solid #303740;border-radius:7px;padding:8px}.field textarea{min-height:65px;resize:vertical}.score-field{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:8px 0}.score-field label{font-weight:600}.score-select{width:82px!important;min-width:82px;padding:6px 8px!important}
+.field input,.field textarea,.field select{width:100%;background:#0b0e12;color:#fff;border:1px solid #303740;border-radius:7px;padding:8px}.field textarea{min-height:65px;resize:vertical}.score-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}.score-group{background:#0f1318;border:1px solid #292f36;border-radius:9px;padding:9px 10px;min-width:0}.score-field{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0}.score-field label{font-weight:600;font-size:13px;line-height:1.2;min-width:0}.score-help{display:block;color:#8e97a1;font-size:10px;font-weight:400;margin-top:3px;white-space:nowrap}.score-select{width:66px!important;min-width:66px;flex:0 0 66px;padding:5px 6px!important;height:34px}.score-section-title{font-size:13px;font-weight:800;margin:0 0 7px}.analysis-layout{display:block}.analysis-comment{margin-top:10px}.analysis-comment textarea{min-height:95px}@media(max-width:1000px){.score-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:600px){.score-grid{grid-template-columns:1fr}}
 .modalbg{position:fixed;inset:0;background:#000c;display:flex;align-items:center;justify-content:center;padding:20px;z-index:40}
 .modal{background:#14181d;border:1px solid #343b44;border-radius:13px;padding:20px;width:min(600px,100%)}
 .modalactions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
@@ -49,7 +49,7 @@ main{margin-left:220px;padding:28px;min-height:100vh}
 </head>
 <body>
 <aside class="sidebar">
-<div class="logo">PISTA <span>COACH</span></div>
+<div class="logo">MP<span>RacingDevelopment</span></div>
 <div class="nav">
 <button data-page="dashboard">Dashboard</button>
 <button data-page="drivers">Pilotos</button>
@@ -170,7 +170,7 @@ function currentPilotId(){
 function profileComplete(u){return !!(u&&u.role==='pilot'&&u.profile&&u.profile.name&&u.profile.age!==''&&u.profile.kartingStartYear!=='')}
 function loginPage(){
   return `<div style="min-height:80vh;display:flex;align-items:center;justify-content:center"><div class="card loginbox">
-    <h1>Pista Coach</h1><div class="sub" style="margin-bottom:18px">Entrar na plataforma</div>
+    <h1>MPRacingDevelopment</h1><div class="sub" style="margin-bottom:18px">Entrar na plataforma</div>
     <div class="field"><label>Email</label><input id="loginEmail" type="email"></div>
     <div class="field"><label>Password</label><input id="loginPassword" type="password"></div>
     <button class="btn primary" style="width:100%" data-action="login">Entrar</button>
@@ -611,7 +611,7 @@ function sessionPage(){
   `<div class="grid2"><div class="card"><div class="field"><label>Piloto em análise</label><select id="activePilot">${pilots.map(p=>`<option value="${p.id}" ${String(p.id)===String(pid)?'selected':''}>${esc(p.name)}</option>`).join('')||'<option value="">Nenhum piloto</option>'}</select></div><div class="help">Seleciona o piloto e depois clica numa curva.</div></div><div class="card"><b>Score da sessão</b><div class="kpi">${score==null?'—':score.toFixed(1)+'/10'}</div><div class="muted">${score==null?'Ainda sem análise suficiente.':Math.round(score*10)+'/100'}</div></div></div>`+
   (pid?`<div class="card" style="margin-top:14px"><h3>Análise geral da sessão</h3><div class="field"><label>Observações gerais do treinador</label><textarea id="generalAnalysis" rows="5" placeholder="Ritmo, consistência, comportamento do kart, evolução, principais pontos a melhorar...">${esc(general.comment||'')}</textarea></div></div>`:'')+
   (track?`<div style="margin-top:14px"><div class="stagebox"><div class="stagehead"><b>${esc(track.name)}</b><span class="muted">${track.points.length} curvas</span></div><div class="stage" id="stage"><div class="image-wrap"><img id="trackImage" class="track-image" src="${track.image}" alt=""></div>${track.points.map((p,i)=>`<button type="button" class="point ${i===idx?'selected':''}" data-session-point="${i}" data-map-point="${i}">${i+1}</button>`).join('')}</div></div></div>
-  <div class="card" style="margin-top:14px">${pid?`<h3>Curva ${idx+1}</h3><div class="help" style="margin-bottom:12px">Seleciona a execução de cada elemento. Nos parâmetros de -10 a +10, <b>0</b> = ideal. Nas trajetórias, <b>10</b> = ideal.</div><div class="grid2"><div><h3>Execução técnica</h3>${metric('analysisBraking','Travagem',a.braking,'-10 cedo · +10 tarde')}${metric('analysisInsertion','Inserção',a.insertion,'-10 suave · +10 incisiva')}${metric('analysisRotation','Rotação do kart',a.rotation,'-10 sem rotação · +10 excesso')}</div><div><h3>Trajetórias e aceleração</h3>${traj('analysisInTrajectory','Trajetória de entrada',a.inTrajectory)}${traj('analysisMidTrajectory','Trajetória de meio',a.midTrajectory)}${traj('analysisOutTrajectory','Trajetória de saída',a.outTrajectory)}${metric('analysisAcceleration','Aceleração',a.acceleration,'-10 insuficiente · +10 excessiva')}</div></div><div class="field"><label>Comentário da curva</label><textarea id="analysisComment" rows="4">${esc(a.comment||'')}</textarea></div><div class="card" style="margin-top:10px"><b>Nota automática da curva</b><div class="kpi">${curveScore(a)==null?'—':curveScore(a).toFixed(1)+'/10'}</div><div class="muted">A nota é calculada automaticamente pelos pesos definidos.</div></div><div class="buttons"><button class="btn primary" data-action="save-analysis">Guardar análise da curva</button><button class="btn" data-action="finish-analysis">Terminar análise e guardar sessão</button></div>`:'<div class="empty">Adiciona um piloto à sessão para começar a análise.</div>'}</div>`:'<div class="empty">Esta sessão ainda não tem uma pista associada.</div>');
+  <div class="card" style="margin-top:14px">${pid?`<h3>Curva ${idx+1}</h3><div class="help" style="margin-bottom:12px">Seleciona a execução de cada elemento. Nos parâmetros de -10 a +10, <b>0</b> = ideal. Nas trajetórias, <b>10</b> = ideal.</div><div class="score-grid"><div class="score-group">${metric('analysisBraking','Travagem',a.braking,'-10 cedo · +10 tarde')}</div><div class="score-group">${metric('analysisInsertion','Inserção',a.insertion,'-10 suave · +10 incisiva')}</div><div class="score-group">${metric('analysisRotation','Rotação do kart',a.rotation,'-10 sem rotação · +10 excesso')}</div><div class="score-group">${traj('analysisInTrajectory','Trajetória de entrada',a.inTrajectory)}</div><div class="score-group">${traj('analysisMidTrajectory','Trajetória de meio',a.midTrajectory)}</div><div class="score-group">${traj('analysisOutTrajectory','Trajetória de saída',a.outTrajectory)}</div><div class="score-group">${metric('analysisAcceleration','Aceleração',a.acceleration,'-10 insuficiente · +10 excessiva')}</div></div><div class="field analysis-comment"><label>Comentário da curva</label><textarea id="analysisComment" rows="4">${esc(a.comment||'')}</textarea></div><div class="card" style="margin-top:10px"><b>Nota automática da curva</b><div class="kpi">${curveScore(a)==null?'—':curveScore(a).toFixed(1)+'/10'}</div><div class="muted">A nota é calculada automaticamente pelos pesos definidos.</div></div><div class="buttons"><button class="btn primary" data-action="save-analysis">Guardar análise da curva</button><button class="btn" data-action="finish-analysis">Terminar análise e guardar sessão</button></div>`:'<div class="empty">Adiciona um piloto à sessão para começar a análise.</div>'}</div>`:'<div class="empty">Esta sessão ainda não tem uma pista associada.</div>');
 }
 
 function newChampionship(){modal(`<h2>Adicionar campeonato</h2><div class="field"><label>Nome</label><input id="champName"></div><div class="field"><label>Época</label><input id="champSeason" placeholder="2026"></div><div class="modalactions"><button class="btn" data-action="close">Cancelar</button><button class="btn primary" data-action="create-championship">Criar</button></div>`)}
@@ -810,7 +810,7 @@ document.addEventListener('click',event=>{
     case 'save-analysis':{
       const s=getSession(),pid=ui.sessionPilot||document.getElementById('activePilot')?.value;
       if(!pid){toast('Seleciona um piloto');break}
-      setAnalysis(s,pid,ui.sessionPoint||0,{comment:document.getElementById('analysisComment').value,braking:document.getElementById('analysisBraking').value,trail:document.getElementById('analysisTrail').value,insertion:document.getElementById('analysisInsertion').value,inTrajectory:document.getElementById('analysisInTrajectory').value,midTrajectory:document.getElementById('analysisMidTrajectory').value,outTrajectory:document.getElementById('analysisOutTrajectory').value,acceleration:document.getElementById('analysisAcceleration').value,rotation:document.getElementById('analysisRotation').value});
+      setAnalysis(s,pid,ui.sessionPoint||0,{comment:document.getElementById('analysisComment').value,braking:document.getElementById('analysisBraking').value,insertion:document.getElementById('analysisInsertion').value,inTrajectory:document.getElementById('analysisInTrajectory').value,midTrajectory:document.getElementById('analysisMidTrajectory').value,outTrajectory:document.getElementById('analysisOutTrajectory').value,acceleration:document.getElementById('analysisAcceleration').value,rotation:document.getElementById('analysisRotation').value});
       if(!s.generalAnalysis)s.generalAnalysis={};s.generalAnalysis[pid]={comment:document.getElementById('generalAnalysis')?.value||''};
       save();toast('Análise guardada');render();break;
     }
