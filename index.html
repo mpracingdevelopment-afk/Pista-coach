@@ -43,6 +43,8 @@ main{margin-left:220px;padding:28px;min-height:100vh}
 
 .breadcrumb{display:flex;gap:8px;align-items:center;color:#8e97a1;font-size:13px;margin-bottom:14px}.breadcrumb [data-action]{cursor:pointer}.breadcrumb b{color:#fff}
 .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}.cardlink,.eventcard{background:#13171c;border:1px solid #292f36;border-radius:11px;padding:16px}.cardlink{cursor:pointer}.cardlink:hover{border-color:#59636e}.cardlink h3,.eventcard h3{margin:0 0 7px}.cardlink p,.eventmeta{margin:0;color:#8e97a1;font-size:13px;line-height:1.5}.eventgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}.links{display:grid;gap:7px;margin-top:10px}.links a{color:#fff;text-decoration:none;border:1px solid #303740;border-radius:7px;padding:8px 10px;background:#171b21;font-size:13px}.sessionrow{background:#13171c;border:1px solid #292f36;border-radius:10px;padding:13px;display:flex;justify-content:space-between;gap:10px;align-items:center}.sectiontitle{font-size:16px;font-weight:800;margin:22px 0 10px}.readonly{background:#101318;border:1px solid #292f36;border-radius:10px;padding:15px}
+
+.userbar{display:flex;align-items:center;gap:10px}.rolebadge{font-size:11px;padding:5px 8px;border-radius:999px;background:#20252c;color:#dbe0e5}.loginbox{width:min(420px,100%)}.loginbox h1{margin-top:0}.account-card{background:#13171c;border:1px solid #292f36;border-radius:10px;padding:13px;margin-top:9px}
 </style>
 </head>
 <body>
@@ -65,6 +67,7 @@ const LEGACY=['pista_coach_v8','pista_coach_v7','pista_coach_v6','pista_coach_v5
 
 let db=load();
 let ui={page:'dashboard',editor:null,mode:'add',selected:null,championship:null,race:null,day:null,session:null};
+let currentUser=loadUser();
 
 function normalize(raw){
   raw=raw||{};
@@ -124,6 +127,63 @@ function load(){
   return normalize({});
 }
 
+
+function defaultUsers(){
+  return [
+    {id:'admin',name:'Admin',email:'admin@pistacoach.pt',password:'admin123',role:'admin',pilotId:null},
+    {id:'pilot1',name:'Piloto Demo',email:'piloto@pistacoach.pt',password:'1234',role:'pilot',pilotId:null}
+  ];
+}
+function loadUser(){
+  try{
+    const raw=localStorage.getItem('pista_coach_v12_users');
+    if(!raw)localStorage.setItem('pista_coach_v12_users',JSON.stringify(defaultUsers()));
+  }catch(e){}
+  return null;
+}
+function users(){
+  try{return JSON.parse(localStorage.getItem('pista_coach_v12_users'))||defaultUsers()}
+  catch(e){return defaultUsers()}
+}
+function isAdmin(){return currentUser?.role==='admin'}
+function canEdit(){return isAdmin()}
+function loginPage(){
+  return `<div style="min-height:80vh;display:flex;align-items:center;justify-content:center">
+    <div class="card loginbox">
+      <h1>Pista Coach</h1><div class="sub" style="margin-bottom:18px">Entrar na plataforma</div>
+      <div class="field"><label>Email</label><input id="loginEmail" type="email" placeholder="email"></div>
+      <div class="field"><label>Password</label><input id="loginPassword" type="password" placeholder="password"></div>
+      <button class="btn primary" style="width:100%" data-action="login">Entrar</button>
+      <div class="help" style="margin-top:14px">Teste admin: admin@pistacoach.pt / admin123<br>Teste piloto: piloto@pistacoach.pt / 1234</div>
+    </div>
+  </div>`;
+}
+function login(){
+  const email=document.getElementById('loginEmail').value.trim().toLowerCase();
+  const password=document.getElementById('loginPassword').value;
+  const u=users().find(x=>x.email.toLowerCase()===email&&x.password===password);
+  if(!u){toast('Email ou password incorretos');return}
+  currentUser=u;
+  sessionStorage.setItem('pista_coach_v12_user',JSON.stringify(u));
+  ui.page=isAdmin()?'dashboard':'my-events';
+  render();
+}
+function restoreUser(){
+  try{const raw=sessionStorage.getItem('pista_coach_v12_user');if(raw)currentUser=JSON.parse(raw)}catch(e){}
+}
+function logout(){
+  currentUser=null;sessionStorage.removeItem('pista_coach_v12_user');ui.page='login';render();
+}
+function myEventsPage(){
+  const pilotId=currentUser?.pilotId;
+  const cards=[];
+  db.championships.forEach(c=>c.races.forEach(r=>{
+    if(!pilotId || r.pilotIds.includes(pilotId))cards.push({c,r});
+  }));
+  return header('Os meus eventos','Área do piloto.')+
+    '<div class="cards">'+(cards.map(x=>`<div class="cardlink" data-action="pilot-race" data-champ="${x.c.id}" data-race="${x.r.id}"><h3>${esc(x.r.name)}</h3><p>${esc(x.c.name)} · ${esc(x.r.location||'')} · ${esc(x.r.date||'')}</p></div>`).join('')||'<div class="empty">Ainda não tens eventos atribuídos.</div>')+'</div>';
+}
+
 function save(){
   try{localStorage.setItem(KEY,JSON.stringify(db));return true}
   catch(e){toast('Não foi possível guardar os dados.');return false}
@@ -148,6 +208,7 @@ function header(title,sub,actions=''){
 }
 
 function tracksPage(){
+  if(!isAdmin())return '<div class="empty">Apenas o administrador pode gerir pistas.</div>';
   return header('Pistas','Imagem + pontos de coaching.',
     '<button class="btn primary" data-action="new-track">+ Nova pista</button>')+
     `<div class="list">${
@@ -207,10 +268,41 @@ function createSession(){const d=getDay(),n=document.getElementById('sessionName
 function configureSession(){const s=getSession();modal(`<h2>Configurar sessão</h2><div class="field"><label>Pista</label><select id="cfgTrack"><option value="">Selecionar</option>${db.tracks.map(t=>`<option value="${t.id}" ${String(t.id)===String(s.trackId)?'selected':''}>${esc(t.name)}</option>`).join('')}</select></div><div class="modalactions"><button class="btn" data-action="close">Cancelar</button><button class="btn primary" data-action="save-session">Guardar</button></div>`)}
 function saveSession(){getSession().trackId=document.getElementById('cfgTrack').value||null;save();closeModal();render()}
 
+
+function pilotRacePage(){
+  const c=db.championships.find(x=>String(x.id)===String(ui.championship));
+  const r=c?.races.find(x=>String(x.id)===String(ui.race));
+  if(!c||!r)return myEventsPage();
+  const pilotId=currentUser?.pilotId;
+  const allowed=!pilotId || r.pilotIds.includes(pilotId);
+  if(!allowed)return myEventsPage();
+  return `<div class="breadcrumb"><span data-action="pilot-home">Os meus eventos</span> › <b>${esc(r.name)}</b></div>`+
+    header(r.name,`${esc(c.name)} · ${esc(r.location||'')} · ${esc(r.date||'')}`,'')+
+    '<div class="sectiontitle">Dias</div><div class="list">'+
+    (r.days.map(d=>`<div class="row"><div><b>${esc(d.name)}</b><div class="muted">${esc(d.date||'')} · ${d.sessions.length} sessões</div></div><button class="btn" data-action="pilot-day" data-id="${d.id}">Abrir</button></div>`).join('')||'<div class="empty">Ainda não existem sessões.</div>')+
+    '</div>';
+}
+function pilotDayPage(){
+  const r=getRace(),d=getDay();
+  return `<div class="breadcrumb"><span data-action="pilot-home">Os meus eventos</span> › <span data-action="pilot-race-back">${esc(r.name)}</span> › <b>${esc(d.name)}</b></div>`+
+    header(d.name,'Sessões do dia.','')+
+    '<div class="list">'+(d.sessions.map(s=>`<div class="sessionrow"><div><b>${esc(s.name)}</b><div class="muted">${esc(s.type||'')}</div></div><button class="btn" data-action="pilot-session" data-id="${s.id}">Abrir</button></div>`).join('')||'<div class="empty">Sem sessões.</div>')+'</div>';
+}
+function pilotSessionPage(){
+  const s=getSession(),track=db.tracks.find(t=>String(t.id)===String(s.trackId));
+  if(!track)return '<div class="empty">Esta sessão ainda não tem uma pista.</div>';
+  return `<div class="breadcrumb"><span data-action="pilot-home">Os meus eventos</span> › <b>${esc(s.name)}</b></div>`+
+    header(s.name,esc(s.type||'Sessão'),'')+
+    `<div class="readonly"><b>${esc(track.name)}</b><div class="help">Mapa e análise da sessão.</div></div>
+    <div style="margin-top:10px"><div class="stagebox"><div class="stagehead"><b>${esc(track.name)}</b><span class="muted">${track.points.length} curvas</span></div><div class="stage"><div class="image-wrap"><img class="track-image" src="${track.image}" alt=""></div>${track.points.map((p,i)=>`<button class="point" style="left:${p.x}%;top:${p.y}%" data-session-point="${i}">${i+1}</button>`).join('')}</div></div></div>`;
+}
+
 function render(){
   const app=document.getElementById('app');
+  if(!currentUser){app.innerHTML=loginPage();document.querySelectorAll('[data-page]').forEach(b=>b.classList.remove('active'));return;}
   if(ui.page==='editor')app.innerHTML=editor();
   else if(ui.page==='dashboard')app.innerHTML=dashboard();
+  else if(ui.page==='my-events')app.innerHTML=myEventsPage();
   else if(ui.page==='drivers')app.innerHTML=drivers();
   else if(ui.page==='sessions')app.innerHTML=sessions();
   else if(ui.page==='tracks')app.innerHTML=tracksPage();
@@ -219,7 +311,25 @@ function render(){
   else if(ui.page==='race')app.innerHTML=racePage();
   else if(ui.page==='day')app.innerHTML=dayPage();
   else if(ui.page==='session')app.innerHTML=sessionPage();
-  document.querySelectorAll('[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===ui.page));
+  else if(ui.page==='pilot-race')app.innerHTML=pilotRacePage();
+  else if(ui.page==='pilot-day')app.innerHTML=pilotDayPage();
+  else if(ui.page==='pilot-session')app.innerHTML=pilotSessionPage();
+  if(currentUser){
+    const role=currentUser.role==='admin'?'ADMIN':'PILOTO';
+    app.insertAdjacentHTML('afterbegin',`<div class="userbar" style="justify-content:flex-end;margin-bottom:12px"><span>${esc(currentUser.name)}</span><span class="rolebadge">${role}</span><button class="btn" data-action="logout">Sair</button></div>`);
+  }
+  document.querySelectorAll('[data-page]').forEach(b=>{
+    b.classList.toggle('active',b.dataset.page===ui.page);
+    const adminOnly=['dashboard','championships','tracks','drivers','sessions'].includes(b.dataset.page);
+    b.style.display=(!isAdmin()&&adminOnly)?'none':'';
+  });
+  const side=document.querySelector('.nav');
+  if(side && !isAdmin() && !side.querySelector('[data-page="my-events"]')){
+    const b=document.createElement('button');b.dataset.page='my-events';b.textContent='Os meus eventos';side.prepend(b);
+  }
+  if(side && isAdmin()){
+    const b=side.querySelector('[data-page="my-events"]');if(b)b.remove();
+  }
   if(ui.page==='editor')bindEditor();
 }
 function modal(content){
@@ -337,8 +447,17 @@ document.addEventListener('click',event=>{
 
   const action=event.target.closest('[data-action]');
   if(!action)return;
+  const protectedActions=['new-track','create-track','delete','new-championship','create-championship','new-race','create-race','new-day','create-day','new-session','create-session','configure-session','save-session','edit','image','remove'];
+  if(!isAdmin()&&protectedActions.includes(action.dataset.action)){toast('Acesso reservado ao administrador');return;}
 
   switch(action.dataset.action){
+    case 'login':login();break;
+    case 'logout':logout();break;
+    case 'pilot-home':ui.page='my-events';render();break;
+    case 'pilot-race-back':ui.page='pilot-race';render();break;
+    case 'pilot-race':ui.page='pilot-race';ui.championship=action.dataset.champ;ui.race=action.dataset.race;render();break;
+    case 'pilot-day':ui.page='pilot-day';ui.day=action.dataset.id;render();break;
+    case 'pilot-session':ui.page='pilot-session';ui.session=action.dataset.id;render();break;
     case 'new-championship':newChampionship();break;
     case 'create-championship':createChampionship();break;
     case 'open-championship':ui.page='championship';ui.championship=action.dataset.id;render();break;
@@ -401,6 +520,8 @@ document.addEventListener('click',event=>{
   }
 });
 
+restoreUser();
+if(currentUser)ui.page=isAdmin()?'dashboard':'my-events';else ui.page='login';
 render();
 </script>
 </body>
