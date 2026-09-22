@@ -249,7 +249,8 @@ function normalize(raw){
     tracks,
     drivers:Array.isArray(raw.drivers)?raw.drivers.map(d=>({...d,id:d.id||Date.now(),name:d.name||'Piloto',userId:d.userId||null,age:d.age||'',kartingStartYear:d.kartingStartYear||'',category:d.category||'',team:d.team||'',number:d.number||''})):[],
     championships,
-    sessions:Array.isArray(raw.sessions)?raw.sessions:[]
+    sessions:Array.isArray(raw.sessions)?raw.sessions:[],
+    sessionTemplates:Array.isArray(raw.sessionTemplates)&&raw.sessionTemplates.length?raw.sessionTemplates.map(x=>String(x).trim()).filter(Boolean):['Treino 1','Treino 2','Treino 3','Qualificação','Corrida']
   };
 }
 function load(){
@@ -636,7 +637,7 @@ function drivers(){
 }
 function sessions(){
   const rows=db.championships.flatMap(c=>c.races.flatMap(r=>r.days.flatMap(d=>d.sessions.map(s=>({c,r,d,s})))));
-  return header('Sessões','Cria uma sessão a partir do campeonato, prova e dia.','<button class="btn primary" data-action="new-session">+ Criar sessão</button>')+
+  return header('Sessões','Cria uma sessão a partir do campeonato, prova e dia.','<div class="buttons"><button class="btn" data-action="manage-session-templates">Nomes de sessão</button><button class="btn primary" data-action="new-session">+ Criar sessão</button></div>')+
   `<div class="list">${rows.map(x=>`<div class="row"><div><b>${esc(x.s.name)}</b><div class="muted">${esc(x.c.name)} · ${esc(x.r.name)} · ${esc(x.d.name)} · ${x.s.pilotIds?.length||0} pilotos</div></div><button class="btn" data-action="open-session" data-id="${x.s.id}" data-champ="${x.c.id}" data-race="${x.r.id}" data-day="${x.d.id}">Abrir</button></div>`).join('')||'<div class="empty">Ainda não existem sessões.</div>'}</div>`;
 }
 function editor(){
@@ -695,14 +696,14 @@ function getSession(){return getDay()?.sessions.find(s=>String(s.id)===String(ui
 function championshipsPage(){return header('Campeonatos','Organiza campeonatos e corridas.','<button class="btn primary" data-action="new-championship">+ Adicionar campeonato</button>')+'<div class="cards">'+(db.championships.map(c=>`<div class="card" style="cursor:default"><div class="cardlink" style="border:0;padding:0;background:transparent" data-action="open-championship" data-id="${c.id}"><h3>${esc(c.name)}</h3><p>${esc(c.season||'')} · ${c.races.length} corridas</p></div><div class="buttons" style="margin-top:12px"><button class="btn" data-action="open-championship" data-id="${c.id}">Abrir</button><button class="btn danger" data-action="delete-championship" data-id="${c.id}">Apagar campeonato</button></div></div>`).join('')||'<div class="empty">Ainda não tens campeonatos.</div>')+'</div>'}
 function championshipPage(){const c=getChamp();return `<div class="breadcrumb"><span data-action="back-championships">Campeonatos</span> › <b>${esc(c.name)}</b></div>`+header(c.name,'Corridas deste campeonato.','<button class="btn primary" data-action="new-race">+ Adicionar corrida</button>')+'<div class="eventgrid">'+(c.races.map(r=>`<div class="eventcard"><h3>${esc(r.name)}</h3><div class="eventmeta">${esc(r.location||'Local por definir')}<br>${esc(r.date||'Data por definir')}<br>${r.days.length} dias</div><div class="buttons"><button class="btn" data-action="open-race" data-id="${r.id}">Abrir corrida</button><button class="btn danger" data-action="delete-race" data-id="${r.id}">Apagar</button></div></div>`).join('')||'<div class="empty">Adiciona a primeira corrida.</div>')+'</div>'}
 function racePage(){const c=getChamp(),r=getRace(),ls=[['Live timing',r.links.timing],['Resultados',r.links.results],['Horários',r.links.schedule]].filter(x=>x[1]);return `<div class="breadcrumb"><span data-action="back-championships">Campeonatos</span> › <span data-action="back-races">${esc(c.name)}</span> › <b>${esc(r.name)}</b></div>`+header(r.name,`${esc(r.location)} · ${esc(r.date)}`,'<button class="btn primary" data-action="new-day">+ Adicionar dia</button>')+`<div class="readonly"><b>Links do evento</b><div class="links">${ls.map(x=>`<a href="${esc(x[1])}" target="_blank" rel="noopener">${esc(x[0])}</a>`).join('')||'<span class="muted">Sem links.</span>'}</div></div><div class="sectiontitle">Dias</div><div class="list">`+(r.days.map(d=>`<div class="row"><div><b>${esc(d.name)}</b><div class="muted">${esc(d.date)} · ${d.sessions.length} sessões</div></div><button class="btn" data-action="open-day" data-id="${d.id}">Abrir dia</button></div>`).join('')||'<div class="empty">Adiciona um dia.</div>')+'</div>'}
-function dayPage(){const r=getRace(),d=getDay();return `<div class="breadcrumb"><span data-action="back-championships">Campeonatos</span> › <span data-action="back-races">${esc(r.name)}</span> › <b>${esc(d.name)}</b></div>`+header(d.name,`Sessões do dia · ${esc(d.date)}`,'<button class="btn primary" data-action="new-session">+ Adicionar sessão</button>')+'<div class="list">'+(d.sessions.map(s=>`<div class="sessionrow"><div><b>${esc(s.name)}</b><div class="muted">${esc(s.type)} · ${s.trackId?'Pista definida':'Pista por definir'}</div></div><button class="btn" data-action="open-session" data-id="${s.id}">Abrir sessão</button></div>`).join('')||'<div class="empty">Ainda não existem sessões.</div>')+'</div>'}
+function dayPage(){const r=getRace(),d=getDay();return `<div class="breadcrumb"><span data-action="back-championships">Campeonatos</span> › <span data-action="back-races">${esc(r.name)}</span> › <b>${esc(d.name)}</b></div>`+header(d.name,`Sessões do dia · ${esc(d.date)}`,'<button class="btn primary" data-action="new-session">+ Adicionar sessão</button>')+'<div class="list">'+(d.sessions.map(s=>`<div class="sessionrow"><div><b>${esc(s.name)}</b><div class="muted">${s.trackId?'Pista definida':'Pista por definir'}</div></div><button class="btn" data-action="open-session" data-id="${s.id}">Abrir sessão</button></div>`).join('')||'<div class="empty">Ainda não existem sessões.</div>')+'</div>'}
 function sessionPage(){
   const d=getDay(),s=getSession(),track=db.tracks.find(t=>String(t.id)===String(s?.trackId)),pilots=s?sessionPilots(s):[],pid=ui.sessionPilot||pilots[0]?.id||'',idx=Number.isFinite(ui.sessionPoint)?ui.sessionPoint:0,a=pid&&track?analysisFor(s,pid,idx):{},general=pid?sessionGeneral(s,pid):{},score=pid?sessionScore(s,pid):null;
   const options=(min,max,val)=>{let o='<option value="">—</option>';for(let n=min;n<=max;n++)o+=`<option value="${n}" ${String(val??'')===String(n)?'selected':''}>${n}</option>`;return o};
   const metric=(id,label,val,help)=>`<div class="score-field"><label>${label}<span class="muted" style="display:block;font-size:11px">${help}</span></label><select class="score-select" id="${id}">${options(-10,10,val)}</select></div>`;
   const traj=(id,label,val)=>`<div class="score-field"><label>${label}<span class="muted" style="display:block;font-size:11px">0–10</span></label><select class="score-select" id="${id}">${options(0,10,val)}</select></div>`;
   return `<div class="breadcrumb"><span data-action="back-championships">Campeonatos</span> › <span data-action="back-day">${esc(d?.name||'Dia')}</span> › <b>${esc(s?.name||'Sessão')}</b></div>`+
-  header(s.name,`${esc(s.type||'Sessão')} · ${track?esc(track.name):'Pista por definir'}`,'<button class="btn primary" data-action="configure-session">Configurar sessão</button>')+
+  header(s.name,`${track?esc(track.name):'Pista por definir'}`,'<button class="btn primary" data-action="configure-session">Configurar sessão</button>')+
   `<div class="grid2"><div class="card"><div class="field"><label>Piloto em análise</label><select id="activePilot">${pilots.map(p=>`<option value="${p.id}" ${String(p.id)===String(pid)?'selected':''}>${esc(p.name)}</option>`).join('')||'<option value="">Nenhum piloto</option>'}</select></div><div class="help">Seleciona o piloto e depois clica numa curva.</div></div><div class="card"><b>Score da sessão</b><div class="kpi">${score==null?'—':score.toFixed(1)+'/10'}</div><div class="muted">${score==null?'Ainda sem análise suficiente.':Math.round(score*10)+'/100'}</div></div></div>`+
   (pid?`<div class="card" style="margin-top:14px"><h3>Análise geral da sessão</h3><div class="field"><label>Observações gerais do treinador</label><textarea id="generalAnalysis" rows="5" placeholder="Ritmo, consistência, comportamento do kart, evolução, principais pontos a melhorar...">${esc(general.comment||'')}</textarea></div></div>`:'')+
   (track?`<div style="margin-top:14px"><div class="stagebox"><div class="stagehead"><b>${esc(track.name)}</b><span class="muted">${track.points.length} curvas</span></div><div class="stage" id="stage"><div class="image-wrap"><img id="trackImage" class="track-image" src="${track.image}" alt=""></div>${track.points.map((p,i)=>`<button type="button" class="point ${i===idx?'selected':''}" data-session-point="${i}" data-map-point="${i}">${i+1}</button>`).join('')}</div></div></div>
@@ -717,24 +718,49 @@ function newDay(){modal(`<h2>Adicionar dia</h2><div class="field"><label>Nome do
 async function createDay(){const r=getRace(),n=document.getElementById('dayName').value.trim();if(!n)return;r.days.push({id:Date.now(),name:n,date:document.getElementById('dayDate').value,sessions:[]});await save();closeModal();render()}
 function newSession(){
   const races=db.championships.flatMap(c=>c.races.map(r=>({c,r})));
+  const templates=Array.isArray(db.sessionTemplates)?db.sessionTemplates:[];
   modal(`<h2>Criar sessão</h2>
     <div class="field"><label>Campeonato</label><select id="sessionChamp"><option value="">Selecionar</option>${db.championships.map(c=>`<option value="${c.id}">${esc(c.name)}${c.season?' · '+esc(c.season):''}</option>`).join('')}</select></div>
     <div class="field"><label>Prova</label><select id="sessionRace"><option value="">Selecionar</option>${races.map(x=>`<option value="${x.r.id}">${esc(x.c.name)} — ${esc(x.r.name)}</option>`).join('')}</select></div>
     <div class="field"><label>Dia</label><select id="sessionDay"><option value="">Selecionar</option>${races.flatMap(x=>x.r.days.map(d=>`<option value="${d.id}">${esc(x.r.name)} — ${esc(d.name)}${d.date?' · '+esc(d.date):''}</option>`)).join('')}</select></div>
-    <div class="field"><label>Nome da sessão</label><input id="sessionName" placeholder="Ex.: Treino 1"></div>
-    <div class="field"><label>Tipo</label><input id="sessionType" placeholder="Treino / Qualificação / Corrida"></div>
+    <div class="field"><label>Nome da sessão</label><select id="sessionName"><option value="">Selecionar nome</option>${templates.map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join('')}</select></div>
     <div class="field"><label>Pista</label><select id="sessionTrack"><option value="">Selecionar pista</option>${db.tracks.map(t=>`<option value="${t.id}">${esc(t.name)}</option>`).join('')}</select></div>
-    <div class="field"><label>Pilotos a analisar</label><div class="checklist">${db.drivers.map(d=>`<label><input type="checkbox" name="newSessionPilot" value="${d.id}"> ${esc(d.name)}</label>`).join('')||'<span class="muted">Adiciona primeiro um piloto.</span>'}</div></div>
-    <div class="help">A sessão fica ligada a campeonato → prova → dia → pista. Depois, dentro da sessão, podes selecionar o piloto e analisar cada curva.</div>
+    <div class="field"><label>Pilotos a analisar</label><div class="checklist">${db.drivers.map(d=>{const u=(profileCache||[]).find(x=>String(x.id)===String(d.userId));const p=u?.profile||d;return `<label><input type="checkbox" name="newSessionPilot" value="${d.id}"> ${esc(d.name)} <span class="muted">· ${esc(categoryName(p.category||d.category))}${p.team?' · '+esc(p.team):''}</span></label>`}).join('')||'<span class="muted">Adiciona primeiro um piloto.</span>'}</div></div>
+    <div class="help">O nome é escolhido a partir dos modelos definidos em “Nomes de sessão”.</div>
     <div class="modalactions"><button class="btn" data-action="close">Cancelar</button><button class="btn primary" data-action="create-session">Criar sessão</button></div>`);
 }
+
+function manageSessionTemplates(){
+  const templates=Array.isArray(db.sessionTemplates)?db.sessionTemplates:[];
+  modal(`<h2>Nomes de sessão</h2><div class="help" style="margin-bottom:12px">Cria os nomes que queres reutilizar sempre que abres uma nova sessão.</div><div class="list" style="margin-bottom:14px">${templates.map((x,i)=>`<div class="row"><div><b>${esc(x)}</b></div><button class="btn danger" data-action="delete-session-template" data-index="${i}">Apagar</button></div>`).join('')||'<div class="empty">Ainda não existem nomes.</div>'}</div><div class="field"><label>Novo nome</label><input id="newSessionTemplate" placeholder="Ex.: Teste de pneus"></div><div class="modalactions"><button class="btn" data-action="close">Fechar</button><button class="btn primary" data-action="add-session-template">Adicionar</button></div>`);
+}
+
+async function addSessionTemplate(){
+  const input=document.getElementById('newSessionTemplate');
+  const name=input?.value.trim()||'';
+  if(!name){toast('Indica um nome');return;}
+  if(!Array.isArray(db.sessionTemplates))db.sessionTemplates=[];
+  if(db.sessionTemplates.some(x=>x.toLowerCase()===name.toLowerCase())){toast('Esse nome já existe');return;}
+  db.sessionTemplates.push(name);
+  await save();
+  manageSessionTemplates();
+}
+
+async function deleteSessionTemplate(index){
+  if(!Array.isArray(db.sessionTemplates))return;
+  if(db.sessionTemplates.length<=1){toast('Mantém pelo menos um nome de sessão');return;}
+  db.sessionTemplates.splice(Number(index),1);
+  await save();
+  manageSessionTemplates();
+}
+
 async function createSession(){
   const champId=document.getElementById('sessionChamp').value,raceId=document.getElementById('sessionRace').value,dayId=document.getElementById('sessionDay').value,n=document.getElementById('sessionName').value.trim();
   if(!champId||!raceId||!dayId||!n){toast('Seleciona campeonato, prova, dia e nome da sessão');return}
   const c=db.championships.find(x=>String(x.id)===String(champId)),r=c?.races.find(x=>String(x.id)===String(raceId)),d=r?.days.find(x=>String(x.id)===String(dayId));
   if(!d){toast('Não foi possível encontrar o dia');return}
   const pilotIds=[...document.querySelectorAll('input[name="newSessionPilot"]:checked')].map(x=>String(x.value));
-  const s={id:Date.now(),name:n,type:document.getElementById('sessionType').value.trim(),trackId:document.getElementById('sessionTrack').value||null,pilotIds,analyses:{}};
+  const s={id:Date.now(),name:n,trackId:document.getElementById('sessionTrack').value||null,pilotIds,analyses:{}};
   d.sessions.push(s);
   // Keep the race-level assignment in sync immediately, so pilot accounts can see the event.
   const racePilotIds=new Set((r.pilotIds||[]).map(x=>String(x)));
@@ -767,7 +793,7 @@ function pilotDayPage(){
   if(!r||!d||!pid)return myEventsPage();
   return `<div class="breadcrumb"><span data-action="pilot-home">Os meus eventos</span> › <span data-action="pilot-race-back" data-champ="${getChamp()?.id||''}" data-race="${r.id}">${esc(r.name)}</span> › <b>${esc(d.name)}</b></div>`+
     header(d.name,'Sessões do dia.','')+
-    '<div class="list">'+((d.sessions||[]).filter(s=>(s.pilotIds||[]).some(x=>String(x)===String(pid))).map(s=>`<div class="sessionrow"><div><b>${esc(s.name)}</b><div class="muted">${esc(s.type||'')}</div></div><button class="btn" data-action="pilot-session" data-id="${s.id}" data-day="${d.id}" data-race="${r.id}" data-champ="${getChamp()?.id||''}">Abrir</button></div>`).join('')||'<div class="empty">Não tens sessões atribuídas neste dia.</div>')+'</div>';
+    '<div class="list">'+((d.sessions||[]).filter(s=>(s.pilotIds||[]).some(x=>String(x)===String(pid))).map(s=>`<div class="sessionrow"><div><b>${esc(s.name)}</b><div class="muted">${s.trackId?'Pista definida':'Pista por definir'}</div></div><button class="btn" data-action="pilot-session" data-id="${s.id}" data-day="${d.id}" data-race="${r.id}" data-champ="${getChamp()?.id||''}">Abrir</button></div>`).join('')||'<div class="empty">Não tens sessões atribuídas neste dia.</div>')+'</div>';
 }
 function pilotSessionPage(){
   const s=getSession(),track=s&&db.tracks.find(t=>String(t.id)===String(s.trackId)),pid=currentPilotId();
@@ -907,7 +933,7 @@ document.addEventListener('click',async event=>{
 
   const action=event.target.closest('[data-action]');
   if(!action)return;
-  const protectedActions=['new-track','create-track','delete','add-registered-pilot','new-championship','create-championship','new-race','create-race','new-day','create-day','new-session','create-session','configure-session','save-session','edit','image','remove'];
+  const protectedActions=['new-track','create-track','delete','add-registered-pilot','new-championship','create-championship','new-race','create-race','new-day','create-day','new-session','create-session','configure-session','save-session','manage-session-templates','add-session-template','delete-session-template','edit','image','remove'];
   if(!isAdmin()&&protectedActions.includes(action.dataset.action)){toast('Acesso reservado ao administrador');return;}
 
   switch(action.dataset.action){
@@ -949,6 +975,9 @@ document.addEventListener('click',async event=>{
     case 'open-day':ui.page='day';ui.day=action.dataset.id;render();break;
     case 'back-day':ui.page='day';render();break;
     case 'new-session':newSession();break;
+    case 'manage-session-templates':manageSessionTemplates();break;
+    case 'add-session-template':addSessionTemplate();break;
+    case 'delete-session-template':deleteSessionTemplate(action.dataset.index);break;
     case 'create-session':createSession();break;
     case 'open-session':ui.page='session';ui.session=action.dataset.id;if(action.dataset.champ)ui.championship=action.dataset.champ;if(action.dataset.race)ui.race=action.dataset.race;if(action.dataset.day)ui.day=action.dataset.day;render();break;
     case 'configure-session':configureSession();break;
