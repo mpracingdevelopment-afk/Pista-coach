@@ -194,8 +194,26 @@ function saveProfile(){
   if(u.pilotId){const d=db.drivers.find(x=>String(x.id)===String(u.pilotId));if(d){Object.assign(d,{name:profile.name,age:profile.age,kartingStartYear:profile.kartingStartYear,category:profile.category,team:profile.team,number:profile.number});save()}}
   ui.page='my-events';render();
 }
-function registeredPilotUsers(){return users().filter(u=>u.role==='pilot'&&u.profile&&!u.pilotId)}
+function syncPilotLinks(){
+  const us=users();
+  for(const d of db.drivers||[]){
+    if(d.userId){
+      const u=us.find(x=>String(x.id)===String(d.userId));
+      if(u && u.pilotId!==d.id)u.pilotId=d.id;
+    }
+  }
+  for(const u of us.filter(x=>x.role==='pilot')){
+    if(u.pilotId && !(db.drivers||[]).some(d=>String(d.id)===String(u.pilotId) && String(d.userId)===String(u.id)))
+      u.pilotId=null;
+  }
+  localStorage.setItem('pista_coach_v13_users',JSON.stringify(us));
+}
+function registeredPilotUsers(){
+  syncPilotLinks();
+  return users().filter(u=>u.role==='pilot'&&u.profile&&!u.pilotId);
+}
 function newDriver(){
+  syncPilotLinks();
   const available=registeredPilotUsers();
   if(!available.length){toast('Não existem contas de piloto registadas e disponíveis.');return}
   modal(`<h2>Adicionar piloto</h2><div class="help" style="margin-bottom:12px">Só aparecem contas de piloto que já estão registadas e ainda não foram adicionadas.</div>
@@ -207,9 +225,10 @@ function createDriver(){
   if(!u||!u.profile){toast('Seleciona uma conta registada');return}
   const p=u.profile,d={id:'d_'+Date.now(),name:p.name,userId:u.id,age:p.age,kartingStartYear:p.kartingStartYear,category:p.category||'',team:p.team||'',number:p.number||'',location:p.location||'',notes:p.notes||''};
   db.drivers.push(d);
-  u.pilotId=d.id;
-  localStorage.setItem('pista_coach_v13_users',JSON.stringify(users()));
-  currentUser = isAdmin() ? currentUser : u;
+  const allUsers=users();
+  const linked=allUsers.find(x=>x.id===u.id);
+  if(linked)linked.pilotId=d.id;
+  localStorage.setItem('pista_coach_v13_users',JSON.stringify(allUsers));
   save();closeModal();render();
 }
 function driverCard(d){
@@ -283,8 +302,8 @@ async function persistTrackImage(track,data){
   const ok=await putImage(imageId,data);
   if(ok){
     track.imageId=imageId;
-    track.image=''; // image bytes live in IndexedDB, not localStorage
-    save();
+    track.image=data;       // keep it in memory so the editor shows it immediately
+    save();                 // save() strips the image bytes from localStorage
     return true;
   }
   track.image=data;
@@ -306,10 +325,12 @@ async function hydrateImages(){
 
 function save(){
   try{
-    localStorage.setItem(KEY,JSON.stringify(db));
+    const payload=JSON.parse(JSON.stringify(db));
+    (payload.tracks||[]).forEach(t=>{if(t.imageId)t.image='';});
+    localStorage.setItem(KEY,JSON.stringify(payload));
     return true;
   }catch(e){
-    toast('Não foi possível guardar os dados locais. A imagem usa armazenamento separado.');
+    toast('Não foi possível guardar os dados locais.');
     return false;
   }
 }
@@ -410,8 +431,8 @@ function newSession(){
     <div class="field"><label>Nome da sessão</label><input id="sessionName" placeholder="Ex.: Treino 1"></div>
     <div class="field"><label>Tipo</label><input id="sessionType" placeholder="Treino / Qualificação / Corrida"></div>
     <div class="field"><label>Pista</label><select id="sessionTrack"><option value="">Selecionar pista</option>${db.tracks.map(t=>`<option value="${t.id}">${esc(t.name)}</option>`).join('')}</select></div>
-    <div class="field"><label>Piloto a analisar</label><select id="sessionPilot"><option value="">Selecionar piloto</option>${db.drivers.map(d=>`<option value="${d.id}">${esc(d.name)}</option>`).join('')}</select></div>
-    <div class="help">A sessão fica ligada a campeonato → prova → dia. Depois, dentro da sessão, podes escolher o piloto e analisar cada curva.</div>
+    <div class="field"><label>Pilotos a analisar</label><div class="checklist">${db.drivers.map(d=>`<label><input type="checkbox" name="newSessionPilot" value="${d.id}"> ${esc(d.name)}</label>`).join('')||'<span class="muted">Adiciona primeiro um piloto.</span>'}</div></div>
+    <div class="help">A sessão fica ligada a campeonato → prova → dia → pista. Depois, dentro da sessão, podes selecionar o piloto e analisar cada curva.</div>
     <div class="modalactions"><button class="btn" data-action="close">Cancelar</button><button class="btn primary" data-action="create-session">Criar sessão</button></div>`);
 }
 function createSession(){
@@ -419,8 +440,8 @@ function createSession(){
   if(!champId||!raceId||!dayId||!n){toast('Seleciona campeonato, prova, dia e nome da sessão');return}
   const c=db.championships.find(x=>String(x.id)===String(champId)),r=c?.races.find(x=>String(x.id)===String(raceId)),d=r?.days.find(x=>String(x.id)===String(dayId));
   if(!d){toast('Não foi possível encontrar o dia');return}
-  const pid=document.getElementById('sessionPilot').value;
-  const s={id:Date.now(),name:n,type:document.getElementById('sessionType').value.trim(),trackId:document.getElementById('sessionTrack').value||null,pilotIds:pid?[pid]:[],analyses:{}};
+  const pilotIds=[...document.querySelectorAll('input[name="newSessionPilot"]:checked')].map(x=>x.value);
+  const s={id:Date.now(),name:n,type:document.getElementById('sessionType').value.trim(),trackId:document.getElementById('sessionTrack').value||null,pilotIds,analyses:{}};
   d.sessions.push(s);save();closeModal();ui.championship=c.id;ui.race=r.id;ui.day=d.id;ui.session=s.id;ui.page='session';render();
 }
 function configureSession(){
@@ -535,18 +556,6 @@ function createTrack(){
   };
   db.tracks.push(t);save();closeModal();
   ui.page='editor';ui.editor=t.id;ui.mode='add';ui.selected=null;render();
-}
-
-function newDriver(){
-  modal(`<h2>Novo piloto</h2>
-    <div class="field"><label>Nome</label><input id="driverName"></div>
-    <div class="modalactions"><button class="btn" data-action="close">Cancelar</button><button class="btn primary" data-action="create-driver">Criar</button></div>`);
-}
-
-function createDriver(){
-  const name=document.getElementById('driverName').value.trim();
-  if(!name)return;
-  db.drivers.push({id:Date.now(),name});save();closeModal();render();
 }
 
 function bindEditor(){
@@ -713,6 +722,7 @@ document.addEventListener('click',event=>{
 });
 
 restoreUser();
+syncPilotLinks();
 if(currentUser)ui.page=isAdmin()?'dashboard':(profileComplete(freshCurrentUser())?'my-events':'profile');else ui.page='login';
 render();
 hydrateImages().then(()=>{if(currentUser)render();});
