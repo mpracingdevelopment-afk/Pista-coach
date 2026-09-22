@@ -496,6 +496,28 @@ function newDriver(){
     <div class="field"><label>Conta de piloto</label><select id="registeredPilot"><option value="">Selecionar</option>${available.map(u=>`<option value="${u.id}">${esc(u.profile.name)} · ${esc(u.email)}</option>`).join('')}</select></div>
     <div class="modalactions"><button class="btn" data-action="close">Cancelar</button><button class="btn primary" data-action="create-driver">Adicionar</button></div>`);
 }
+async function deletePilotAccount(userId){
+  if(!isAdmin()){toast('Acesso reservado ao administrador');return;}
+  const u=(profileCache||[]).find(x=>String(x.id)===String(userId));
+  if(!u||u.role!=='pilot'){toast('Conta de piloto não encontrada.');return;}
+  const linked=db.drivers.find(d=>String(d.userId)===String(userId));
+  const label=u.profile?.name||u.name||u.email||'este piloto';
+  if(!confirm(`Apagar a conta de ${label}? Esta ação remove o acesso à aplicação e o perfil associado.${linked?'\n\nO piloto também será removido da equipa.':''}`))return;
+  const {error}=await sb.rpc('delete_pilot_account',{p_user_id:u.id});
+  if(error){console.error(error);toast(error.message||'Não foi possível apagar a conta.');return;}
+  if(linked){
+    db.drivers=db.drivers.filter(d=>String(d.userId)!==String(userId));
+    for(const c of db.championships) for(const r of c.races) for(const d of r.days) for(const sess of d.sessions){
+      sess.pilotIds=(sess.pilotIds||[]).filter(id=>String(id)!==String(linked.id));
+      if(sess.analyses) delete sess.analyses[linked.id];
+      if(sess.generalAnalysis) delete sess.generalAnalysis[linked.id];
+    }
+    await save();
+  }
+  await loadProfiles();
+  closeModal();render();toast('Conta de piloto eliminada.');
+}
+
 async function addRegisteredPilot(userId){
   const selectedUserId=userId||document.getElementById('registeredPilot')?.value;
   const u=(profileCache||[]).find(x=>String(x.id)===String(selectedUserId));
@@ -511,7 +533,7 @@ function driverCard(d){
   const u=(profileCache||[]).find(x=>String(x.id)===String(d.userId)),p=u?.profile||d;
   const photo=p.photo||''; const initials=String(p.name||d.name||'P').trim().slice(0,1).toUpperCase();
   const avatar=photo?`<img class="avatar" src="${esc(photo)}" alt="">`:`<div class="avatar avatar-placeholder">${esc(initials)}</div>`;
-  return `<div class="card" style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;gap:16px"><div style="display:flex;gap:12px;align-items:center">${avatar}<div><h3 style="margin:0 0 6px">${esc(p.name||d.name)}</h3><div class="muted">${esc(p.category||'Categoria por definir')} · ${esc(p.team||'Equipa por definir')} · ${p.age?esc(p.age)+' anos':''}</div></div></div><span class="rolebadge">${u?'Conta registada':'Sem conta'}</span></div>
+  return `<div class="card" style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;gap:16px"><div style="display:flex;gap:12px;align-items:center">${avatar}<div><h3 style="margin:0 0 6px">${esc(p.name||d.name)}</h3><div class="muted">${esc(p.category||'Categoria por definir')} · ${esc(p.team||'Equipa por definir')} · ${p.age?esc(p.age)+' anos':''}</div></div></div><div style="display:flex;gap:8px;align-items:center"><span class="rolebadge">${u?'Conta registada':'Sem conta'}</span>${u?`<button class="btn danger" data-action="delete-pilot-account" data-user-id="${esc(u.id)}">Apagar conta</button>`:''}</div></div>
   <div class="grid2" style="margin-top:14px"><div><span class="muted">Início no karting</span><br>${esc(p.kartingStartYear||'—')}</div><div><span class="muted">Número</span><br>${esc(p.number||'—')}</div><div><span class="muted">Localidade</span><br>${esc(p.location||'—')}</div><div><span class="muted">Email</span><br>${esc(u?.email||'—')}</div></div>
   ${p.notes?`<div class="help" style="margin-top:12px">${esc(p.notes)}</div>`:''}</div>`;
 }
@@ -629,7 +651,7 @@ function dashboard(){
 }
 function drivers(){
   const pending=registeredPilotUsers();
-  const pendingHtml=pending.map(u=>{const p=u.profile||{};const complete=!!(p.name&&p.age!==''&&p.kartingStartYear!==''&&validPilotCategory(p.category));return `<div class="row"><div><b>${esc(p.name||u.name||'Piloto sem perfil')}</b><div class="muted">${esc(u.email)} · ${complete?(esc(p.category||'Categoria por definir')+' · '+esc(p.team||'Equipa por definir')):'Perfil ainda não preenchido'}</div></div>${complete?`<button class="btn primary" data-action="add-registered-pilot" data-user-id="${esc(u.id)}">Adicionar à equipa</button>`:'<span class="badge">A aguardar perfil</span>'}</div>`}).join('');
+  const pendingHtml=pending.map(u=>{const p=u.profile||{};const complete=!!(p.name&&p.age!==''&&p.kartingStartYear!==''&&validPilotCategory(p.category));return `<div class="row"><div><b>${esc(p.name||u.name||'Piloto sem perfil')}</b><div class="muted">${esc(u.email)} · ${complete?(esc(p.category||'Categoria por definir')+' · '+esc(p.team||'Equipa por definir')):'Perfil ainda não preenchido'}</div></div><div class="buttons">${complete?`<button class="btn primary" data-action="add-registered-pilot" data-user-id="${esc(u.id)}">Adicionar à equipa</button>`:'<span class="badge">A aguardar perfil</span>'}<button class="btn danger" data-action="delete-pilot-account" data-user-id="${esc(u.id)}">Apagar conta</button></div></div>`}).join('');
   return header('Pilotos','As contas e os pilotos da equipa ficam ligados pelo ID da conta.','<button class="btn primary" data-action="new-driver">+ Adicionar piloto</button>')+
   `<div class="sectiontitle">Contas de piloto registadas</div><div class="list">${pendingHtml||'<div class="empty">Não há contas de piloto pendentes.</div>'}</div>
   <div class="sectiontitle" style="margin-top:22px">Pilotos da equipa por categoria</div>${groupedDriverSections(db.drivers)||'<div class="empty">Ainda não tens pilotos adicionados.</div>'}
@@ -958,7 +980,7 @@ document.addEventListener('click',async event=>{
 
   const action=event.target.closest('[data-action]');
   if(!action)return;
-  const protectedActions=['new-track','create-track','delete','add-registered-pilot','new-championship','create-championship','new-race','create-race','new-day','create-day','new-session','create-session','configure-session','save-session','manage-session-templates','add-session-template','delete-session-template','delete-session','edit','image','remove'];
+  const protectedActions=['new-track','create-track','delete','add-registered-pilot','new-championship','create-championship','new-race','create-race','new-day','create-day','new-session','create-session','configure-session','save-session','manage-session-templates','add-session-template','delete-session-template','delete-session','delete-pilot-account','edit','image','remove'];
   if(!isAdmin()&&protectedActions.includes(action.dataset.action)){toast('Acesso reservado ao administrador');return;}
 
   switch(action.dataset.action){
@@ -1017,6 +1039,7 @@ document.addEventListener('click',async event=>{
     case 'new-driver':newDriver();break;
     case 'add-registered-pilot':addRegisteredPilot(action.dataset.userId);break;
     case 'create-driver':addRegisteredPilot();break;
+    case 'delete-pilot-account':deletePilotAccount(action.dataset.userId);break;
     case 'close':closeModal();break;
     case 'edit':
       ui.page='editor';ui.editor=action.dataset.id;ui.mode='add';ui.selected=null;render();break;
