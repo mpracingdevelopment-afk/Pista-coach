@@ -412,7 +412,7 @@ async function saveProfile(){
   }catch(e){console.error(e);toast('Erro ao guardar o perfil.');}
 }
 function syncPilotLinks(){return true}
-function registeredPilotUsers(){return users().filter(u=>u.role==='pilot'&&u.profile&&!u.pilotId)}
+function registeredPilotUsers(){return users().filter(u=>u.role==='pilot'&&!u.pilotId)}
 function newDriver(){
   const available=registeredPilotUsers();
   if(!available.length){toast('Não existem contas de piloto registadas e disponíveis.');return}
@@ -551,7 +551,7 @@ function dashboard(){
 }
 function drivers(){
   const pending=registeredPilotUsers();
-  const pendingHtml=pending.map(u=>`<div class="row"><div><b>${esc(u.profile.name)}</b><div class="muted">${esc(u.email)} · ${esc(u.profile.category||'Categoria por definir')} · ${esc(u.profile.team||'Equipa por definir')}</div></div><button class="btn primary" data-action="add-registered-pilot" data-user-id="${esc(u.id)}">Adicionar à equipa</button></div>`).join('');
+  const pendingHtml=pending.map(u=>{const p=u.profile||{};const complete=!!(p.name&&p.age!==''&&p.kartingStartYear!=='');return `<div class="row"><div><b>${esc(p.name||u.name||'Piloto sem perfil')}</b><div class="muted">${esc(u.email)} · ${complete?(esc(p.category||'Categoria por definir')+' · '+esc(p.team||'Equipa por definir')):'Perfil ainda não preenchido'}</div></div>${complete?`<button class="btn primary" data-action="add-registered-pilot" data-user-id="${esc(u.id)}">Adicionar à equipa</button>`:'<span class="badge">A aguardar perfil</span>'}</div>`}).join('');
   return header('Pilotos','As contas e os pilotos da equipa ficam ligados pelo ID da conta.','<button class="btn primary" data-action="new-driver">+ Adicionar piloto</button>')+
   `<div class="sectiontitle">Contas de piloto registadas</div><div class="list">${pendingHtml||'<div class="empty">Não há contas de piloto pendentes.</div>'}</div>
   <div class="sectiontitle" style="margin-top:22px">Pilotos da equipa</div><div class="list">${db.drivers.map(driverCard).join('')||'<div class="empty">Ainda não tens pilotos adicionados.</div>'}</div>
