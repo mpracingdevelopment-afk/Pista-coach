@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Pista Coach</title>
+<title>Pista Coach V10</title>
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#0b0d10;color:#f5f6f7;font-family:Arial,Helvetica,sans-serif}
@@ -319,14 +319,17 @@ function bindEditor(){
       return;
     }
 
-    const rect=image.getBoundingClientRect();
+    const imageRect=image.getBoundingClientRect();
+    const stageRect=stage.getBoundingClientRect();
 
-    // Only accept clicks inside the visible image, not in the dark margins.
-    if(event.clientX<rect.left || event.clientX>rect.right ||
-       event.clientY<rect.top || event.clientY>rect.bottom)return;
+    // Only accept clicks inside the visible image.
+    if(event.clientX<imageRect.left || event.clientX>imageRect.right ||
+       event.clientY<imageRect.top || event.clientY>imageRect.bottom)return;
 
-    const x=((event.clientX-rect.left)/rect.width)*100;
-    const y=((event.clientY-rect.top)/rect.height)*100;
+    // Points are positioned relative to the whole stage, so calculate
+    // their coordinates from the stage, not from the image.
+    const x=((event.clientX-stageRect.left)/stageRect.width)*100;
+    const y=((event.clientY-stageRect.top)/stageRect.height)*100;
 
     t.points.push({
       id:'p'+Date.now(),
