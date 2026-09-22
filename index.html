@@ -64,7 +64,10 @@ main{margin-left:220px;padding:28px;min-height:100vh}
 <script>
 'use strict';
 
-const KEY='pista_coach_v13';
+const KEY='pista_coach_v17';
+const USERS_KEY='pista_coach_v17_users';
+const AUTH_KEY='pista_coach_v17_user';
+const MIGRATION_KEY='pista_coach_v17_migrated';
 const LEGACY=['pista_coach_v12','pista_coach_v9','pista_coach_v8','pista_coach_v7','pista_coach_v6','pista_coach_v5','pista_coach_v4_1','pista_coach_v4','pista_coach_v3','pista_coach_v2','pista_coach_v1'];
 
 let db=load();
@@ -97,19 +100,29 @@ function normalize(raw){
   };
 }
 function load(){
-  for(const key of [KEY,...LEGACY]){
+  // V17 uses its own namespace so stale V13/V15 data cannot overwrite the new state.
+  try{
+    const existing=localStorage.getItem(KEY);
+    if(existing) return normalize(JSON.parse(existing));
+  }catch(e){}
+
+  const candidates=['pista_coach_v16','pista_coach_v15','pista_coach_v14','pista_coach_v13','pista_coach_v12','pista_coach_v9','pista_coach_v8','pista_coach_v7','pista_coach_v6','pista_coach_v5','pista_coach_v4_1','pista_coach_v4','pista_coach_v3','pista_coach_v2','pista_coach_v1'];
+  for(const key of candidates){
     try{
       const raw=localStorage.getItem(key);
-      if(raw){
-        const data=normalize(JSON.parse(raw));
-        localStorage.setItem(KEY,JSON.stringify(data));
-        return data;
-      }
+      if(!raw)continue;
+      const data=normalize(JSON.parse(raw));
+      // Only migrate durable application entities. Driver records without a userId are
+      // intentionally discarded because they cannot be tied to a real pilot account.
+      data.drivers=(data.drivers||[]).filter(d=>d.userId);
+      localStorage.setItem(KEY,JSON.stringify(data));
+      return data;
     }catch(e){}
   }
-  return normalize({});
+  const empty=normalize({});
+  localStorage.setItem(KEY,JSON.stringify(empty));
+  return empty;
 }
-
 
 function defaultUsers(){
   return [
@@ -119,12 +132,27 @@ function defaultUsers(){
 }
 function loadUser(){
   try{
-    const key='pista_coach_v13_users';
-    if(!localStorage.getItem(key))localStorage.setItem(key,JSON.stringify(defaultUsers()));
+    if(!localStorage.getItem(USERS_KEY)){
+      let migrated=null;
+      // Migrate account/profile data, not authentication state, from the previous namespace.
+      for(const key of ['pista_coach_v16_users','pista_coach_v15_users','pista_coach_v14_users','pista_coach_v13_users']){
+        const raw=localStorage.getItem(key);
+        if(raw){try{migrated=JSON.parse(raw);break}catch(e){}}
+      }
+      const list=Array.isArray(migrated)?migrated:defaultUsers();
+      // Ensure the known test accounts exist without deleting real registered pilot accounts.
+      for(const d of defaultUsers()) if(!list.some(u=>String(u.id)===String(d.id))) list.push(d);
+      localStorage.setItem(USERS_KEY,JSON.stringify(list));
+    }
   }catch(e){}
   return null;
 }
-function users(){try{return JSON.parse(localStorage.getItem('pista_coach_v13_users'))||defaultUsers()}catch(e){return defaultUsers()}}
+function users(){
+  try{
+    const list=JSON.parse(localStorage.getItem(USERS_KEY));
+    return Array.isArray(list)?list:defaultUsers();
+  }catch(e){return defaultUsers()}
+}
 function isAdmin(){return currentUser?.role==='admin'}
 function freshCurrentUser(){
   if(!currentUser)return null;
@@ -159,19 +187,19 @@ function login(){
   const email=document.getElementById('loginEmail').value.trim().toLowerCase(),password=document.getElementById('loginPassword').value;
   const u=users().find(x=>x.email.toLowerCase()===email&&x.password===password);
   if(!u){toast('Email ou password incorretos');return}
-  currentUser=u;sessionStorage.setItem('pista_coach_v13_user',JSON.stringify(u));
+  currentUser=u;sessionStorage.setItem('pista_coach_v17_user',JSON.stringify(u));
   ui.page=isAdmin()?'dashboard':(profileComplete(u)?'my-events':'profile');render();
 }
-function restoreUser(){try{const raw=sessionStorage.getItem('pista_coach_v13_user');if(raw)currentUser=JSON.parse(raw)}catch(e){}}
-function logout(){currentUser=null;sessionStorage.removeItem('pista_coach_v13_user');ui.page='login';render()}
+function restoreUser(){try{const raw=sessionStorage.getItem('pista_coach_v17_user');if(raw)currentUser=JSON.parse(raw)}catch(e){}}
+function logout(){currentUser=null;sessionStorage.removeItem('pista_coach_v17_user');ui.page='login';render()}
 function registerPilot(){
   const name=document.getElementById('regName').value.trim(),email=document.getElementById('regEmail').value.trim().toLowerCase(),password=document.getElementById('regPassword').value;
   if(!name||!email||password.length<4){toast('Preenche nome, email e uma password com pelo menos 4 caracteres');return}
   const list=users();
   if(list.some(u=>u.email.toLowerCase()===email)){toast('Já existe uma conta com esse email');return}
   const u={id:'pilot_'+Date.now(),name,email,password,role:'pilot',pilotId:null,profile:null};
-  list.push(u);localStorage.setItem('pista_coach_v13_users',JSON.stringify(list));
-  currentUser=u;sessionStorage.setItem('pista_coach_v13_user',JSON.stringify(u));ui.page='profile';render();
+  list.push(u);localStorage.setItem('pista_coach_v17_users',JSON.stringify(list));
+  currentUser=u;sessionStorage.setItem('pista_coach_v17_user',JSON.stringify(u));ui.page='profile';render();
 }
 function profilePage(){
   const p=currentUser?.profile||{};
@@ -189,24 +217,57 @@ function saveProfile(){
   const u=users().find(x=>x.id===currentUser.id);if(!u)return;
   const profile={name:document.getElementById('profileName').value.trim(),age:document.getElementById('profileAge').value,kartingStartYear:document.getElementById('profileKartingYear').value,category:document.getElementById('profileCategory').value.trim(),team:document.getElementById('profileTeam').value.trim(),number:document.getElementById('profileNumber').value.trim(),location:document.getElementById('profileLocation').value.trim(),notes:document.getElementById('profileNotes').value.trim()};
   if(!profile.name||profile.age===''||profile.kartingStartYear===''){toast('Preenche nome, idade e ano de início no karting');return}
-  u.name=profile.name;u.profile=profile;localStorage.setItem('pista_coach_v13_users',JSON.stringify(users()));
-  currentUser=u;sessionStorage.setItem('pista_coach_v13_user',JSON.stringify(u));
-  if(u.pilotId){const d=db.drivers.find(x=>String(x.id)===String(u.pilotId));if(d){Object.assign(d,{name:profile.name,age:profile.age,kartingStartYear:profile.kartingStartYear,category:profile.category,team:profile.team,number:profile.number});save()}}
+  u.name=profile.name;u.profile=profile;
+  localStorage.setItem(USERS_KEY,JSON.stringify(users()));
+  if(u.pilotId){
+    const d=db.drivers.find(x=>String(x.id)===String(u.pilotId)&&String(x.userId)===String(u.id));
+    if(d) Object.assign(d,{name:profile.name,age:profile.age,kartingStartYear:profile.kartingStartYear,category:profile.category,team:profile.team,number:profile.number,location:profile.location,notes:profile.notes});
+  }
+  syncPilotLinks();
+  currentUser=users().find(x=>String(x.id)===String(u.id))||u;
+  sessionStorage.setItem(AUTH_KEY,JSON.stringify(currentUser));
+  save();
   ui.page='my-events';render();
 }
 function syncPilotLinks(){
   const us=users();
-  for(const d of db.drivers||[]){
-    if(d.userId){
-      const u=us.find(x=>String(x.id)===String(d.userId));
-      if(u && u.pilotId!==d.id)u.pilotId=d.id;
+  const pilotIds=new Set(us.filter(u=>u.role==='pilot').map(u=>String(u.id)));
+
+  // Only real account-linked pilots are durable pilot records.
+  db.drivers=(db.drivers||[]).filter(d=>d.userId && pilotIds.has(String(d.userId)));
+
+  for(const u of us.filter(x=>x.role==='pilot')){
+    const linked=db.drivers.filter(d=>String(d.userId)===String(u.id));
+    if(linked.length){
+      const d=linked[0];
+      u.pilotId=d.id;
+      if(u.profile){
+        Object.assign(d,{
+          name:u.profile.name||d.name,
+          age:u.profile.age??d.age,
+          kartingStartYear:u.profile.kartingStartYear??d.kartingStartYear,
+          category:u.profile.category||'',
+          team:u.profile.team||'',
+          number:u.profile.number||'',
+          location:u.profile.location||'',
+          notes:u.profile.notes||''
+        });
+      }
+      // Remove duplicates for this same account and clean their references from sessions.
+      for(let i=1;i<linked.length;i++){
+        const duplicateId=linked[i].id;
+        db.drivers=db.drivers.filter(x=>String(x.id)!==String(duplicateId));
+        for(const c of db.championships||[])for(const r of c.races||[])for(const day of r.days||[])for(const s of day.sessions||[]){
+          s.pilotIds=(s.pilotIds||[]).filter(x=>String(x)!==String(duplicateId));
+          if(s.analyses)delete s.analyses[duplicateId];
+        }
+      }
+    }else{
+      u.pilotId=null;
     }
   }
-  for(const u of us.filter(x=>x.role==='pilot')){
-    if(u.pilotId && !(db.drivers||[]).some(d=>String(d.id)===String(u.pilotId) && String(d.userId)===String(u.id)))
-      u.pilotId=null;
-  }
-  localStorage.setItem('pista_coach_v13_users',JSON.stringify(us));
+  localStorage.setItem(USERS_KEY,JSON.stringify(us));
+  save();
 }
 function registeredPilotUsers(){
   syncPilotLinks();
@@ -220,15 +281,16 @@ function newDriver(){
     <div class="field"><label>Conta de piloto</label><select id="registeredPilot"><option value="">Selecionar</option>${available.map(u=>`<option value="${u.id}">${esc(u.profile.name)} · ${esc(u.email)}</option>`).join('')}</select></div>
     <div class="modalactions"><button class="btn" data-action="close">Cancelar</button><button class="btn primary" data-action="create-driver">Adicionar</button></div>`);
 }
-function createDriver(){
-  const u=users().find(x=>x.id===document.getElementById('registeredPilot')?.value);
+function addRegisteredPilot(userId){
+  const selectedUserId=userId||document.getElementById('registeredPilot')?.value;
+  const u=users().find(x=>String(x.id)===String(selectedUserId));
   if(!u||!u.profile){toast('Seleciona uma conta registada');return}
   const p=u.profile,d={id:'d_'+Date.now(),name:p.name,userId:u.id,age:p.age,kartingStartYear:p.kartingStartYear,category:p.category||'',team:p.team||'',number:p.number||'',location:p.location||'',notes:p.notes||''};
   db.drivers.push(d);
   const allUsers=users();
   const linked=allUsers.find(x=>x.id===u.id);
   if(linked)linked.pilotId=d.id;
-  localStorage.setItem('pista_coach_v13_users',JSON.stringify(allUsers));
+  localStorage.setItem('pista_coach_v17_users',JSON.stringify(allUsers));
   save();closeModal();render();
 }
 function driverCard(d){
@@ -369,6 +431,13 @@ function tracksPage(){
     }</div>`;
 }
 
+
+function storageStatus(){
+  try{
+    const ok=!!localStorage.getItem(KEY);
+    return ok?'Dados locais ativos':'Dados locais indisponíveis';
+  }catch(e){return 'Armazenamento indisponível'}
+}
 function dashboard(){
   if(!isAdmin())return myEventsPage();
   const totalSessions=db.championships.reduce((n,c)=>n+c.races.reduce((a,r)=>a+r.days.reduce((b,d)=>b+d.sessions.length,0),0),0);
@@ -377,9 +446,12 @@ function dashboard(){
   <div class="sectiontitle">Pilotos da equipa</div><div class="list">${db.drivers.map(driverCard).join('')||'<div class="empty">Ainda não tens pilotos.</div>'}</div>`;
 }
 function drivers(){
-  return header('Pilotos','Só podes adicionar pilotos que já tenham uma conta registada.','<button class="btn primary" data-action="new-driver">+ Adicionar piloto</button>')+
-  `<div class="list">${db.drivers.map(driverCard).join('')||'<div class="empty">Ainda não tens pilotos adicionados.</div>'}</div>
-  <div class="help" style="margin-top:12px">Cria uma conta de piloto no ecrã de login, preenche o perfil e depois adiciona essa conta aqui.</div>`;
+  const pending=registeredPilotUsers();
+  const pendingHtml=pending.map(u=>`<div class="row"><div><b>${esc(u.profile.name)}</b><div class="muted">${esc(u.email)} · ${esc(u.profile.category||'Categoria por definir')} · ${esc(u.profile.team||'Equipa por definir')}</div></div><button class="btn primary" data-action="add-registered-pilot" data-user-id="${esc(u.id)}">Adicionar à equipa</button></div>`).join('');
+  return header('Pilotos','As contas e os pilotos da equipa ficam ligados pelo ID da conta.','<button class="btn primary" data-action="new-driver">+ Adicionar piloto</button>')+
+  `<div class="sectiontitle">Contas de piloto registadas</div><div class="list">${pendingHtml||'<div class="empty">Não há contas de piloto pendentes.</div>'}</div>
+  <div class="sectiontitle" style="margin-top:22px">Pilotos da equipa</div><div class="list">${db.drivers.map(driverCard).join('')||'<div class="empty">Ainda não tens pilotos adicionados.</div>'}</div>
+  <div class="help" style="margin-top:12px">O piloto cria a conta e guarda o perfil. Só depois o administrador o adiciona à equipa. O refresh não cria uma nova ficha nem perde a anterior.</div>`;
 }
 function sessions(){
   const rows=db.championships.flatMap(c=>c.races.flatMap(r=>r.days.flatMap(d=>d.sessions.map(s=>({c,r,d,s})))));
@@ -393,7 +465,7 @@ function editor(){
   return `<div style="margin-bottom:12px"><button class="btn" data-action="back">← Pistas</button></div>
   ${header('Editar · '+t.name,'Aqui defines apenas os pontos das curvas. Os comentários ficam nas sessões.','<button class="btn primary" data-action="save">Guardar pista</button>')}
   <div class="editor"><div class="panel">
-    <div class="card"><h3>Imagem da pista</h3><button class="btn" data-action="image">Carregar imagem</button><input id="file" type="file" accept="image/*" hidden><div class="help">A imagem é a referência visual.</div></div>
+    <div class="card"><h3>Imagem da pista</h3><label class="btn" for="file">Carregar imagem</label><input id="file" type="file" accept="image/*" hidden><div class="help">A imagem é a referência visual.</div></div>
     <div class="card"><h3>Pontos das curvas</h3><div class="mode"><button class="btn ${ui.mode==='add'?'selected':''}" data-mode="add">Adicionar</button><button class="btn ${ui.mode==='select'?'selected':''}" data-mode="select">Selecionar</button></div><button class="btn danger" data-action="remove">Apagar selecionado</button><div class="help">Clica na imagem para criar Curva 1, Curva 2, Curva 3...</div></div>
     <div class="card"><h3>Estado</h3><b>${t.points.length}</b> curvas configuradas</div>
   </div><div class="stagebox"><div class="stagehead"><b>${esc(t.name)}</b><span class="muted">${t.points.length} curvas</span></div><div class="stage" id="stage"><div class="image-wrap">${t.image?`<img id="trackImage" class="track-image" src="${t.image}" alt="">`:'<div class="empty" style="margin:auto">Carrega uma imagem da pista</div>'}</div><div class="click-layer" id="clickLayer"></div>${points}</div></div></div>`;
@@ -681,7 +753,7 @@ document.addEventListener('click',event=>{
     case 'new-track':newTrack();break;
     case 'create-track':createTrack();break;
     case 'new-driver':newDriver();break;
-    case 'create-driver':createDriver();break;
+    case 'create-driver':addRegisteredPilot();break;
     case 'close':closeModal();break;
     case 'edit':
       ui.page='editor';ui.editor=action.dataset.id;ui.mode='add';ui.selected=null;render();break;
