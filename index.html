@@ -143,6 +143,50 @@ function localLegacyLoad(){
   return localLegacyDb;
 }
 
+const TRACK_BACKUP_KEY='mpracingdevelopment_track_assets_v1';
+function backupTrackAssets(){
+  try{
+    const assets=(db.tracks||[]).filter(t=>t.image).map(t=>({id:t.id,name:t.name,image:t.image,points:t.points||[],pointSpace:t.pointSpace||'image'}));
+    if(assets.length) localStorage.setItem(TRACK_BACKUP_KEY,JSON.stringify({updated_at:new Date().toISOString(),assets}));
+  }catch(e){console.warn('track backup failed',e)}
+}
+function recoverTrackAssets(){
+  try{
+    const sources=[];
+    const current=localStorage.getItem(TRACK_BACKUP_KEY); if(current) sources.push(JSON.parse(current));
+    const currentDb=localStorage.getItem(KEY); if(currentDb) sources.push({assets:normalize(JSON.parse(currentDb)).tracks||[]});
+    for(const key of ['mpracingdevelopment_v25','pista_coach_v24','pista_coach_v23','pista_coach_v22','pista_coach_v21','pista_coach_v20']){
+      const raw=localStorage.getItem(key); if(raw){try{sources.push({assets:normalize(JSON.parse(raw)).tracks||[]})}catch(e){}}
+    }
+    const byName=new Map();
+    for(const src of sources){for(const t of (src.assets||[])){if(t?.name) byName.set(String(t.name).trim().toLowerCase(),t)}}
+    let changed=false;
+    for(const t of (db.tracks||[])){
+      const old=byName.get(String(t.name||'').trim().toLowerCase());
+      if(!old) continue;
+      if(!t.image && old.image){t.image=old.image;t.imageId=t.imageId||old.imageId||('img_'+t.id);changed=true;}
+      if((!t.points||!t.points.length) && old.points?.length){t.points=old.points;t.pointSpace='image';changed=true;}
+      if(t.image && t.points?.length && t.pointSpace!=='image'){t.pointSpace='image';changed=true;}
+    }
+    return changed;
+  }catch(e){console.warn('track recovery failed',e);return false}
+}
+function compressImage(file){
+  return new Promise((resolve,reject)=>{
+    const reader=new FileReader(); reader.onerror=()=>reject(new Error('Falha a ler a imagem'));
+    reader.onload=()=>{
+      const img=new Image(); img.onerror=()=>reject(new Error('Imagem inválida'));
+      img.onload=()=>{
+        const max=1600, scale=Math.min(1,max/Math.max(img.width,img.height));
+        const canvas=document.createElement('canvas');
+        canvas.width=Math.max(1,Math.round(img.width*scale)); canvas.height=Math.max(1,Math.round(img.height*scale));
+        const ctx=canvas.getContext('2d'); ctx.drawImage(img,0,0,canvas.width,canvas.height);
+        resolve(canvas.toDataURL('image/jpeg',0.72));
+      }; img.src=reader.result;
+    }; reader.readAsDataURL(file);
+  });
+}
+
 async function loadCloudState(){
   const {data,error}=await sb.from('app_state').select('data').eq('id','main').maybeSingle();
   if(error){console.error(error);toast('Erro a carregar os dados online. Verifica a configuração do Supabase.');return false;}
@@ -172,6 +216,7 @@ async function loadProfiles(){
 async function save(){
   if(!isAdmin())return false;
   try{
+    backupTrackAssets();
     const payload=JSON.parse(JSON.stringify(db));
     const {error}=await sb.from('app_state').upsert({id:'main',data:payload,updated_at:new Date().toISOString()});
     if(error){console.error(error);toast('Não foi possível guardar os dados online.');return false;}
@@ -202,6 +247,7 @@ async function bootCloud(){
     currentUser={id:session.user.id,email:session.user.email||'',role:'pilot',name:session.user.email||'Piloto',pilotId:null,profile:null};
     await loadProfiles();
     await loadCloudState();
+    if(recoverTrackAssets()){ await save(); }
     await importLegacyIfNeeded();
     await autoLinkPilot();
     if(isAdmin()) await loadProfiles();
