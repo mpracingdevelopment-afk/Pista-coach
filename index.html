@@ -561,7 +561,12 @@ function createSession(){
   if(!d){toast('Não foi possível encontrar o dia');return}
   const pilotIds=[...document.querySelectorAll('input[name="newSessionPilot"]:checked')].map(x=>String(x.value));
   const s={id:Date.now(),name:n,type:document.getElementById('sessionType').value.trim(),trackId:document.getElementById('sessionTrack').value||null,pilotIds,analyses:{}};
-  d.sessions.push(s);save();closeModal();ui.championship=c.id;ui.race=r.id;ui.day=d.id;ui.session=s.id;ui.page='session';render();
+  d.sessions.push(s);
+  // Keep the race-level assignment in sync immediately, so pilot accounts can see the event.
+  const racePilotIds=new Set((r.pilotIds||[]).map(x=>String(x)));
+  pilotIds.forEach(id=>racePilotIds.add(String(id)));
+  r.pilotIds=[...racePilotIds];
+  save();closeModal();ui.championship=c.id;ui.race=r.id;ui.day=d.id;ui.session=s.id;ui.page='session';render();
 }
 function configureSession(){
   const s=getSession();
