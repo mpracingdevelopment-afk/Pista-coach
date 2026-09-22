@@ -184,11 +184,14 @@ async function bootCloud(){
 function subscribeAuth(){
   sb.auth.onAuthStateChange(async (event,session)=>{
     if(event==='SIGNED_OUT'){currentUser=null;profileCache=[];db=normalize({});ui.page='login';render();return;}
-    if(session?.user){
-      currentUser={id:session.user.id,email:session.user.email||'',role:'pilot',name:session.user.email||'Piloto',pilotId:null,profile:null};
-      await loadProfiles();await loadCloudState();
-      await importLegacyIfNeeded();await autoLinkPilot();
-      ui.page=isAdmin()?'dashboard':(profileComplete(currentUser)?'my-events':'profile');render();
+    if(session?.user && ['INITIAL_SESSION','SIGNED_IN','TOKEN_REFRESHED','USER_UPDATED'].includes(event)){
+      currentUser={id:session.user.id,email:session.user.email||'',role:'pilot',name:session.user.user_metadata?.name||session.user.email||'Piloto',pilotId:null,profile:null};
+      await loadProfiles();
+      await loadCloudState();
+      await importLegacyIfNeeded();
+      await autoLinkPilot();
+      ui.page=isAdmin()?'dashboard':(profileComplete(currentUser)?'my-events':'profile');
+      render();
     }
   });
 }
@@ -331,11 +334,45 @@ async function login(){
 function restoreUser(){}
 async function logout(){await sb.auth.signOut();}
 async function registerPilot(){
-  const email=document.getElementById('regEmail').value.trim().toLowerCase(),password=document.getElementById('regPassword').value;
+  const name=document.getElementById('regName')?.value.trim()||'',email=document.getElementById('regEmail').value.trim().toLowerCase(),password=document.getElementById('regPassword').value;
+  if(!name){toast('Indica o teu nome');return}
   if(!email||password.length<6){toast('Usa um email válido e uma password com pelo menos 6 caracteres');return}
-  const {data,error}=await sb.auth.signUp({email,password});
-  if(error){toast(error.message||'Não foi possível criar a conta');return}
-  if(!data.session){toast('Conta criada. Confirma o email e depois entra na plataforma.');return;}
+  const button=document.querySelector('[data-action=register-pilot]');
+  if(button){button.disabled=true;button.textContent='A criar conta…'}
+  try{
+    const {data,error}=await sb.auth.signUp({email,password,options:{data:{name}}});
+    if(error){
+      console.error('Supabase signUp error:',error);
+      toast(error.message||'Não foi possível criar a conta');
+      return;
+    }
+    if(data?.user && Array.isArray(data.user.identities) && data.user.identities.length===0){
+      toast('Este email já tem uma conta. Tenta iniciar sessão.');
+      return;
+    }
+    if(!data?.user){
+      toast('Não foi possível criar a conta.');
+      return;
+    }
+    if(!data.session){
+      ui.page='login';
+      render();
+      toast('Conta criada. Confirma o email recebido e depois entra na plataforma.');
+      return;
+    }
+    currentUser={id:data.user.id,email:data.user.email||email,role:'pilot',name:name,pilotId:null,profile:null};
+    await loadProfiles();
+    await loadCloudState();
+    await autoLinkPilot();
+    ui.page='profile';
+    render();
+    toast('Conta criada. Completa agora o teu perfil.');
+  }catch(e){
+    console.error('Registration error:',e);
+    toast(e?.message||'Erro ao criar a conta.');
+  }finally{
+    if(button){button.disabled=false;button.textContent='Criar conta'}
+  }
 }
 
 function profilePage(){
@@ -668,7 +705,11 @@ function pilotSessionPage(){
 function render(){
   const app=document.getElementById('app');
   if(currentUser && currentUser.role==='pilot' && !profileComplete(currentUser) && !['profile','register'].includes(ui.page))ui.page='profile';
-  if(!currentUser){app.innerHTML=loginPage();document.querySelectorAll('[data-page]').forEach(b=>b.classList.remove('active'));return;}
+  if(!currentUser){
+    app.innerHTML=(ui.page==='register'?registerPage():loginPage());
+    document.querySelectorAll('[data-page]').forEach(b=>b.classList.remove('active'));
+    return;
+  }
   if(ui.page==='editor')app.innerHTML=editor();
   else if(ui.page==='dashboard')app.innerHTML=dashboard();
   else if(ui.page==='my-events')app.innerHTML=myEventsPage();
