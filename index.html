@@ -3,124 +3,242 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Pista Coach — V1</title>
+<title>Pista Coach</title>
 <style>
-:root{--bg:#090b0e;--panel:#11151a;--panel2:#171c22;--line:#29313a;--text:#f4f5f6;--muted:#929ba6;--ok:#7ee2a8;--warn:#ffd166;--bad:#ff8585}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-button,input,select,textarea{font:inherit}button{cursor:pointer}.app{display:flex;min-height:100vh}
-.side{width:240px;position:fixed;inset:0 auto 0 0;background:#0d1014;border-right:1px solid var(--line);padding:22px 15px}.brand{font-weight:850;font-size:20px;margin:0 10px 30px}.brand span{color:#89939e}.nav button{display:block;width:100%;border:0;background:transparent;color:#aab2bc;text-align:left;padding:11px 12px;border-radius:9px;margin:4px 0}.nav button:hover,.nav button.active{background:#1b2027;color:#fff}
-.main{margin-left:240px;flex:1;padding:28px;max-width:1500px}.top{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:22px}.title{font-size:28px;font-weight:800}.sub{color:var(--muted);margin-top:5px}.actions{display:flex;gap:8px;flex-wrap:wrap}.btn{background:#171c22;color:#fff;border:1px solid var(--line);padding:10px 14px;border-radius:9px}.btn:hover{background:#20262e}.btn.primary{background:#fff;color:#090b0e;border-color:#fff;font-weight:750}.btn.danger{color:#ff9a9a}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:17px}.metric{font-size:29px;font-weight:850;margin-top:7px}.muted{color:var(--muted)}.section{margin-top:24px}.section h2{font-size:17px;margin:0 0 12px}.list{display:grid;gap:10px}.row{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;justify-content:space-between;align-items:center;gap:15px}.left{display:flex;align-items:center;gap:12px}.avatar{width:38px;height:38px;border-radius:50%;background:#252c34;display:grid;place-items:center;font-weight:800}.pill{font-size:12px;border:1px solid var(--line);border-radius:999px;padding:5px 8px;color:#bbc3cc}.empty{padding:36px;text-align:center;border:1px dashed var(--line);border-radius:12px;color:var(--muted)}
-.modal{position:fixed;inset:0;background:#000b;z-index:20;display:grid;place-items:center;padding:18px}.modalbox{width:min(850px,100%);max-height:92vh;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:22px}.fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field{display:grid;gap:6px}.field.full{grid-column:1/-1}.field label{font-size:12px;color:#aeb7c0}.field input,.field select,.field textarea{width:100%;background:#0c1014;color:#fff;border:1px solid var(--line);border-radius:8px;padding:10px}.field textarea{min-height:100px;resize:vertical}.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}.hidden{display:none}
-.track{background:#0b0f13;border:1px solid var(--line);border-radius:15px;overflow:hidden}.trackhead{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between}.track svg{display:block;width:100%;height:500px;background:radial-gradient(circle,#151b21,#090c0f)}
-.base{fill:none;stroke:#343d47;stroke-width:48;stroke-linecap:round;stroke-linejoin:round}.inner{fill:none;stroke:#0c1014;stroke-width:34;stroke-linecap:round;stroke-linejoin:round}.centre{fill:none;stroke:#d9dde1;stroke-width:2;stroke-dasharray:8 9;stroke-linecap:round;stroke-linejoin:round}.corner{fill:#fff;stroke:#080a0c;stroke-width:2;cursor:pointer}.corner:hover{fill:#c8cdd2}.corner.active{fill:var(--warn)}.ct{font-size:13px;fill:#111;font-weight:850;text-anchor:middle;dominant-baseline:middle;pointer-events:none}
-.analysis{display:grid;grid-template-columns:1.25fr .75fr;gap:16px;margin-top:16px}.panel{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:16px}.panel h3{margin:0 0 12px}.taggrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.tag{border:1px solid var(--line);background:#171c22;color:#dce0e4;border-radius:8px;padding:9px;text-align:left}.tag.active{background:#fff;color:#111;border-color:#fff}.notesgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.note{background:#10151a;border:1px solid var(--line);border-radius:10px;padding:12px}.note b{display:block;margin-bottom:5px}.note small{color:var(--muted)}
-.score{font-size:38px;font-weight:900}.score.ok{color:var(--ok)}.score.warn{color:var(--warn)}.score.bad{color:var(--bad)}
-@media(max-width:900px){.side{width:70px}.brand{font-size:0}.brand:after{content:"PC";font-size:18px}.nav button{font-size:0;text-align:center}.main{margin-left:70px;padding:18px}.grid{grid-template-columns:1fr 1fr}.analysis{grid-template-columns:1fr}.notesgrid{grid-template-columns:1fr 1fr}}
-@media(max-width:600px){.main{padding:13px}.grid,.fields,.notesgrid,.taggrid{grid-template-columns:1fr}.title{font-size:22px}.top{align-items:flex-start;flex-direction:column}.row{align-items:flex-start;flex-direction:column}.row .actions{width:100%}.track svg{height:380px}}
+*{box-sizing:border-box}body{margin:0;background:#090b0e;color:#f4f5f7;font-family:Arial,Helvetica,sans-serif}
+button,input,select,textarea{font:inherit}button{cursor:pointer}
+.layout{min-height:100vh;display:flex}.sidebar{width:230px;background:#0f1216;border-right:1px solid #292f36;padding:20px;position:fixed;left:0;top:0;bottom:0}
+.logo{font-weight:800;font-size:20px;margin:5px 8px 30px}.logo span{color:#7f8994}
+.nav{display:flex;flex-direction:column;gap:5px}.nav button{border:0;background:transparent;color:#aeb5bd;text-align:left;padding:12px;border-radius:8px}.nav button.active,.nav button:hover{background:#1c2229;color:white}
+.content{margin-left:230px;width:calc(100% - 230px);padding:28px;max-width:1500px}.header{display:flex;justify-content:space-between;gap:15px;align-items:center;margin-bottom:22px}.title{font-size:28px;font-weight:800}.subtitle{color:#8f98a3;margin-top:5px}
+.btn{background:#171c22;color:#fff;border:1px solid #303740;border-radius:8px;padding:10px 14px}.btn.primary{background:#fff;color:#090b0e;border-color:#fff;font-weight:700}.btn.danger{color:#ff9696}.buttons{display:flex;gap:8px;flex-wrap:wrap}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.card{background:#12171c;border:1px solid #293038;border-radius:12px;padding:17px}.number{font-size:30px;font-weight:800;margin-top:6px}
+.muted{color:#929ba5}.list{display:grid;gap:9px;margin-top:12px}.row{background:#12171c;border:1px solid #293038;border-radius:11px;padding:14px;display:flex;align-items:center;justify-content:space-between;gap:15px}.identity{display:flex;align-items:center;gap:11px}.avatar{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:#262d35;font-weight:800}
+.empty{border:1px dashed #303740;border-radius:11px;padding:35px;text-align:center;color:#929ba5}.section{margin-top:24px}.section h2{font-size:17px;margin:0 0 10px}
+.modal-bg{position:fixed;inset:0;background:#000c;display:flex;align-items:center;justify-content:center;padding:18px;z-index:10}.modal{width:min(760px,100%);max-height:92vh;overflow:auto;background:#12171c;border:1px solid #303740;border-radius:14px;padding:20px}.fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field{display:grid;gap:6px}.field.full{grid-column:1/-1}.field label{font-size:12px;color:#aeb5bd}.field input,.field select,.field textarea{background:#0b0e12;color:#fff;border:1px solid #303740;border-radius:7px;padding:10px}.field textarea{min-height:110px;resize:vertical}.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
+.track{border:1px solid #293038;background:#0b0e12;border-radius:14px;overflow:hidden}.track-top{padding:13px 15px;border-bottom:1px solid #293038;display:flex;justify-content:space-between}.track svg{width:100%;height:500px;display:block}.road{fill:none;stroke:#39434e;stroke-width:50;stroke-linecap:round;stroke-linejoin:round}.road2{fill:none;stroke:#0e1216;stroke-width:35;stroke-linecap:round;stroke-linejoin:round}.line{fill:none;stroke:#dfe3e6;stroke-width:2;stroke-dasharray:8 9;stroke-linecap:round;stroke-linejoin:round}.marker{fill:#fff;stroke:#090b0e;stroke-width:2;cursor:pointer}.marker.selected{fill:#ffd166}.marker:hover{fill:#cbd1d6}.markertext{font-size:13px;font-weight:800;text-anchor:middle;dominant-baseline:middle;pointer-events:none;fill:#111}
+.session-grid{display:grid;grid-template-columns:1.3fr .7fr;gap:14px;margin-top:14px}.panel{background:#12171c;border:1px solid #293038;border-radius:14px;padding:16px}.tags{display:grid;grid-template-columns:1fr 1fr;gap:8px}.tag{background:#171c22;color:#dfe3e6;border:1px solid #303740;border-radius:7px;padding:9px;text-align:left}.tag.selected{background:#fff;color:#111;border-color:#fff}.notes{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.note{background:#10151a;border:1px solid #293038;border-radius:9px;padding:11px}.note b{display:block}.score{font-size:38px;font-weight:800;margin-top:5px}.good{color:#7ee2a8}.medium{color:#ffd166}.low{color:#ff8585}
+.toast{position:fixed;right:18px;bottom:18px;background:#fff;color:#111;padding:12px 15px;border-radius:8px;font-weight:700;z-index:30}
+@media(max-width:900px){.sidebar{width:68px;padding:15px 8px}.logo{font-size:0;text-align:center}.logo:after{content:"PC";font-size:18px}.nav button{font-size:0;text-align:center}.content{margin-left:68px;width:calc(100% - 68px);padding:18px}.cards{grid-template-columns:1fr 1fr}.session-grid{grid-template-columns:1fr}.notes{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){.content{padding:13px}.header{align-items:flex-start;flex-direction:column}.cards,.fields,.notes,.tags{grid-template-columns:1fr}.row{align-items:flex-start;flex-direction:column}.row .buttons{width:100%}.row .buttons .btn{width:100%}.track svg{height:370px}.title{font-size:23px}}
 </style>
 </head>
 <body>
-<div class="app">
-<aside class="side"><div class="brand">PISTA <span>COACH</span></div><div class="nav">
-<button data-view="dashboard" class="active">Dashboard</button>
-<button data-view="drivers">Pilotos</button>
-<button data-view="tracks">Pistas</button>
-<button data-view="sessions">Sessões</button>
+<div class="layout">
+<aside class="sidebar"><div class="logo">PISTA <span>COACH</span></div><div class="nav">
+<button data-nav="dashboard" class="active">Dashboard</button>
+<button data-nav="drivers">Pilotos</button>
+<button data-nav="tracks">Pistas</button>
+<button data-nav="sessions">Sessões</button>
 </div></aside>
-<main class="main" id="app"></main>
-</div><div id="modal"></div>
+<main class="content" id="content"></main>
+</div>
+<div id="overlay"></div>
+
 <script>
-window.addEventListener('error', e => {
-  console.error('Pista Coach error:', e.error || e.message);
-});
-const KEY='pista_coach_v1_data';
-const defaultTrack={id:1,name:'Portimão',variant:'Karting',corners:16,points:[[120,120],[240,70],[420,85],[610,140],[670,250],[620,380],[500,440],[330,430],[180,470],[90,390],[105,285],[180,245],[260,270],[330,225],[430,250],[510,205]]};
-const seed={drivers:[],tracks:[defaultTrack],sessions:[]};
-let db=JSON.parse(localStorage.getItem(KEY)||'null')||seed;
-let state={view:'dashboard',sessionId:null,selectedCorner:1};
-const save=()=>localStorage.setItem(KEY,JSON.stringify(db));
-const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const dname=id=>db.drivers.find(x=>x.id==id)?.name||'—';
-const tname=id=>db.tracks.find(x=>x.id==id)?.name||'—';
-function nav(){document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.view===state.view))}
-function top(title,sub,action=''){return `<div class="top"><div><div class="title">${title}</div><div class="sub">${sub||''}</div></div><div>${action}</div></div>`}
+(function(){
+'use strict';
+
+const STORAGE_KEY='pista_coach_v2';
+const basePoints=[
+ [120,115],[235,75],[420,90],[585,145],[665,250],[625,365],
+ [505,440],[345,425],[205,470],[100,395],[90,300],[155,245],
+ [250,270],[330,225],[430,250],[510,200]
+];
+
+const initial={
+ drivers:[],
+ tracks:[{id:1,name:'Portimão',variant:'Karting',corners:16,points:basePoints}],
+ sessions:[]
+};
+
+function load(){
+ try{
+   const raw=localStorage.getItem(STORAGE_KEY);
+   return raw?JSON.parse(raw):initial;
+ }catch(e){return initial;}
+}
+let db=load();
+let state={page:'dashboard',sessionId:null,corner:1};
+
+function persist(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(db));}catch(e){}}
+function byId(arr,id){return arr.find(x=>String(x.id)===String(id));}
+function driverName(id){const x=byId(db.drivers,id);return x?x.name:'—';}
+function trackName(id){const x=byId(db.tracks,id);return x?x.name:'—';}
+function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function toast(msg){const el=document.createElement('div');el.className='toast';el.textContent=msg;document.body.appendChild(el);setTimeout(()=>el.remove(),1600);}
+function header(title,sub,action){return '<div class="header"><div><div class="title">'+esc(title)+'</div><div class="subtitle">'+esc(sub||'')+'</div></div><div>'+ (action||'')+'</div></div>';}
+
 function dashboard(){
- const notes=db.sessions.reduce((n,s)=>n+Object.values(s.corners||{}).filter(x=>x&&x.comment).length,0);
- return top('Dashboard','Coaching e análise em pista',`<button class="btn primary" onclick="newSession()">+ Nova sessão</button>`)+
- `<div class="grid"><div class="card"><div class="muted">Pilotos</div><div class="metric">${db.drivers.length}</div></div><div class="card"><div class="muted">Pistas</div><div class="metric">${db.tracks.length}</div></div><div class="card"><div class="muted">Sessões</div><div class="metric">${db.sessions.length}</div></div><div class="card"><div class="muted">Notas por curva</div><div class="metric">${notes}</div></div></div>
- <div class="section"><h2>Últimas sessões</h2><div class="list">${db.sessions.slice().reverse().slice(0,6).map(s=>`<div class="row"><div class="left"><div class="avatar">${esc(dname(s.driverId).slice(0,1))}</div><div><b>${esc(dname(s.driverId))}</b><div class="muted">${esc(tname(s.trackId))} · ${esc(s.date)}</div></div></div><button class="btn" onclick="openSession(${s.id})">Abrir</button></div>`).join('')||'<div class="empty">Cria a primeira sessão para começar.</div>'}</div></div>`;
+ const notes=db.sessions.reduce((n,s)=>n+Object.values(s.corners||{}).filter(c=>c&&c.comment).length,0);
+ return header('Dashboard','Coaching e análise em pista','<button class="btn primary" data-action="new-session">+ Nova sessão</button>')+
+ '<div class="cards"><div class="card"><div class="muted">Pilotos</div><div class="number">'+db.drivers.length+'</div></div>'+
+ '<div class="card"><div class="muted">Pistas</div><div class="number">'+db.tracks.length+'</div></div>'+
+ '<div class="card"><div class="muted">Sessões</div><div class="number">'+db.sessions.length+'</div></div>'+
+ '<div class="card"><div class="muted">Notas</div><div class="number">'+notes+'</div></div></div>'+
+ '<div class="section"><h2>Últimas sessões</h2><div class="list">'+
+ (db.sessions.slice().reverse().slice(0,6).map(s=>'<div class="row"><div class="identity"><div class="avatar">'+esc(driverName(s.driverId).charAt(0))+'</div><div><b>'+esc(driverName(s.driverId))+'</b><div class="muted">'+esc(trackName(s.trackId))+' · '+esc(s.date)+'</div></div></div><button class="btn" data-action="open-session" data-id="'+s.id+'">Abrir</button></div>').join('')||'<div class="empty">Ainda não existem sessões.</div>')+
+ '</div></div>';
 }
+
 function drivers(){
- return top('Pilotos','Pilotos acompanhados',`<button class="btn primary" onclick="newDriver()">+ Adicionar piloto</button>`)+
- `<div class="section"><div class="list">${db.drivers.map(d=>`<div class="row"><div class="left"><div class="avatar">${esc(d.name.slice(0,1))}</div><div><b>${esc(d.name)}</b><div class="muted">${esc(d.category||'Karting')}${d.number?' · #'+esc(d.number):''}</div></div></div><div class="actions"><button class="btn" onclick="filterDriver(${d.id})">Ver sessões</button><button class="btn danger" onclick="deleteDriver(${d.id})">Apagar</button></div></div>`).join('')||'<div class="empty">Ainda não tens pilotos.</div>'}</div></div>`;
+ return header('Pilotos','Pilotos acompanhados','<button class="btn primary" data-action="new-driver">+ Adicionar piloto</button>')+
+ '<div class="section"><div class="list">'+
+ (db.drivers.map(d=>'<div class="row"><div class="identity"><div class="avatar">'+esc(d.name.charAt(0))+'</div><div><b>'+esc(d.name)+'</b><div class="muted">'+esc(d.category||'Karting')+(d.number?' · #'+esc(d.number):'')+'</div></div></div><div class="buttons"><button class="btn" data-action="driver-sessions" data-id="'+d.id+'">Ver sessões</button><button class="btn danger" data-action="delete-driver" data-id="'+d.id+'">Apagar</button></div></div>').join('')||'<div class="empty">Adiciona o primeiro piloto.</div>')+
+ '</div></div>';
 }
+
 function tracks(){
- return top('Pistas','Layouts usados nas sessões',`<button class="btn primary" onclick="newTrack()">+ Adicionar pista</button>`)+
- `<div class="section"><div class="list">${db.tracks.map(t=>`<div class="row"><div><b>${esc(t.name)}</b><div class="muted">${esc(t.variant)} · ${t.corners} curvas</div></div><div class="actions"><button class="btn" onclick="previewTrack(${t.id})">Ver layout</button><button class="btn danger" onclick="deleteTrack(${t.id})">Apagar</button></div></div>`).join('')}</div></div>`;
+ return header('Pistas','Layouts disponíveis','<button class="btn primary" data-action="new-track">+ Adicionar pista</button>')+
+ '<div class="section"><div class="list">'+
+ db.tracks.map(t=>'<div class="row"><div><b>'+esc(t.name)+'</b><div class="muted">'+esc(t.variant)+' · '+t.corners+' curvas</div></div><div class="buttons"><button class="btn" data-action="preview-track" data-id="'+t.id+'">Ver layout</button><button class="btn danger" data-action="delete-track" data-id="'+t.id+'">Apagar</button></div></div>').join('')+
+ '</div></div>';
 }
+
 function sessions(){
- return top('Sessões','Histórico de coaching',`<button class="btn primary" onclick="newSession()">+ Nova sessão</button>`)+
- `<div class="section"><div class="list">${db.sessions.slice().reverse().map(s=>`<div class="row"><div><b>${esc(dname(s.driverId))}</b><div class="muted">${esc(tname(s.trackId))} · ${esc(s.date)} · ${Object.values(s.corners||{}).filter(x=>x?.comment).length} notas</div></div><div class="actions"><button class="btn" onclick="openSession(${s.id})">Abrir</button><button class="btn danger" onclick="deleteSession(${s.id})">Apagar</button></div></div>`).join('')||'<div class="empty">Ainda não existem sessões.</div>'}</div></div>`;
+ return header('Sessões','Histórico de coaching','<button class="btn primary" data-action="new-session">+ Nova sessão</button>')+
+ '<div class="section"><div class="list">'+
+ (db.sessions.slice().reverse().map(s=>'<div class="row"><div><b>'+esc(driverName(s.driverId))+'</b><div class="muted">'+esc(trackName(s.trackId))+' · '+esc(s.date)+' · '+Object.values(s.corners||{}).filter(c=>c&&c.comment).length+' notas</div></div><div class="buttons"><button class="btn" data-action="open-session" data-id="'+s.id+'">Abrir</button><button class="btn danger" data-action="delete-session" data-id="'+s.id+'">Apagar</button></div></div>').join('')||'<div class="empty">Ainda não existem sessões.</div>')+
+ '</div></div>';
 }
-function pathFor(t){let p=t.points||defaultTrack.points;return p.map((a,i)=>(i?'L':'M')+a[0]+' '+a[1]).join(' ')+' Z'}
-function trackSVG(t,session){
- const p=t.points||defaultTrack.points, n=t.corners;
- const marks=p.slice(0,n).map((a,i)=>{let num=i+1,active=session&&state.selectedCorner===num?'active':'';return `<g onclick="selectCorner(${num})"><circle class="corner ${active}" cx="${a[0]}" cy="${a[1]}" r="15"/><text class="ct" x="${a[0]}" y="${a[1]}">${num}</text></g>`}).join('');
- return `<svg viewBox="0 0 760 520"><path class="base" d="${pathFor(t)}"/><path class="inner" d="${pathFor(t)}"/><path class="centre" d="${pathFor(t)}"/>${marks}</svg>`;
+
+function path(t){const p=t.points||basePoints;return p.map((a,i)=>(i?'L':'M')+a[0]+' '+a[1]).join(' ')+' Z';}
+function mapSvg(t,session){
+ const p=(t.points||basePoints).slice(0,t.corners);
+ const markers=p.map((a,i)=>{
+   const n=i+1,selected=session&&state.corner===n?' selected':'';
+   return '<g data-action="select-corner" data-corner="'+n+'"><circle class="marker'+selected+'" cx="'+a[0]+'" cy="'+a[1]+'" r="15"></circle><text class="markertext" x="'+a[0]+'" y="'+a[1]+'">'+n+'</text></g>';
+ }).join('');
+ return '<svg viewBox="0 0 760 520" aria-label="Mapa da pista"><path class="road" d="'+path(t)+'"></path><path class="road2" d="'+path(t)+'"></path><path class="line" d="'+path(t)+'"></path>'+markers+'</svg>';
 }
+
 function sessionPage(){
- const s=db.sessions.find(x=>x.id===state.sessionId),t=db.tracks.find(x=>x.id===s.trackId),c=s.corners?.[state.selectedCorner]||{};
- const complete=Object.values(s.corners||{}).filter(x=>x?.comment).length;
- const score=calcScore(s,t);
- return `<div style="margin-bottom:12px"><button class="btn" onclick="state.view='sessions';render()">← Voltar</button></div>`+
- top(`${esc(dname(s.driverId))} · ${esc(t.name)}`,`${esc(s.date)}${s.conditions?' · '+esc(s.conditions):''}`,`<div class="actions"><button class="btn" onclick="sessionSummary()">Resumo</button><button class="btn primary" onclick="save();toast('Sessão guardada')">Guardar</button></div>`)+
- `<div class="track"><div class="trackhead"><div><b>Mapa de análise</b><div class="muted">Seleciona uma curva para registar o que observaste.</div></div><span class="pill">${complete}/${t.corners} curvas com nota</span></div>${trackSVG(t,s)}</div>
- <div class="analysis"><div class="panel"><h3>Curva ${state.selectedCorner}</h3>
- <div class="field"><label>Comentário geral</label><textarea id="comment" placeholder="O que aconteceu nesta curva?">${esc(c.comment||'')}</textarea></div>
- <div class="section" style="margin-top:14px"><label class="muted">Classificação da curva</label><div class="taggrid" style="margin-top:7px">${['Muito boa','Boa','A melhorar','Erro'].map(v=>`<button class="tag ${c.rating===v?'active':''}" onclick="setRating('${v}')">${v}</button>`).join('')}</div></div>
- <div class="section" style="margin-top:14px"><div class="fields"><div class="field"><label>Travagem</label><input id="braking" value="${esc(c.braking||'')}" placeholder="Referência / intensidade"></div><div class="field"><label>Entrada</label><input id="entry" value="${esc(c.entry||'')}" placeholder="Velocidade / linha"></div><div class="field"><label>Apex</label><input id="apex" value="${esc(c.apex||'')}" placeholder="Ponto / velocidade"></div><div class="field"><label>Saída</label><input id="exit" value="${esc(c.exit||'')}" placeholder="Trajetória / aceleração"></div><div class="field full"><label>Erro / correção</label><input id="error" value="${esc(c.error||'')}" placeholder="Ex.: entrou demasiado cedo, abrir mais a saída..."></div></div></div>
- <div class="modal-actions"><button class="btn primary" onclick="saveCorner()">Guardar curva ${state.selectedCorner}</button></div></div>
- <div class="panel"><h3>Resumo rápido</h3><div class="muted">Score da sessão</div><div class="score ${score>=80?'ok':score>=55?'warn':'bad'}">${score}<span style="font-size:16px">/100</span></div><div class="section"><div class="muted">Condições</div><b>${esc(s.conditions||'Não registadas')}</b></div><div class="section"><div class="muted">Curvas avaliadas</div><b>${complete} de ${t.corners}</b></div><div class="section"><div class="muted">Curva atual</div><b>${esc(c.rating||'Sem classificação')}</b></div></div></div>
- <div class="section"><h2>Notas por curva</h2><div class="notesgrid">${Array.from({length:t.corners},(_,i)=>{let x=s.corners?.[i+1]||{};return `<div class="note"><b>Curva ${i+1}</b><small>${esc(x.rating||'Sem classificação')}</small><div style="margin-top:7px">${esc(x.comment||'Sem nota')}</div><button class="btn" style="margin-top:9px" onclick="selectCorner(${i+1})">Editar</button></div>`}).join('')}</div></div>`;
+ const s=byId(db.sessions,state.sessionId);
+ if(!s){state.page='sessions';return sessions();}
+ const t=byId(db.tracks,s.trackId);
+ const c=(s.corners&&s.corners[state.corner])||{};
+ const complete=Object.values(s.corners||{}).filter(x=>x&&x.comment).length;
+ const score=calcScore(s);
+ return '<div style="margin-bottom:12px"><button class="btn" data-action="go-sessions">← Voltar</button></div>'+
+ header(driverName(s.driverId)+' · '+t.name,s.date+(s.conditions?' · '+s.conditions:''),'<div class="buttons"><button class="btn" data-action="summary">Resumo</button><button class="btn primary" data-action="save-session">Guardar</button></div>')+
+ '<div class="track"><div class="track-top"><div><b>Mapa de análise</b><div class="muted">Clica numa curva para a selecionar.</div></div><div class="muted">'+complete+'/'+t.corners+' avaliadas</div></div>'+mapSvg(t,s)+'</div>'+
+ '<div class="session-grid"><div class="panel"><h3>Curva '+state.corner+'</h3>'+
+ '<div class="field"><label>Comentário</label><textarea id="corner-comment" placeholder="O que observaste nesta curva?">'+esc(c.comment||'')+'</textarea></div>'+
+ '<div class="section"><div class="muted">Classificação</div><div class="tags" style="margin-top:7px">'+['Muito boa','Boa','A melhorar','Erro'].map(v=>'<button class="tag'+(c.rating===v?' selected':'')+'" data-action="rating" data-rating="'+esc(v)+'">'+v+'</button>').join('')+'</div></div>'+
+ '<div class="section"><div class="fields"><div class="field"><label>Travagem</label><input id="corner-braking" value="'+esc(c.braking||'')+'" placeholder="Referência / intensidade"></div><div class="field"><label>Entrada</label><input id="corner-entry" value="'+esc(c.entry||'')+'" placeholder="Linha / velocidade"></div><div class="field"><label>Apex</label><input id="corner-apex" value="'+esc(c.apex||'')+'" placeholder="Ponto / velocidade"></div><div class="field"><label>Saída</label><input id="corner-exit" value="'+esc(c.exit||'')+'" placeholder="Linha / aceleração"></div><div class="field full"><label>Erro / correção</label><input id="corner-error" value="'+esc(c.error||'')+'" placeholder="O que deve mudar?"></div></div></div>'+
+ '<div class="modal-actions"><button class="btn primary" data-action="save-corner">Guardar curva</button></div></div>'+
+ '<div class="panel"><h3>Resumo</h3><div class="muted">Score da sessão</div><div class="score '+(score>=80?'good':score>=55?'medium':'low')+'">'+score+'<span style="font-size:16px">/100</span></div><div class="section"><div class="muted">Condições</div><b>'+esc(s.conditions||'Não registadas')+'</b></div><div class="section"><div class="muted">Curvas avaliadas</div><b>'+complete+' de '+t.corners+'</b></div><div class="section"><div class="muted">Classificação atual</div><b>'+esc(c.rating||'Sem classificação')+'</b></div></div></div>'+
+ '<div class="section"><h2>Notas por curva</h2><div class="notes">'+Array.from({length:t.corners},(_,i)=>{const x=(s.corners&&s.corners[i+1])||{};return '<div class="note"><b>Curva '+(i+1)+'</b><small class="muted">'+esc(x.rating||'Sem classificação')+'</small><div style="margin-top:6px">'+esc(x.comment||'Sem nota')+'</div><button class="btn" style="margin-top:8px" data-action="select-corner" data-corner="'+(i+1)+'">Editar</button></div>';}).join('')+'</div></div>';
 }
-function calcScore(s,t){let xs=Object.values(s.corners||{}).filter(x=>x&&x.rating);if(!xs.length)return 0;let pts={'Muito boa':100,'Boa':80,'A melhorar':55,'Erro':25};return Math.round(xs.reduce((a,x)=>a+pts[x.rating],0)/xs.length)}
-function render(){nav();let v=state.view;document.getElementById('app').innerHTML=v==='dashboard'?dashboard():v==='drivers'?drivers():v==='tracks'?tracks():v==='sessions'?sessions():sessionPage()}
-function modal(x){document.getElementById('modal').innerHTML=`<div class="modal" onclick="if(event.target===this)closeModal()"><div class="modalbox">${x}</div></div>`}
-function closeModal(){document.getElementById('modal').innerHTML=''}
-function newDriver(){modal(`<h2>Novo piloto</h2><div class="fields"><div class="field"><label>Nome</label><input id="dn"></div><div class="field"><label>Número</label><input id="dnum"></div><div class="field full"><label>Categoria</label><input id="dcat" value="Karting"></div></div><div class="modal-actions"><button class="btn" onclick="closeModal()">Cancelar</button><button class="btn primary" onclick="createDriver()">Criar</button></div>`)}
-function createDriver(){let n=document.getElementById('dn').value.trim();if(!n)return;db.drivers.push({id:Date.now(),name:n,number:document.getElementById('dnum').value.trim(),category:document.getElementById('dcat').value.trim()||'Karting'});save();closeModal();render()}
-function deleteDriver(id){if(confirm('Apagar piloto?')){db.drivers=db.drivers.filter(x=>x.id!==id);save();render()}}
-function newTrack(){modal(`<h2>Adicionar pista</h2><div class="fields"><div class="field"><label>Nome</label><input id="tn"></div><div class="field"><label>Variante</label><input id="tv" value="Karting"></div><div class="field"><label>Número de curvas</label><input id="tc" type="number" min="1" max="30" value="12"></div></div><p class="muted">Nesta V1, pistas novas usam um layout base. Depois substituímos cada uma pelo layout real que definirmos.</p><div class="modal-actions"><button class="btn" onclick="closeModal()">Cancelar</button><button class="btn primary" onclick="createTrack()">Criar</button></div>`)}
-function createTrack(){let n=document.getElementById('tn').value.trim();if(!n)return;let c=+document.getElementById('tc').value||12;db.tracks.push({id:Date.now(),name:n,variant:document.getElementById('tv').value.trim()||'Karting',corners:c,points:defaultTrack.points.slice(0,c)});save();closeModal();render()}
-function deleteTrack(id){if(confirm('Apagar esta pista?')){db.tracks=db.tracks.filter(x=>x.id!==id);save();render()}}
-function previewTrack(id){let t=db.tracks.find(x=>x.id===id);modal(`<h2>${esc(t.name)}</h2><div class="track">${trackSVG(t)}</div><div class="modal-actions"><button class="btn" onclick="closeModal()">Fechar</button></div>`)}
-function newSession(){if(!db.drivers.length){alert('Adiciona primeiro um piloto.');return}modal(`<h2>Nova sessão</h2><div class="fields"><div class="field"><label>Piloto</label><select id="sd">${db.drivers.map(d=>`<option value="${d.id}">${esc(d.name)}</option>`).join('')}</select></div><div class="field"><label>Pista</label><select id="st">${db.tracks.map(t=>`<option value="${t.id}">${esc(t.name)} — ${esc(t.variant)}</option>`).join('')}</select></div><div class="field"><label>Data</label><input id="sdate" type="date" value="${new Date().toISOString().slice(0,10)}"></div><div class="field"><label>Condições</label><input id="sc" placeholder="Seco, molhado, temperatura..."></div></div><div class="modal-actions"><button class="btn" onclick="closeModal()">Cancelar</button><button class="btn primary" onclick="createSession()">Começar</button></div>`)}
-function createSession(){let s={id:Date.now(),driverId:+document.getElementById('sd').value,trackId:+document.getElementById('st').value,date:document.getElementById('sdate').value,conditions:document.getElementById('sc').value.trim(),corners:{}};db.sessions.push(s);save();closeModal();openSession(s.id)}
-function openSession(id){state.sessionId=id;state.selectedCorner=1;state.view='session';render()}
-function deleteSession(id){if(confirm('Apagar sessão?')){db.sessions=db.sessions.filter(x=>x.id!==id);save();render()}}
-function selectCorner(n){saveCorner(true);state.selectedCorner=n;render()}
-function setRating(v){let s=db.sessions.find(x=>x.id===state.sessionId);s.corners[state.selectedCorner] ||= {};s.corners[state.selectedCorner].rating=v;save();render()}
-function saveCorner(silent=false){let s=db.sessions.find(x=>x.id===state.sessionId);if(!s)return;s.corners[state.selectedCorner] ||= {};let c=s.corners[state.selectedCorner];for(let id of ['comment','braking','entry','apex','exit','error']){let el=document.getElementById(id);if(el)c[id]=el.value.trim()}save();if(!silent)toast('Curva guardada');}
-function sessionSummary(){let s=db.sessions.find(x=>x.id===state.sessionId),t=db.tracks.find(x=>x.id===s.trackId);let rows=Object.entries(s.corners||{}).filter(([_,c])=>c?.comment).map(([n,c])=>`<div class="row"><div><b>Curva ${n}</b><div class="muted">${esc(c.rating||'Sem classificação')}</div></div><div>${esc(c.comment)}</div></div>`).join('')||'<div class="empty">Sem notas.</div>';modal(`<h2>Resumo — ${esc(dname(s.driverId))}</h2><p class="muted">${esc(t.name)} · ${esc(s.date)}</p><div class="list">${rows}</div><div class="modal-actions"><button class="btn" onclick="closeModal()">Fechar</button></div>`)}
-function filterDriver(id){
- state.view='sessions';
- render();
- const app=document.getElementById('app');
- const title=app.querySelector('.title');
- if(title) title.textContent='Sessões · '+dname(id);
- const rows=[...app.querySelectorAll('.row')];
- rows.forEach(r=>{
-   const name=r.querySelector('b');
-   r.style.display=(!name || name.textContent===dname(id))?'flex':'none';
- });
+
+function calcScore(s){
+ const points={'Muito boa':100,'Boa':80,'A melhorar':55,'Erro':25};
+ const vals=Object.values(s.corners||{}).map(x=>points[x&&x.rating]).filter(x=>typeof x==='number');
+ return vals.length?Math.round(vals.reduce((a,b)=>a+b,0)/vals.length):0;
 }
-function toast(msg){let x=document.createElement('div');x.className='toast';x.textContent=msg;document.body.appendChild(x);setTimeout(()=>x.remove(),1800)}
-document.querySelector('.nav').addEventListener('click', e=>{
- const b=e.target.closest('button[data-view]');
- if(!b)return;
- state.view=b.dataset.view;
- render();
+
+function render(){
+ const c=document.getElementById('content');
+ if(state.page==='dashboard')c.innerHTML=dashboard();
+ else if(state.page==='drivers')c.innerHTML=drivers();
+ else if(state.page==='tracks')c.innerHTML=tracks();
+ else if(state.page==='sessions')c.innerHTML=sessions();
+ else c.innerHTML=sessionPage();
+ document.querySelectorAll('[data-nav]').forEach(b=>b.classList.toggle('active',b.dataset.nav===state.page));
+}
+
+function overlay(html){document.getElementById('overlay').innerHTML='<div class="modal-bg" data-close="true"><div class="modal">'+html+'</div></div>';}
+function closeOverlay(){document.getElementById('overlay').innerHTML='';}
+
+function newDriver(){
+ overlay('<h2>Novo piloto</h2><div class="fields"><div class="field"><label>Nome</label><input id="driver-name"></div><div class="field"><label>Número</label><input id="driver-number"></div><div class="field full"><label>Categoria</label><input id="driver-category" value="Karting"></div></div><div class="modal-actions"><button class="btn" data-action="close">Cancelar</button><button class="btn primary" data-action="create-driver">Criar</button></div>');
+}
+
+function newTrack(){
+ overlay('<h2>Nova pista</h2><div class="fields"><div class="field"><label>Nome</label><input id="track-name"></div><div class="field"><label>Variante</label><input id="track-variant" value="Karting"></div><div class="field"><label>Número de curvas</label><input id="track-corners" type="number" min="1" max="16" value="12"></div></div><p class="muted">Nesta versão, o layout base é temporário. Vamos substituir pelos layouts reais das pistas.</p><div class="modal-actions"><button class="btn" data-action="close">Cancelar</button><button class="btn primary" data-action="create-track">Criar</button></div>');
+}
+
+function newSession(){
+ if(!db.drivers.length){overlay('<h2>Primeiro adiciona um piloto</h2><p class="muted">É necessário ter pelo menos um piloto para criar uma sessão.</p><div class="modal-actions"><button class="btn primary" data-action="close">OK</button></div>');return;}
+ overlay('<h2>Nova sessão</h2><div class="fields"><div class="field"><label>Piloto</label><select id="session-driver">'+db.drivers.map(d=>'<option value="'+d.id+'">'+esc(d.name)+'</option>').join('')+'</select></div><div class="field"><label>Pista</label><select id="session-track">'+db.tracks.map(t=>'<option value="'+t.id+'">'+esc(t.name)+' — '+esc(t.variant)+'</option>').join('')+'</select></div><div class="field"><label>Data</label><input id="session-date" type="date" value="'+new Date().toISOString().slice(0,10)+'"></div><div class="field"><label>Condições</label><input id="session-conditions" placeholder="Seco, molhado, temperatura..."></div></div><div class="modal-actions"><button class="btn" data-action="close">Cancelar</button><button class="btn primary" data-action="create-session">Começar</button></div>');
+}
+
+function previewTrack(id){
+ const t=byId(db.tracks,id);
+ overlay('<h2>'+esc(t.name)+'</h2><div class="track">'+mapSvg(t,null)+'</div><div class="modal-actions"><button class="btn" data-action="close">Fechar</button></div>');
+}
+
+function saveCorner(){
+ const s=byId(db.sessions,state.sessionId);
+ if(!s)return;
+ s.corners=s.corners||{};
+ const c=s.corners[state.corner]||{};
+ const get=id=>{const el=document.getElementById(id);return el?el.value.trim():''};
+ c.comment=get('corner-comment');c.braking=get('corner-braking');c.entry=get('corner-entry');c.apex=get('corner-apex');c.exit=get('corner-exit');c.error=get('corner-error');
+ s.corners[state.corner]=c;persist();render();toast('Curva guardada');
+}
+
+function createDriver(){
+ const name=document.getElementById('driver-name').value.trim();if(!name)return;
+ db.drivers.push({id:Date.now(),name,number:document.getElementById('driver-number').value.trim(),category:document.getElementById('driver-category').value.trim()||'Karting'});
+ persist();closeOverlay();render();
+}
+function createTrack(){
+ const name=document.getElementById('track-name').value.trim();if(!name)return;
+ const n=Math.max(1,Math.min(16,Number(document.getElementById('track-corners').value)||12));
+ db.tracks.push({id:Date.now(),name,variant:document.getElementById('track-variant').value.trim()||'Karting',corners:n,points:basePoints.slice(0,n)});
+ persist();closeOverlay();render();
+}
+function createSession(){
+ const s={id:Date.now(),driverId:Number(document.getElementById('session-driver').value),trackId:Number(document.getElementById('session-track').value),date:document.getElementById('session-date').value,conditions:document.getElementById('session-conditions').value.trim(),corners:{}};
+ db.sessions.push(s);persist();closeOverlay();state.sessionId=s.id;state.corner=1;state.page='session';render();
+}
+
+document.addEventListener('click',function(e){
+ const nav=e.target.closest('[data-nav]');
+ if(nav){state.page=nav.dataset.nav;state.sessionId=null;render();return;}
+ const action=e.target.closest('[data-action]');
+ if(!action)return;
+ const a=action.dataset.action;
+ if(a==='close'){closeOverlay();return;}
+ if(a==='new-driver'){newDriver();return;}
+ if(a==='new-track'){newTrack();return;}
+ if(a==='new-session'){newSession();return;}
+ if(a==='create-driver'){createDriver();return;}
+ if(a==='create-track'){createTrack();return;}
+ if(a==='create-session'){createSession();return;}
+ if(a==='open-session'){state.sessionId=Number(action.dataset.id);state.corner=1;state.page='session';render();return;}
+ if(a==='go-sessions'){state.page='sessions';state.sessionId=null;render();return;}
+ if(a==='save-session'){persist();toast('Sessão guardada');return;}
+ if(a==='save-corner'){saveCorner();return;}
+ if(a==='select-corner'){saveCornerSilent();state.corner=Number(action.dataset.corner);render();return;}
+ if(a==='rating'){const s=byId(db.sessions,state.sessionId);s.corners=s.corners||{};s.corners[state.corner]=s.corners[state.corner]||{};s.corners[state.corner].rating=action.dataset.rating;persist();render();return;}
+ if(a==='preview-track'){previewTrack(Number(action.dataset.id));return;}
+ if(a==='delete-driver'){if(confirm('Apagar este piloto?')){db.drivers=db.drivers.filter(x=>String(x.id)!==String(action.dataset.id));persist();render();}return;}
+ if(a==='delete-track'){if(confirm('Apagar esta pista?')){db.tracks=db.tracks.filter(x=>String(x.id)!==String(action.dataset.id));persist();render();}return;}
+ if(a==='delete-session'){if(confirm('Apagar esta sessão?')){db.sessions=db.sessions.filter(x=>String(x.id)!==String(action.dataset.id));persist();render();}return;}
+ if(a==='driver-sessions'){state.page='sessions';render();return;}
+ if(a==='summary'){showSummary();return;}
 });
+document.getElementById('overlay').addEventListener('click',function(e){if(e.target.dataset.close==='true')closeOverlay();});
+
+function saveCornerSilent(){
+ if(state.page!=='session')return;
+ const s=byId(db.sessions,state.sessionId);if(!s)return;
+ s.corners=s.corners||{};
+ const c=s.corners[state.corner]||{};
+ const get=id=>{const el=document.getElementById(id);return el?el.value.trim():c[id]||''};
+ c.comment=get('corner-comment');c.braking=get('corner-braking');c.entry=get('corner-entry');c.apex=get('corner-apex');c.exit=get('corner-exit');c.error=get('corner-error');
+ s.corners[state.corner]=c;persist();
+}
+function showSummary(){
+ const s=byId(db.sessions,state.sessionId);if(!s)return;
+ const rows=Object.keys(s.corners||{}).sort((a,b)=>Number(a)-Number(b)).map(n=>{const c=s.corners[n];return '<div class="row"><div><b>Curva '+n+'</b><div class="muted">'+esc(c.rating||'Sem classificação')+'</div></div><div>'+esc(c.comment||'Sem nota')+'</div></div>';}).join('');
+ overlay('<h2>Resumo da sessão</h2><p class="muted">'+esc(driverName(s.driverId))+' · '+esc(trackName(s.trackId))+' · '+esc(s.date)+'</p><div class="list">'+(rows||'<div class="empty">Ainda não existem notas.</div>')+'</div><div class="modal-actions"><button class="btn" data-action="close">Fechar</button></div>');
+}
+
 render();
+})();
 </script>
-</body></html>
+</body>
+</html>
