@@ -79,7 +79,7 @@ function normalize(raw){
   const tracks=Array.isArray(raw.tracks)?raw.tracks.map((t,i)=>{
     const source=Array.isArray(t.points)?t.points:[];
     const points=source.map((p,j)=>({id:p.id||('p'+Date.now()+j),x:Number(p.x!=null?p.x:p[0])||0,y:Number(p.y!=null?p.y:p[1])||0,comment:p.comment||'',braking:p.braking||'',entry:p.entry||'',apex:p.apex||'',exit:p.exit||'',trajectory:p.trajectory||'',error:p.error||'',correction:p.correction||''}));
-    return {id:t.id||Date.now()+i,name:t.name||('Pista '+(i+1)),variant:t.variant||'Karting',imageId:t.imageId||null,image:t.image||t.background||'',points};
+    return {id:t.id||Date.now()+i,name:t.name||('Pista '+(i+1)),variant:t.variant||'Karting',imageId:t.imageId||null,image:t.image||t.background||'',pointSpace:t.pointSpace||'stage',points};
   }):[];
   const championships=Array.isArray(raw.championships)?raw.championships.map((c,i)=>({
     id:c.id||Date.now()+i,name:c.name||('Campeonato '+(i+1)),season:c.season||'',
@@ -351,9 +351,45 @@ function hasPilotInRace(r,pid){
   return (r.days||[]).some(d=>(d.sessions||[]).some(s=>(s.pilotIds||[]).some(x=>String(x)===String(pid))));
 }
 
+const SCORE_WEIGHTS={rotation:20,braking:16,inTrajectory:14,midTrajectory:14,outTrajectory:12,insertion:10,trail:8,acceleration:6};
 function analysisFor(s,pid,index){return s.analyses?.[pid]?.[index]||{}}
 function setAnalysis(s,pid,index,data){if(!s.analyses||Array.isArray(s.analyses))s.analyses={};if(!s.analyses[pid])s.analyses[pid]={};s.analyses[pid][index]={...(s.analyses[pid][index]||{}),...data}}
-function saveCurrentAnalysis(){const s=getSession(),pid=ui.sessionPilot||document.getElementById('activePilot')?.value;if(!s||!pid)return false;const read=id=>document.getElementById(id)?.value||'';setAnalysis(s,pid,ui.sessionPoint||0,{comment:read('analysisComment'),braking:read('analysisBraking'),entry:read('analysisEntry'),apex:read('analysisApex'),exit:read('analysisExit'),trajectory:read('analysisTrajectory'),error:read('analysisError'),correction:read('analysisCorrection')});return save();}
+function metricScore(v){const n=Number(v);return Number.isFinite(n)?Math.max(0,10-Math.abs(Math.max(-10,Math.min(10,n)))):null}
+function curveScore(a){
+  if(!a)return null;
+  const vals=[
+    ['rotation',metricScore(a.rotation),SCORE_WEIGHTS.rotation],
+    ['braking',metricScore(a.braking),SCORE_WEIGHTS.braking],
+    ['inTrajectory',Number(a.inTrajectory),SCORE_WEIGHTS.inTrajectory],
+    ['midTrajectory',Number(a.midTrajectory),SCORE_WEIGHTS.midTrajectory],
+    ['outTrajectory',Number(a.outTrajectory),SCORE_WEIGHTS.outTrajectory],
+    ['insertion',metricScore(a.insertion),SCORE_WEIGHTS.insertion],
+    ['trail',metricScore(a.trail),SCORE_WEIGHTS.trail],
+    ['acceleration',metricScore(a.acceleration),SCORE_WEIGHTS.acceleration]
+  ].filter(x=>Number.isFinite(x[1]));
+  if(!vals.length)return null;
+  const weight=vals.reduce((n,x)=>n+x[2],0);
+  return weight?vals.reduce((n,x)=>n+x[1]*x[2],0)/weight:null;
+}
+function sessionScore(s,pid){
+  const entries=Object.values(s.analyses?.[pid]||{}).map(curveScore).filter(v=>v!=null);
+  return entries.length?entries.reduce((a,b)=>a+b,0)/entries.length:null;
+}
+function sessionGeneral(s,pid){return s.generalAnalysis?.[pid]||{comment:''}}
+function saveCurrentAnalysis(){
+  const s=getSession(),pid=ui.sessionPilot||document.getElementById('activePilot')?.value;
+  if(!s||!pid)return false;
+  const read=id=>document.getElementById(id)?.value||'';
+  setAnalysis(s,pid,ui.sessionPoint||0,{
+    comment:read('analysisComment'),
+    braking:read('analysisBraking'),trail:read('analysisTrail'),insertion:read('analysisInsertion'),
+    inTrajectory:read('analysisInTrajectory'),midTrajectory:read('analysisMidTrajectory'),outTrajectory:read('analysisOutTrajectory'),
+    acceleration:read('analysisAcceleration'),rotation:read('analysisRotation')
+  });
+  if(!s.generalAnalysis)s.generalAnalysis={};
+  s.generalAnalysis[pid]={comment:read('generalAnalysis')};
+  return save();
+}
 function sessionPilots(s){return (s.pilotIds||[]).map(id=>db.drivers.find(d=>String(d.id)===String(id))).filter(Boolean)}
 
 
@@ -512,7 +548,7 @@ function sessions(){
 function editor(){
   const t=db.tracks.find(x=>String(x.id)===String(ui.editor));
   if(!t){ui.page='tracks';return tracksPage();}
-  const points=t.points.map((p,i)=>`<button class="point ${ui.selected===i?'selected':''}" data-point="${i}" style="left:${p.x}%;top:${p.y}%" title="Curva ${i+1}">${i+1}</button>`).join('');
+  const points=t.points.map((p,i)=>`<button class="point ${ui.selected===i?'selected':''}" data-point="${i}" data-map-point="${i}" title="Curva ${i+1}">${i+1}</button>`).join('');
   return `<div style="margin-bottom:12px"><button class="btn" data-action="back">← Pistas</button></div>
   ${header('Editar · '+t.name,'Aqui defines apenas os pontos das curvas. Os comentários ficam nas sessões.','<button class="btn primary" data-action="save">Guardar pista</button>')}
   <div class="editor"><div class="panel">
@@ -520,6 +556,41 @@ function editor(){
     <div class="card"><h3>Pontos das curvas</h3><div class="mode"><button class="btn ${ui.mode==='add'?'selected':''}" data-mode="add">Adicionar</button><button class="btn ${ui.mode==='select'?'selected':''}" data-mode="select">Selecionar</button></div><button class="btn danger" data-action="remove">Apagar selecionado</button><div class="help">Clica na imagem para criar Curva 1, Curva 2, Curva 3...</div></div>
     <div class="card"><h3>Estado</h3><b>${t.points.length}</b> curvas configuradas</div>
   </div><div class="stagebox"><div class="stagehead"><b>${esc(t.name)}</b><span class="muted">${t.points.length} curvas</span></div><div class="stage" id="stage"><div class="image-wrap">${t.image?`<img id="trackImage" class="track-image" src="${t.image}" alt="">`:'<div class="empty" style="margin:auto">Carrega uma imagem da pista</div>'}</div><div class="click-layer" id="clickLayer"></div>${points}</div></div></div>`;
+}
+function positionMapPoints(){
+  const stage=document.getElementById('stage');
+  const image=document.getElementById('trackImage');
+  if(!stage||!image)return;
+  const track=db.tracks.find(x=>String(x.id)===String(ui.editor));
+  const s=getSession();
+  const trackForSession=ui.page==='session'&&s?db.tracks.find(t=>String(t.id)===String(s.trackId)):null;
+  const t=track||trackForSession||db.tracks.find(x=>x.points?.length && x.image);
+  if(!t)return;
+  const ir=image.getBoundingClientRect(),sr=stage.getBoundingClientRect();
+  const points=[...stage.querySelectorAll('[data-map-point]')];
+  points.forEach((el,i)=>{
+    const p=t.points[i];if(!p)return;
+    let x,y;
+    if(t.pointSpace==='image'){x=(ir.left-sr.left)+(Number(p.x)/100)*ir.width;y=(ir.top-sr.top)+(Number(p.y)/100)*ir.height;}
+    else{x=(Number(p.x)/100)*sr.width;y=(Number(p.y)/100)*sr.height;}
+    el.style.left=x+'px';el.style.top=y+'px';
+  });
+  [...stage.querySelectorAll('[data-session-point]')].forEach(el=>{
+    const i=Number(el.dataset.sessionPoint),p=t.points[i];if(!p)return;
+    let x,y;
+    if(t.pointSpace==='image'){x=(ir.left-sr.left)+(Number(p.x)/100)*ir.width;y=(ir.top-sr.top)+(Number(p.y)/100)*ir.height;}
+    else{x=(Number(p.x)/100)*sr.width;y=(Number(p.y)/100)*sr.height;}
+    el.style.left=x+'px';el.style.top=y+'px';
+  });
+}
+function migrateLegacyTrackPoints(t){
+  if(!t||t.pointSpace==='image')return false;
+  const stage=document.getElementById('stage'),image=document.getElementById('trackImage');
+  if(!stage||!image||!image.complete)return false;
+  const ir=image.getBoundingClientRect(),sr=stage.getBoundingClientRect();
+  if(!ir.width||!ir.height)return false;
+  t.points.forEach(p=>{p.x=Math.max(0,Math.min(100,((Number(p.x)/100*sr.width-(ir.left-sr.left))/ir.width)*100));p.y=Math.max(0,Math.min(100,((Number(p.y)/100*sr.height-(ir.top-sr.top))/ir.height)*100));});
+  t.pointSpace='image';save();return true;
 }
 
 function getChamp(){return db.championships.find(c=>String(c.id)===String(ui.championship))}
@@ -532,13 +603,17 @@ function championshipPage(){const c=getChamp();return `<div class="breadcrumb"><
 function racePage(){const c=getChamp(),r=getRace(),ls=[['Live timing',r.links.timing],['Resultados',r.links.results],['Horários',r.links.schedule]].filter(x=>x[1]);return `<div class="breadcrumb"><span data-action="back-championships">Campeonatos</span> › <span data-action="back-races">${esc(c.name)}</span> › <b>${esc(r.name)}</b></div>`+header(r.name,`${esc(r.location)} · ${esc(r.date)}`,'<button class="btn primary" data-action="new-day">+ Adicionar dia</button>')+`<div class="readonly"><b>Links do evento</b><div class="links">${ls.map(x=>`<a href="${esc(x[1])}" target="_blank" rel="noopener">${esc(x[0])}</a>`).join('')||'<span class="muted">Sem links.</span>'}</div></div><div class="sectiontitle">Dias</div><div class="list">`+(r.days.map(d=>`<div class="row"><div><b>${esc(d.name)}</b><div class="muted">${esc(d.date)} · ${d.sessions.length} sessões</div></div><button class="btn" data-action="open-day" data-id="${d.id}">Abrir dia</button></div>`).join('')||'<div class="empty">Adiciona um dia.</div>')+'</div>'}
 function dayPage(){const r=getRace(),d=getDay();return `<div class="breadcrumb"><span data-action="back-championships">Campeonatos</span> › <span data-action="back-races">${esc(r.name)}</span> › <b>${esc(d.name)}</b></div>`+header(d.name,`Sessões do dia · ${esc(d.date)}`,'<button class="btn primary" data-action="new-session">+ Adicionar sessão</button>')+'<div class="list">'+(d.sessions.map(s=>`<div class="sessionrow"><div><b>${esc(s.name)}</b><div class="muted">${esc(s.type)} · ${s.trackId?'Pista definida':'Pista por definir'}</div></div><button class="btn" data-action="open-session" data-id="${s.id}">Abrir sessão</button></div>`).join('')||'<div class="empty">Ainda não existem sessões.</div>')+'</div>'}
 function sessionPage(){
-  const d=getDay(),s=getSession(),track=db.tracks.find(t=>String(t.id)===String(s.trackId)),pilots=sessionPilots(s),pid=ui.sessionPilot||pilots[0]?.id||'',idx=Number.isFinite(ui.sessionPoint)?ui.sessionPoint:0,a=pid&&track?analysisFor(s,pid,idx):{};
-  return `<div class="breadcrumb"><span data-action="back-championships">Campeonatos</span> › <span data-action="back-day">${esc(d.name)}</span> › <b>${esc(s.name)}</b></div>`+
+  const d=getDay(),s=getSession(),track=db.tracks.find(t=>String(t.id)===String(s?.trackId)),pilots=s?sessionPilots(s):[],pid=ui.sessionPilot||pilots[0]?.id||'',idx=Number.isFinite(ui.sessionPoint)?ui.sessionPoint:0,a=pid&&track?analysisFor(s,pid,idx):{},general=pid?sessionGeneral(s,pid):{},score=pid?sessionScore(s,pid):null;
+  const metric=(id,label,val,help)=>`<div class="field"><label>${label} <span class="muted">${help}</span></label><input id="${id}" type="number" min="-10" max="10" step="1" value="${esc(val??'')}"></div>`;
+  const traj=(id,label,val)=>`<div class="field"><label>${label} <span class="muted">0–10</span></label><input id="${id}" type="number" min="0" max="10" step="1" value="${esc(val??'')}"></div>`;
+  return `<div class="breadcrumb"><span data-action="back-championships">Campeonatos</span> › <span data-action="back-day">${esc(d?.name||'Dia')}</span> › <b>${esc(s?.name||'Sessão')}</b></div>`+
   header(s.name,`${esc(s.type||'Sessão')} · ${track?esc(track.name):'Pista por definir'}`,'<button class="btn primary" data-action="configure-session">Configurar sessão</button>')+
-  `<div class="grid2"><div class="card"><div class="field"><label>Piloto em análise</label><select id="activePilot">${pilots.map(p=>`<option value="${p.id}" ${String(p.id)===String(pid)?'selected':''}>${esc(p.name)}</option>`).join('')||'<option value="">Nenhum piloto</option>'}</select></div><div class="help">Seleciona o piloto e depois clica numa curva.</div></div><div class="card"><b>Contexto</b><div class="muted">${esc(d.name)} · ${esc(s.type||'Sessão')}</div></div></div>`+
-  (track?`<div style="margin-top:14px"><div class="stagebox"><div class="stagehead"><b>${esc(track.name)}</b><span class="muted">${track.points.length} curvas</span></div><div class="stage"><div class="image-wrap"><img class="track-image" src="${track.image}" alt=""></div>${track.points.map((p,i)=>`<button class="point ${i===idx?'selected':''}" style="left:${p.x}%;top:${p.y}%" data-session-point="${i}">${i+1}</button>`).join('')}</div></div></div>
-  <div class="card" style="margin-top:14px">${pid?`<h3>Curva ${idx+1}</h3><div class="grid2"><div class="field"><label>Comentário</label><textarea id="analysisComment" rows="5">${esc(a.comment||'')}</textarea></div><div><div class="field"><label>Travagem</label><input id="analysisBraking" value="${esc(a.braking||'')}"></div><div class="field"><label>Entrada</label><input id="analysisEntry" value="${esc(a.entry||'')}"></div><div class="field"><label>Ápex</label><input id="analysisApex" value="${esc(a.apex||'')}"></div><div class="field"><label>Saída</label><input id="analysisExit" value="${esc(a.exit||'')}"></div></div></div><div class="grid2"><div class="field"><label>Trajetória</label><input id="analysisTrajectory" value="${esc(a.trajectory||'')}"></div><div class="field"><label>Erro</label><input id="analysisError" value="${esc(a.error||'')}"></div></div><div class="field"><label>Correção</label><textarea id="analysisCorrection" rows="3">${esc(a.correction||'')}</textarea></div><div class="buttons"><button class="btn primary" data-action="save-analysis">Guardar análise da curva</button><button class="btn" data-action="finish-analysis">Terminar análise e guardar sessão</button></div>`:'<div class="empty">Adiciona um piloto à sessão para começar a análise.</div>'}</div>`:'<div class="empty">Esta sessão ainda não tem uma pista associada.</div>');
+  `<div class="grid2"><div class="card"><div class="field"><label>Piloto em análise</label><select id="activePilot">${pilots.map(p=>`<option value="${p.id}" ${String(p.id)===String(pid)?'selected':''}>${esc(p.name)}</option>`).join('')||'<option value="">Nenhum piloto</option>'}</select></div><div class="help">Seleciona o piloto e depois clica numa curva.</div></div><div class="card"><b>Score da sessão</b><div class="kpi">${score==null?'—':score.toFixed(1)+'/10'}</div><div class="muted">${score==null?'Ainda sem análise suficiente.':Math.round(score*10)+'/100'}</div></div></div>`+
+  (pid?`<div class="card" style="margin-top:14px"><h3>Análise geral da sessão</h3><div class="field"><label>Observações gerais do treinador</label><textarea id="generalAnalysis" rows="5" placeholder="Ritmo, consistência, comportamento do kart, evolução, principais pontos a melhorar...">${esc(general.comment||'')}</textarea></div></div>`:'')+
+  (track?`<div style="margin-top:14px"><div class="stagebox"><div class="stagehead"><b>${esc(track.name)}</b><span class="muted">${track.points.length} curvas</span></div><div class="stage" id="stage"><div class="image-wrap"><img id="trackImage" class="track-image" src="${track.image}" alt=""></div>${track.points.map((p,i)=>`<button type="button" class="point ${i===idx?'selected':''}" data-session-point="${i}" data-map-point="${i}">${i+1}</button>`).join('')}</div></div></div>
+  <div class="card" style="margin-top:14px">${pid?`<h3>Curva ${idx+1}</h3><div class="help" style="margin-bottom:12px">Parâmetros técnicos: <b>-10</b> = erro para um lado, <b>0</b> = ideal, <b>+10</b> = erro para o outro lado. Nas trajetórias, <b>10</b> = ideal.</div><div class="grid2"><div><h3>Execução técnica</h3>${metric('analysisBraking','Travagem',a.braking,'-10 cedo · +10 tarde')}${metric('analysisTrail','Trail braking',a.trail,'-10 insuficiente · +10 excessivo')}${metric('analysisInsertion','Inserção',a.insertion,'-10 suave · +10 incisiva')}${metric('analysisRotation','Rotação do kart',a.rotation,'-10 sem rotação · +10 excesso')}</div><div><h3>Trajetórias e aceleração</h3>${traj('analysisInTrajectory','Trajetória de entrada',a.inTrajectory)}${traj('analysisMidTrajectory','Trajetória de meio',a.midTrajectory)}${traj('analysisOutTrajectory','Trajetória de saída',a.outTrajectory)}${metric('analysisAcceleration','Aceleração',a.acceleration,'-10 insuficiente · +10 excessiva')}</div></div><div class="field"><label>Comentário da curva</label><textarea id="analysisComment" rows="4">${esc(a.comment||'')}</textarea></div><div class="card" style="margin-top:10px"><b>Nota automática da curva</b><div class="kpi">${curveScore(a)==null?'—':curveScore(a).toFixed(1)+'/10'}</div><div class="muted">A nota é calculada automaticamente pelos pesos definidos.</div></div><div class="buttons"><button class="btn primary" data-action="save-analysis">Guardar análise da curva</button><button class="btn" data-action="finish-analysis">Terminar análise e guardar sessão</button></div>`:'<div class="empty">Adiciona um piloto à sessão para começar a análise.</div>'}</div>`:'<div class="empty">Esta sessão ainda não tem uma pista associada.</div>');
 }
+
 function newChampionship(){modal(`<h2>Adicionar campeonato</h2><div class="field"><label>Nome</label><input id="champName"></div><div class="field"><label>Época</label><input id="champSeason" placeholder="2026"></div><div class="modalactions"><button class="btn" data-action="close">Cancelar</button><button class="btn primary" data-action="create-championship">Criar</button></div>`)}
 function createChampionship(){const n=document.getElementById('champName').value.trim();if(!n)return;db.championships.push({id:Date.now(),name:n,season:document.getElementById('champSeason').value.trim(),races:[]});save();closeModal();render()}
 function newRace(){modal(`<h2>Adicionar corrida</h2><div class="field"><label>Nome</label><input id="raceName" placeholder="Ex.: Ronda 1"></div><div class="field"><label>Kartódromo / local</label><input id="raceLocation"></div><div class="field"><label>Data</label><input id="raceDate" type="date"></div><div class="field"><label>Live timing</label><input id="raceTiming"></div><div class="field"><label>Resultados</label><input id="raceResults"></div><div class="field"><label>Horários</label><input id="raceSchedule"></div><div class="modalactions"><button class="btn" data-action="close">Cancelar</button><button class="btn primary" data-action="create-race">Criar</button></div>`)}
@@ -600,22 +675,18 @@ function pilotDayPage(){
     '<div class="list">'+((d.sessions||[]).filter(s=>(s.pilotIds||[]).some(x=>String(x)===String(pid))).map(s=>`<div class="sessionrow"><div><b>${esc(s.name)}</b><div class="muted">${esc(s.type||'')}</div></div><button class="btn" data-action="pilot-session" data-id="${s.id}" data-day="${d.id}" data-race="${r.id}" data-champ="${getChamp()?.id||''}">Abrir</button></div>`).join('')||'<div class="empty">Não tens sessões atribuídas neste dia.</div>')+'</div>';
 }
 function pilotSessionPage(){
-  const s=getSession(),track=s&&db.tracks.find(t=>String(t.id)===String(s.trackId));
-  const pid=currentPilotId();
+  const s=getSession(),track=s&&db.tracks.find(t=>String(t.id)===String(s.trackId)),pid=currentPilotId();
   if(!s||!pid||(s.pilotIds||[]).every(x=>String(x)!==String(pid)))return '<div class="empty">Esta sessão não está atribuída à tua conta.</div>';
   if(!track)return '<div class="empty">Esta sessão ainda não tem uma pista associada.</div>';
-  const idx=Number.isFinite(ui.sessionPoint)?ui.sessionPoint:0;
-  const safeIdx=track.points.length?Math.min(Math.max(idx,0),track.points.length-1):0;
-  const a=analysisFor(s,pid,safeIdx);
+  const idx=Number.isFinite(ui.sessionPoint)?ui.sessionPoint:0,safeIdx=track.points.length?Math.min(Math.max(idx,0),track.points.length-1):0,a=analysisFor(s,pid,safeIdx),score=sessionScore(s,pid),general=sessionGeneral(s,pid);
   return `<div class="breadcrumb"><span data-action="pilot-home">Os meus eventos</span> › <b>${esc(s.name)}</b></div>`+
     header(s.name,`${esc(s.type||'Sessão')} · ${esc(track.name)}`,'')+
-    `<div class="card"><b>Análise do treinador</b><div class="help">Clica diretamente nos números das curvas para consultar cada observação.</div></div>
-    <div style="margin-top:14px"><div class="stagebox"><div class="stagehead"><b>${esc(track.name)}</b><span class="muted">${track.points.length} curvas</span></div><div class="stage"><div class="image-wrap">${track.image?`<img class="track-image" src="${track.image}" alt="Mapa da pista">`:'<div class="empty" style="margin:auto">Imagem indisponível</div>'}</div>${track.points.map((p,i)=>`<button type="button" class="point ${i===safeIdx?'selected':''}" style="left:${p.x}%;top:${p.y}%" data-session-point="${i}">${i+1}</button>`).join('')}</div></div></div>
-    <div class="card" style="margin-top:14px"><h3>Curva ${track.points.length?safeIdx+1:'—'}</h3>
-      ${track.points.length?(a.comment||a.braking||a.entry||a.apex||a.exit||a.trajectory||a.error||a.correction ?
-      `<div class="analysisread">${[['Comentário',a.comment],['Travagem',a.braking],['Entrada',a.entry],['Ápex',a.apex],['Saída',a.exit],['Trajetória',a.trajectory],['Erro',a.error],['Correção',a.correction]].filter(x=>x[1]).map(x=>`<div style="margin-bottom:12px"><div class="muted">${x[0]}</div><div>${esc(x[1])}</div></div>`).join('')}</div>`:'<div class="empty">Ainda não existe análise para esta curva.</div>'):'<div class="empty">Esta pista ainda não tem curvas marcadas.</div>'}
-    </div>`;
+    `<div class="grid2"><div class="card"><b>Score da sessão</b><div class="kpi">${score==null?'—':score.toFixed(1)+'/10'}</div><div class="muted">${score==null?'Ainda sem análise.':Math.round(score*10)+'/100'}</div></div><div class="card"><b>Análise geral</b><div style="margin-top:8px">${esc(general.comment||'Ainda não foi adicionada uma análise geral.')}</div></div></div>
+    <div class="card" style="margin-top:14px"><b>Análise do treinador</b><div class="help">Clica diretamente nos números das curvas para consultar cada avaliação.</div></div>
+    <div style="margin-top:14px"><div class="stagebox"><div class="stagehead"><b>${esc(track.name)}</b><span class="muted">${track.points.length} curvas</span></div><div class="stage" id="stage"><div class="image-wrap">${track.image?`<img id="trackImage" class="track-image" src="${track.image}" alt="Mapa da pista">`:'<div class="empty" style="margin:auto">Imagem indisponível</div>'}</div>${track.points.map((p,i)=>`<button type="button" class="point ${i===safeIdx?'selected':''}" data-session-point="${i}" data-map-point="${i}">${i+1}</button>`).join('')}</div></div></div>
+    <div class="card" style="margin-top:14px"><h3>Curva ${track.points.length?safeIdx+1:'—'}</h3>${track.points.length?`<div class="grid2"><div><div class="muted">Nota da curva</div><div class="kpi">${curveScore(a)==null?'—':curveScore(a).toFixed(1)+'/10'}</div></div><div><div class="muted">Rotação</div><div>${a.rotation===''||a.rotation==null?'—':esc(a.rotation)+'/10'}</div></div></div><div class="analysisread" style="margin-top:14px">${[['Comentário',a.comment],['Travagem',a.braking],['Trail braking',a.trail],['Inserção',a.insertion],['Trajetória entrada',a.inTrajectory],['Trajetória meio',a.midTrajectory],['Trajetória saída',a.outTrajectory],['Aceleração',a.acceleration],['Rotação',a.rotation]].filter(x=>x[1]!==''&&x[1]!=null).map(x=>`<div style="margin-bottom:10px"><div class="muted">${x[0]}</div><div>${esc(x[1])}</div></div>`).join('')||'<div class="empty">Ainda não existe análise para esta curva.</div>'}</div>`:'<div class="empty">Esta pista ainda não tem curvas marcadas.</div>'}</div>`;
 }
+
 
 function render(){
   const app=document.getElementById('app');
@@ -655,6 +726,7 @@ function render(){
     const b=side.querySelector('[data-page="my-events"]');if(b)b.remove();
   }
   if(ui.page==='editor')bindEditor();
+  if(ui.page==='session'||ui.page==='pilot-session'){const img=document.getElementById('trackImage');if(img){const p=()=>positionMapPoints();if(img.complete)p();else img.onload=p;}}
 }
 function modal(content){
   document.getElementById('modal').innerHTML=`<div class="modalbg"><div class="modal">${content}</div></div>`;
@@ -676,6 +748,7 @@ function createTrack(){
     name,
     variant:document.getElementById('trackVariant').value.trim()||'Karting',
     image:'',
+    pointSpace:'image',
     points:[]
   };
   db.tracks.push(t);save();closeModal();
@@ -684,57 +757,20 @@ function createTrack(){
 
 function bindEditor(){
   const t=db.tracks.find(x=>String(x.id)===String(ui.editor));
-  const stage=document.getElementById('stage');
-  const layer=document.getElementById('clickLayer');
-  const image=document.getElementById('trackImage');
+  const stage=document.getElementById('stage'),layer=document.getElementById('clickLayer'),image=document.getElementById('trackImage');
   if(!t||!stage||!layer)return;
-
   const file=document.getElementById('file');
-  if(file){
-    file.onchange=()=>{
-      const f=file.files[0];
-      if(!f)return;
-      compressImage(f).then(async data=>{
-        const ok=await persistTrackImage(t,data);
-        if(ok){render();toast('Imagem carregada e guardada');}
-        else toast('Não foi possível guardar a imagem');
-      }).catch(()=>toast('Não foi possível ler a imagem'));
-    };
-  }
-
-  layer.onclick=(event)=>{
-    if(ui.mode!=='add')return;
-    if(!image){
-      toast('Carrega primeiro uma imagem.');
-      return;
-    }
-
-    const imageRect=image.getBoundingClientRect();
-    const stageRect=stage.getBoundingClientRect();
-
-    // Only accept clicks inside the visible image.
-    if(event.clientX<imageRect.left || event.clientX>imageRect.right ||
-       event.clientY<imageRect.top || event.clientY>imageRect.bottom)return;
-
-    // Points are positioned relative to the whole stage, so calculate
-    // their coordinates from the stage, not from the image.
-    const x=((event.clientX-stageRect.left)/stageRect.width)*100;
-    const y=((event.clientY-stageRect.top)/stageRect.height)*100;
-
-    t.points.push({
-      id:'p'+Date.now(),
-      x,y,
-      comment:'',braking:'',entry:'',apex:'',exit:'',
-      trajectory:'',error:'',correction:''
-    });
-
-    ui.selected=t.points.length-1;
-    save();
-    render();
+  if(file)file.onchange=()=>{const f=file.files[0];if(!f)return;compressImage(f).then(async data=>{const ok=await persistTrackImage(t,data);if(ok){t.pointSpace='image';render();toast('Imagem carregada e guardada')}else toast('Não foi possível guardar a imagem')}).catch(()=>toast('Não foi possível ler a imagem'))};
+  const position=()=>{if(image){if(!migrateLegacyTrackPoints(t)){positionMapPoints();}else{render();return;}}};
+  if(image){if(image.complete)position();else image.onload=position;}
+  layer.onclick=event=>{
+    if(ui.mode!=='add'||!image){if(!image)toast('Carrega primeiro uma imagem.');return;}
+    const ir=image.getBoundingClientRect(),sr=stage.getBoundingClientRect();
+    if(event.clientX<ir.left||event.clientX>ir.right||event.clientY<ir.top||event.clientY>ir.bottom)return;
+    const x=((event.clientX-ir.left)/ir.width)*100,y=((event.clientY-ir.top)/ir.height)*100;
+    t.pointSpace='image';t.points.push({id:'p'+Date.now(),x,y,comment:'',braking:'',trail:'',insertion:'',inTrajectory:10,midTrajectory:10,outTrajectory:10,acceleration:'',rotation:''});
+    ui.selected=t.points.length-1;save();render();
   };
-
-  // Make image itself non-interactive; points are separate buttons.
-  if(image)image.draggable=false;
 }
 
 document.addEventListener('change',event=>{
@@ -774,7 +810,8 @@ document.addEventListener('click',event=>{
     case 'save-analysis':{
       const s=getSession(),pid=ui.sessionPilot||document.getElementById('activePilot')?.value;
       if(!pid){toast('Seleciona um piloto');break}
-      setAnalysis(s,pid,ui.sessionPoint||0,{comment:document.getElementById('analysisComment').value,braking:document.getElementById('analysisBraking').value,entry:document.getElementById('analysisEntry').value,apex:document.getElementById('analysisApex').value,exit:document.getElementById('analysisExit').value,trajectory:document.getElementById('analysisTrajectory').value,error:document.getElementById('analysisError').value,correction:document.getElementById('analysisCorrection').value});
+      setAnalysis(s,pid,ui.sessionPoint||0,{comment:document.getElementById('analysisComment').value,braking:document.getElementById('analysisBraking').value,trail:document.getElementById('analysisTrail').value,insertion:document.getElementById('analysisInsertion').value,inTrajectory:document.getElementById('analysisInTrajectory').value,midTrajectory:document.getElementById('analysisMidTrajectory').value,outTrajectory:document.getElementById('analysisOutTrajectory').value,acceleration:document.getElementById('analysisAcceleration').value,rotation:document.getElementById('analysisRotation').value});
+      if(!s.generalAnalysis)s.generalAnalysis={};s.generalAnalysis[pid]={comment:document.getElementById('generalAnalysis')?.value||''};
       save();toast('Análise guardada');render();break;
     }
     case 'finish-analysis':{
