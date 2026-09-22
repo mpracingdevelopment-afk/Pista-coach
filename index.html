@@ -220,112 +220,76 @@ function normalize(raw){
   raw=raw||{};
   const tracks=Array.isArray(raw.tracks)?raw.tracks.map((t,i)=>{
     const source=Array.isArray(t.points)?t.points:[];
-    const points=source.map((p,j)=>({id:p.id||('p'+Date.now()+j),x:Number(p.x!=null?p.x:p[0])||0,y:Number(p.y!=null?p.y:p[1])||0,comment:p.comment||'',braking:p.braking||'',entry:p.entry||'',apex:p.apex||'',exit:p.exit||'',trajectory:p.trajectory||'',error:p.error||'',correction:p.correction||''}));
-    return {id:t.id||Date.now()+i,name:t.name||('Pista '+(i+1)),variant:t.variant||'Karting',imageId:t.imageId||null,image:t.image||t.background||'',pointSpace:t.pointSpace||'stage',points};
+    const points=source.map((pt,j)=>({
+      id:pt.id||('p'+Date.now()+j),
+      x:Number(pt.x!=null?pt.x:pt[0])||0,
+      y:Number(pt.y!=null?pt.y:pt[1])||0,
+      comment:pt.comment||'',
+      braking:pt.braking||'',
+      entry:pt.entry||'',
+      apex:pt.apex||'',
+      exit:pt.exit||'',
+      trajectory:pt.trajectory||'',
+      error:pt.error||'',
+      correction:pt.correction||''
+    }));
+    return {
+      id:t.id||Date.now()+i,
+      name:t.name||('Pista '+(i+1)),
+      variant:t.variant||'Karting',
+      imageId:t.imageId||null,
+      image:t.image||t.background||'',
+      pointSpace:t.pointSpace||'image',
+      points
+    };
   }):[];
   const championships=Array.isArray(raw.championships)?raw.championships.map((c,i)=>({
-    id:c.id||Date.now()+i,name:c.name||('Campeonato '+(i+1)),season:c.season||'',
+    id:c.id||Date.now()+i,
+    name:c.name||('Campeonato '+(i+1)),
+    season:c.season||'',
     races:Array.isArray(c.races)?c.races.map((r,j)=>({
-      id:r.id||Date.now()+j,name:r.name||('Corrida '+(j+1)),location:r.location||'',date:r.date||'',
+      id:r.id||Date.now()+j,
+      name:r.name||('Corrida '+(j+1)),
+      location:r.location||'',
+      date:r.date||'',
       links:{timing:r.links?.timing||'',results:r.links?.results||'',schedule:r.links?.schedule||''},
       days:Array.isArray(r.days)?r.days.map((d,k)=>({
-        id:d.id||Date.now()+k,name:d.name||('Dia '+(k+1)),date:d.date||'',sessions:Array.isArray(d.sessions)?d.sessions.map(s=>({...s,pilotIds:Array.isArray(s.pilotIds)?s.pilotIds:[],analyses:s.analyses||{}})):[]
-      })):[],pilotIds:Array.isArray(r.pilotIds)?r.pilotIds:[]
-    })):[],
+        id:d.id||Date.now()+k,
+        name:d.name||('Dia '+(k+1)),
+        date:d.date||'',
+        sessions:Array.isArray(d.sessions)?d.sessions.map(sess=>({...sess,
+          pilotIds:Array.isArray(sess.pilotIds)?sess.pilotIds:[],
+          analyses:sess.analyses||{},
+          generalAnalysis:sess.generalAnalysis||{}
+        })):[]
+      })):[],
+      pilotIds:Array.isArray(r.pilotIds)?r.pilotIds:[]
+    })):[]
   })):[];
-
   return {
     tracks,
-    drivers:Array.isArray(raw.drivers)?raw.drivers.map(d=>({...d,id:d.id||Date.now(),name:d.name||'Piloto',userId:d.userId||null,age:d.age||'',kartingStartYear:d.kartingStartYear||'',category:d.category||'',team:d.team||'',number:d.number||''})):[],
+    drivers:Array.isArray(raw.drivers)?raw.drivers.map(d=>({...d,
+      id:d.id||Date.now(),
+      name:d.name||'Piloto',
+      userId:d.userId||null,
+      age:d.age||'',
+      kartingStartYear:d.kartingStartYear||'',
+      category:normalizeCategory(d.category||''),
+      team:d.team||'',
+      number:d.number||'',
+      location:d.location||'',
+      notes:d.notes||'',
+      photo:d.photo||''
+    })):[],
     championships,
-    sessions:Array.isArray(raw.sessions)?raw.sessions:[],sessionTemplates:Array.isArray(raw.sessionTemplates)?raw.sessionTemplates:DEFAULT_SESSION_TEMPLATES.slice()
+    sessions:Array.isArray(raw.sessions)?raw.sessions:[],
+    sessionTemplates:Array.isArray(raw.sessionTemplates)&&raw.sessionTemplates.length?raw.sessionTemplates:DEFAULT_SESSION_TEMPLATES.slice()
   };
 }
-function load(){
-  try{
-    const existing=localStorage.getItem(KEY);
-    if(existing) return normalize(JSON.parse(existing));
-  }catch(e){}
+// Legacy local data is used only as a migration source by the cloud bootstrap above.
 
-  // V26 migration: use V25 as the primary state, and only use older versions
-  // to restore missing point/image data for tracks that still exist. Never
-  // resurrect tracks that were deleted from the current state.
-  const sources=['mpracingdevelopment_v25','pista_coach_v24','pista_coach_v23','pista_coach_v22','pista_coach_v21','pista_coach_v20','pista_coach_v19','pista_coach_v16'];
-  let base=null;
-  for(const key of sources){
-    try{const raw=localStorage.getItem(key);if(raw){base=normalize(JSON.parse(raw));break;}}catch(e){}
-  }
-  if(!base) base=normalize({});
+function profileComplete(u){return !!(u&&u.role==='pilot'&&u.profile&&u.profile.name&&u.profile.age!==''&&u.profile.kartingStartYear!==''&&u.profile.category)}
 
-  // Recover points/images for tracks that exist in the current base. Do not
-  // re-add missing tracks: absence is treated as an intentional deletion.
-  const byName=new Map();
-  for(const key of sources.slice(1)){
-    try{
-      const raw=localStorage.getItem(key); if(!raw) continue;
-      const old=normalize(JSON.parse(raw));
-      for(const t of old.tracks||[]) byName.set(String(t.name).trim().toLowerCase(),t);
-    }catch(e){}
-  }
-  base.tracks=(base.tracks||[]).map(t=>{
-    const old=byName.get(String(t.name||'').trim().toLowerCase());
-    if(old){
-      if((!t.points||!t.points.length) && old.points?.length) t.points=old.points;
-      if(!t.imageId && old.imageId) t.imageId=old.imageId;
-      if((!t.image||t.image.length<100) && old.image) t.image=old.image;
-      if(old.pointSpace==='image') t.pointSpace='image';
-    }
-    return t;
-  });
-  base.tracks.forEach(t=>{ if(t.points?.length) t.pointSpace='image'; });
-  try{ const deleted=JSON.parse(localStorage.getItem(DELETED_TRACKS_KEY)||'[]'); const ids=new Set(deleted.map(x=>String(x.id))); base.tracks=base.tracks.filter(t=>!ids.has(String(t.id))); }catch(e){}
-  try{localStorage.setItem(KEY,JSON.stringify(base));localStorage.setItem(DELETED_TRACKS_KEY,'[]');}catch(e){}
-  return base;
-}
-function defaultUsers(){
-  return [
-    {id:'admin',name:'Admin',email:'admin@pistacoach.pt',password:'admin123',role:'admin',pilotId:null,profile:null},
-    {id:'pilot1',name:'Piloto Demo',email:'piloto@pistacoach.pt',password:'1234',role:'pilot',pilotId:null,profile:null}
-  ];
-}
-function loadUser(){
-  try{
-    if(!localStorage.getItem(USERS_KEY)){
-      let migrated=null;
-      for(const key of ['pista_coach_v20_users','pista_coach_v19_users','pista_coach_v18_users','pista_coach_v17_users','pista_coach_v16_users','pista_coach_v15_users','pista_coach_v14_users','pista_coach_v13_users']){
-        const raw=localStorage.getItem(key);
-        if(raw){try{migrated=JSON.parse(raw);break}catch(e){}}
-      }
-      const list=Array.isArray(migrated)?migrated:defaultUsers();
-      for(const d of defaultUsers()) if(!list.some(u=>String(u.id)===String(d.id))) list.push(d);
-      localStorage.setItem(USERS_KEY,JSON.stringify(list));
-    }
-    const rawAuth=localStorage.getItem(AUTH_KEY);
-    if(rawAuth){
-      const auth=JSON.parse(rawAuth);
-      const fresh=JSON.parse(localStorage.getItem(USERS_KEY)||'[]').find(u=>String(u.id)===String(auth.id));
-      return fresh||null;
-    }
-  }catch(e){}
-  return null;
-}
-function users(){
-  try{
-    const list=JSON.parse(localStorage.getItem(USERS_KEY));
-    return Array.isArray(list)?list:defaultUsers();
-  }catch(e){return defaultUsers()}
-}
-function isAdmin(){return currentUser?.role==='admin'}
-function freshCurrentUser(){
-  if(!currentUser)return null;
-  const u=users().find(x=>x.id===currentUser.id);
-  if(u)currentUser=u;
-  return currentUser;
-}
-function currentPilotId(){
-  return freshCurrentUser()?.pilotId||null;
-}
-function profileComplete(u){return !!(u&&u.role==='pilot'&&u.profile&&u.profile.name&&u.profile.age!==''&&u.profile.kartingStartYear!=='')}
 function loginPage(){
   return `<div style="min-height:80vh;display:flex;align-items:center;justify-content:center"><div class="card loginbox">
     <h1>MPRacingDevelopment</h1><div class="sub" style="margin-bottom:18px">Entrar na plataforma</div>
