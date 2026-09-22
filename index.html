@@ -47,10 +47,11 @@ main{margin-left:238px;padding:34px 38px 50px;min-height:100vh;max-width:1500px}
 <script>
 'use strict';
 
-const KEY='mpracingdevelopment_v25';
-const USERS_KEY='mpracingdevelopment_v25_users';
-const AUTH_KEY='mpracingdevelopment_v25_user';
-const MIGRATION_KEY='mpracingdevelopment_v25_migrated';
+const KEY='mpracingdevelopment_v26';
+const USERS_KEY='mpracingdevelopment_v26_users';
+const AUTH_KEY='mpracingdevelopment_v26_user';
+const MIGRATION_KEY='mpracingdevelopment_v26_migrated';
+const DELETED_TRACKS_KEY='mpracingdevelopment_v26_deleted_tracks';
 const LEGACY=['pista_coach_v12','pista_coach_v9','pista_coach_v8','pista_coach_v7','pista_coach_v6','pista_coach_v5','pista_coach_v4_1','pista_coach_v4','pista_coach_v3','pista_coach_v2','pista_coach_v1'];
 
 let db=load();
@@ -83,30 +84,46 @@ function normalize(raw){
   };
 }
 function load(){
-  // V17 uses its own namespace so stale V13/V15 data cannot overwrite the new state.
   try{
     const existing=localStorage.getItem(KEY);
     if(existing) return normalize(JSON.parse(existing));
   }catch(e){}
 
-  const candidates=['pista_coach_v20','pista_coach_v19','pista_coach_v16','pista_coach_v15','pista_coach_v14','pista_coach_v13','pista_coach_v12','pista_coach_v9','pista_coach_v8','pista_coach_v7','pista_coach_v6','pista_coach_v5','pista_coach_v4_1','pista_coach_v4','pista_coach_v3','pista_coach_v2','pista_coach_v1'];
-  for(const key of candidates){
+  // V26 migration: use V25 as the primary state, and only use older versions
+  // to restore missing point/image data for tracks that still exist. Never
+  // resurrect tracks that were deleted from the current state.
+  const sources=['mpracingdevelopment_v25','pista_coach_v24','pista_coach_v23','pista_coach_v22','pista_coach_v21','pista_coach_v20','pista_coach_v19','pista_coach_v16'];
+  let base=null;
+  for(const key of sources){
+    try{const raw=localStorage.getItem(key);if(raw){base=normalize(JSON.parse(raw));break;}}catch(e){}
+  }
+  if(!base) base=normalize({});
+
+  // Recover points/images for tracks that exist in the current base. Do not
+  // re-add missing tracks: absence is treated as an intentional deletion.
+  const byName=new Map();
+  for(const key of sources.slice(1)){
     try{
-      const raw=localStorage.getItem(key);
-      if(!raw)continue;
-      const data=normalize(JSON.parse(raw));
-      // Only migrate durable application entities. Driver records without a userId are
-      // intentionally discarded because they cannot be tied to a real pilot account.
-      data.drivers=(data.drivers||[]).filter(d=>d.userId);
-      localStorage.setItem(KEY,JSON.stringify(data));
-      return data;
+      const raw=localStorage.getItem(key); if(!raw) continue;
+      const old=normalize(JSON.parse(raw));
+      for(const t of old.tracks||[]) byName.set(String(t.name).trim().toLowerCase(),t);
     }catch(e){}
   }
-  const empty=normalize({});
-  localStorage.setItem(KEY,JSON.stringify(empty));
-  return empty;
+  base.tracks=(base.tracks||[]).map(t=>{
+    const old=byName.get(String(t.name||'').trim().toLowerCase());
+    if(old){
+      if((!t.points||!t.points.length) && old.points?.length) t.points=old.points;
+      if(!t.imageId && old.imageId) t.imageId=old.imageId;
+      if((!t.image||t.image.length<100) && old.image) t.image=old.image;
+      if(old.pointSpace==='image') t.pointSpace='image';
+    }
+    return t;
+  });
+  base.tracks.forEach(t=>{ if(t.points?.length) t.pointSpace='image'; });
+  try{ const deleted=JSON.parse(localStorage.getItem(DELETED_TRACKS_KEY)||'[]'); const ids=new Set(deleted.map(x=>String(x.id))); base.tracks=base.tracks.filter(t=>!ids.has(String(t.id))); }catch(e){}
+  try{localStorage.setItem(KEY,JSON.stringify(base));localStorage.setItem(DELETED_TRACKS_KEY,'[]');}catch(e){}
+  return base;
 }
-
 function defaultUsers(){
   return [
     {id:'admin',name:'Admin',email:'admin@pistacoach.pt',password:'admin123',role:'admin',pilotId:null,profile:null},
@@ -404,6 +421,17 @@ async function getImage(id){
     });
     dbi.close();return value||'';
   }catch(e){return ''}
+}
+async function deleteImage(id){
+  if(!id)return;
+  try{
+    const dbi=await openImageDB();
+    await new Promise((resolve,reject)=>{
+      const tx=dbi.transaction('images','readwrite');tx.objectStore('images').delete(id);
+      tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);
+    });
+    dbi.close();
+  }catch(e){}
 }
 function compressImage(file){
   return new Promise((resolve,reject)=>{
@@ -848,12 +876,21 @@ document.addEventListener('click',event=>{
       ui.selected=t.points.length?Math.min(ui.selected,t.points.length-1):null;
       save();render();break;
     }
-    case 'delete':
-      if(confirm('Apagar esta pista?')){
-        db.tracks=db.tracks.filter(t=>String(t.id)!==String(action.dataset.id));
-        save();render();
-      }
+    case 'delete':{
+      const id=String(action.dataset.id);
+      const doomed=db.tracks.find(t=>String(t.id)===id);
+      db.tracks=db.tracks.filter(t=>String(t.id)!==id);
+      try{
+        const deleted=JSON.parse(localStorage.getItem(DELETED_TRACKS_KEY)||'[]');
+        if(!deleted.some(x=>String(x.id)===id)) deleted.push({id,name:doomed?.name||'',deletedAt:Date.now()});
+        localStorage.setItem(DELETED_TRACKS_KEY,JSON.stringify(deleted));
+      }catch(e){}
+      if(doomed?.imageId) deleteImage(doomed.imageId);
+      save();
+      render();
+      toast('Pista eliminada');
       break;
+    }
     case 'save-comment':{
       const t=db.tracks.find(x=>String(x.id)===String(ui.editor));
       const p=t?.points?.[ui.selected];
