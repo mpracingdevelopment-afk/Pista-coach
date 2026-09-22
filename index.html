@@ -131,12 +131,22 @@ async function loadCloudState(){
   return true;
 }
 async function loadProfiles(){
-  if(!currentUser)return;
-  const query=isAdmin()?sb.from('profiles').select('*').order('created_at',{ascending:true}):sb.from('profiles').select('*').eq('id',currentUser.id).maybeSingle();
-  const {data,error}=await query;
-  if(error){console.error(error);toast('Erro a carregar a conta.');return false;}
-  profileCache=Array.isArray(data)?data.map(normalizeProfile).filter(Boolean):[normalizeProfile(data)].filter(Boolean);
-  currentUser=profileCache.find(x=>String(x.id)===String(currentUser.id))||currentUser;
+  if(!currentUser)return false;
+  // First load the authenticated user's own profile so the real role is known.
+  const own=await sb.from('profiles').select('*').eq('id',currentUser.id).maybeSingle();
+  if(own.error){console.error(own.error);toast('Erro a carregar a conta.');return false;}
+  const ownProfile=normalizeProfile(own.data);
+  if(ownProfile){
+    currentUser=ownProfile;
+    profileCache=[ownProfile];
+  }
+  // Once the real role is known, an admin can load all pilot accounts.
+  if(currentUser?.role==='admin'){
+    const all=await sb.from('profiles').select('*').order('created_at',{ascending:true});
+    if(all.error){console.error(all.error);toast('Erro a carregar as contas de piloto.');return false;}
+    profileCache=(Array.isArray(all.data)?all.data:[]).map(normalizeProfile).filter(Boolean);
+    currentUser=profileCache.find(x=>String(x.id)===String(currentUser.id))||currentUser;
+  }
   return true;
 }
 async function save(){
@@ -174,6 +184,7 @@ async function bootCloud(){
     await loadCloudState();
     await importLegacyIfNeeded();
     await autoLinkPilot();
+    if(isAdmin()) await loadProfiles();
     ui.page=isAdmin()?'dashboard':(profileComplete(currentUser)?'my-events':'profile');
   }else{
     currentUser=null;db=normalize({});ui.page='login';
@@ -412,7 +423,10 @@ async function saveProfile(){
   }catch(e){console.error(e);toast('Erro ao guardar o perfil.');}
 }
 function syncPilotLinks(){return true}
-function registeredPilotUsers(){return users().filter(u=>u.role==='pilot'&&!u.pilotId)}
+function registeredPilotUsers(){
+  // Admin data must come from Supabase, never from this browser's old local user cache.
+  return (profileCache||[]).filter(u=>u.role==='pilot'&&!u.pilotId);
+}
 function newDriver(){
   const available=registeredPilotUsers();
   if(!available.length){toast('Não existem contas de piloto registadas e disponíveis.');return}
@@ -422,7 +436,7 @@ function newDriver(){
 }
 async function addRegisteredPilot(userId){
   const selectedUserId=userId||document.getElementById('registeredPilot')?.value;
-  const u=users().find(x=>String(x.id)===String(selectedUserId));
+  const u=(profileCache||[]).find(x=>String(x.id)===String(selectedUserId));
   if(!u||!u.profile){toast('Seleciona uma conta registada');return}
   const p=u.profile,d={id:'d_'+Date.now(),name:p.name,userId:u.id,age:p.age,kartingStartYear:p.kartingStartYear,category:p.category||'',team:p.team||'',number:p.number||'',location:p.location||'',notes:p.notes||''};
   db.drivers.push(d);
@@ -432,7 +446,7 @@ async function addRegisteredPilot(userId){
 }
 
 function driverCard(d){
-  const u=users().find(x=>x.id===d.userId),p=u?.profile||d;
+  const u=(profileCache||[]).find(x=>String(x.id)===String(d.userId)),p=u?.profile||d;
   return `<div class="card" style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;gap:16px"><div><h3 style="margin:0 0 6px">${esc(p.name||d.name)}</h3><div class="muted">${esc(p.category||'Categoria por definir')} · ${esc(p.team||'Equipa por definir')} · ${p.age?esc(p.age)+' anos':''}</div></div><span class="rolebadge">${u?'Conta registada':'Sem conta'}</span></div>
   <div class="grid2" style="margin-top:14px"><div><span class="muted">Início no karting</span><br>${esc(p.kartingStartYear||'—')}</div><div><span class="muted">Número</span><br>${esc(p.number||'—')}</div><div><span class="muted">Localidade</span><br>${esc(p.location||'—')}</div><div><span class="muted">Email</span><br>${esc(u?.email||'—')}</div></div>
   ${p.notes?`<div class="help" style="margin-top:12px">${esc(p.notes)}</div>`:''}</div>`;
