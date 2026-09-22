@@ -318,10 +318,11 @@ function loginPage(){
 }
 function registerPage(){
   return `<div style="min-height:80vh;display:flex;align-items:center;justify-content:center"><div class="card loginbox">
-    <h1>Criar conta de piloto</h1><div class="sub">Depois do registo, vais preencher o teu perfil.</div>
-    <div class="field"><label>Nome</label><input id="regName"></div>
-    <div class="field"><label>Email</label><input id="regEmail" type="email"></div>
-    <div class="field"><label>Password</label><input id="regPassword" type="password"></div>
+    <h1>Criar conta de piloto</h1><div class="sub">Cria a tua conta. Depois vais preencher o perfil de piloto.</div>
+    <div id="registerStatus" class="help" style="display:none;margin:12px 0"></div>
+    <div class="field"><label>Nome</label><input id="regName" autocomplete="name"></div>
+    <div class="field"><label>Email</label><input id="regEmail" type="email" autocomplete="email"></div>
+    <div class="field"><label>Password</label><input id="regPassword" type="password" autocomplete="new-password" minlength="6"><div class="muted">Mínimo de 6 caracteres.</div></div>
     <div class="modalactions"><button class="btn" data-action="back-login">Voltar</button><button class="btn primary" data-action="register-pilot">Criar conta</button></div>
   </div></div>`;
 }
@@ -334,26 +335,29 @@ async function login(){
 function restoreUser(){}
 async function logout(){await sb.auth.signOut();}
 async function registerPilot(){
-  const name=document.getElementById('regName')?.value.trim()||'',email=document.getElementById('regEmail').value.trim().toLowerCase(),password=document.getElementById('regPassword').value;
-  if(!name){toast('Indica o teu nome');return}
-  if(!email||password.length<6){toast('Usa um email válido e uma password com pelo menos 6 caracteres');return}
+  const name=document.getElementById('regName')?.value.trim()||'';
+  const email=(document.getElementById('regEmail')?.value||'').trim().toLowerCase();
+  const password=document.getElementById('regPassword')?.value||'';
+  const status=document.getElementById('registerStatus');
+  const setStatus=(msg,ok=false)=>{if(status){status.style.display='block';status.textContent=msg;status.style.borderLeft='3px solid '+(ok?'#8ef0a7':'#fff');status.style.padding='10px 12px';status.style.background='#2a2a2a';}};
+  if(!name){setStatus('Indica o teu nome.');document.getElementById('regName')?.focus();return}
+  if(!/^\S+@\S+\.\S+$/.test(email)){setStatus('Indica um email válido.');document.getElementById('regEmail')?.focus();return}
+  if(password.length<6){setStatus('A password tem de ter pelo menos 6 caracteres.');document.getElementById('regPassword')?.focus();return}
   const button=document.querySelector('[data-action=register-pilot]');
   if(button){button.disabled=true;button.textContent='A criar conta…'}
+  setStatus('A criar conta…');
   try{
     const {data,error}=await sb.auth.signUp({email,password,options:{data:{name}}});
     if(error){
       console.error('Supabase signUp error:',error);
-      toast(error.message||'Não foi possível criar a conta');
+      setStatus('Não foi possível criar a conta: '+(error.message||'erro desconhecido'));
       return;
     }
     if(data?.user && Array.isArray(data.user.identities) && data.user.identities.length===0){
-      toast('Este email já tem uma conta. Tenta iniciar sessão.');
+      setStatus('Este email já está registado. Usa o Login em vez de criar outra conta.');
       return;
     }
-    if(!data?.user){
-      toast('Não foi possível criar a conta.');
-      return;
-    }
+    if(!data?.user){setStatus('O Supabase não devolveu uma conta. Tenta novamente.');return;}
     if(!data.session){
       ui.page='login';
       render();
@@ -369,7 +373,7 @@ async function registerPilot(){
     toast('Conta criada. Completa agora o teu perfil.');
   }catch(e){
     console.error('Registration error:',e);
-    toast(e?.message||'Erro ao criar a conta.');
+    setStatus('Erro ao criar a conta: '+(e?.message||String(e)));
   }finally{
     if(button){button.disabled=false;button.textContent='Criar conta'}
   }
