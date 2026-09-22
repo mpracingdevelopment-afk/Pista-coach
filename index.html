@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Pista Coach V14</title>
+<title>Pista Coach V19</title>
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#0b0d10;color:#f5f6f7;font-family:Arial,Helvetica,sans-serif}
@@ -64,10 +64,10 @@ main{margin-left:220px;padding:28px;min-height:100vh}
 <script>
 'use strict';
 
-const KEY='pista_coach_v17';
-const USERS_KEY='pista_coach_v17_users';
-const AUTH_KEY='pista_coach_v17_user';
-const MIGRATION_KEY='pista_coach_v17_migrated';
+const KEY='pista_coach_v19';
+const USERS_KEY='pista_coach_v19_users';
+const AUTH_KEY='pista_coach_v19_user';
+const MIGRATION_KEY='pista_coach_v19_migrated';
 const LEGACY=['pista_coach_v12','pista_coach_v9','pista_coach_v8','pista_coach_v7','pista_coach_v6','pista_coach_v5','pista_coach_v4_1','pista_coach_v4','pista_coach_v3','pista_coach_v2','pista_coach_v1'];
 
 let db=load();
@@ -191,7 +191,7 @@ function login(){
   const email=document.getElementById('loginEmail').value.trim().toLowerCase(),password=document.getElementById('loginPassword').value;
   const u=users().find(x=>x.email.toLowerCase()===email&&x.password===password);
   if(!u){toast('Email ou password incorretos');return}
-  currentUser=u;sessionStorage.setItem('pista_coach_v17_user',JSON.stringify(u));
+  currentUser=u;sessionStorage.setItem(AUTH_KEY,JSON.stringify(u));
   ui.page=isAdmin()?'dashboard':(profileComplete(u)?'my-events':'profile');render();
 }
 function restoreUser(){
@@ -212,7 +212,7 @@ function registerPilot(){
   const list=users();
   if(list.some(u=>u.email.toLowerCase()===email)){toast('Já existe uma conta com esse email');return}
   const u={id:'pilot_'+Date.now(),name,email,password,role:'pilot',pilotId:null,profile:null};
-  list.push(u);localStorage.setItem('pista_coach_v17_users',JSON.stringify(list));
+  list.push(u);localStorage.setItem(USERS_KEY,JSON.stringify(list));
   currentUser=u;localStorage.setItem(AUTH_KEY,JSON.stringify(u));sessionStorage.setItem(AUTH_KEY,JSON.stringify(u));ui.page='profile';render();
 }
 function profilePage(){
@@ -327,7 +327,7 @@ function addRegisteredPilot(userId){
   const allUsers=users();
   const linked=allUsers.find(x=>x.id===u.id);
   if(linked)linked.pilotId=d.id;
-  localStorage.setItem('pista_coach_v17_users',JSON.stringify(allUsers));
+  localStorage.setItem(USERS_KEY,JSON.stringify(allUsers));
   save();closeModal();render();
 }
 function driverCard(d){
@@ -338,10 +338,20 @@ function driverCard(d){
 }
 function myEventsPage(){
   const pid=currentPilotId(),cards=[];
-  db.championships.forEach(c=>c.races.forEach(r=>{if(!pid||r.pilotIds.includes(pid)||r.days.some(d=>d.sessions.some(s=>s.pilotIds?.includes(pid))))cards.push({c,r})}));
+  const hasPilot=(s)=>Array.isArray(s.pilotIds)&&s.pilotIds.some(x=>String(x)===String(pid));
+  db.championships.forEach(c=>c.races.forEach(r=>{
+    const assigned=hasPilotInRace(r,pid);
+    if(assigned)cards.push({c,r});
+  }));
   return header('Os meus eventos','Campeonatos e sessões atribuídas ao piloto.','')+
   '<div class="cards">'+(cards.map(x=>`<div class="cardlink" data-action="pilot-race" data-champ="${x.c.id}" data-race="${x.r.id}"><h3>${esc(x.r.name)}</h3><p>${esc(x.c.name)} · ${esc(x.r.location||'')} · ${esc(x.r.date||'')}</p></div>`).join('')||'<div class="empty">Ainda não tens eventos atribuídos.</div>')+'</div>';
 }
+function hasPilotInRace(r,pid){
+  if(!r||!pid)return false;
+  if((r.pilotIds||[]).some(x=>String(x)===String(pid)))return true;
+  return (r.days||[]).some(d=>(d.sessions||[]).some(s=>(s.pilotIds||[]).some(x=>String(x)===String(pid))));
+}
+
 function analysisFor(s,pid,index){return s.analyses?.[pid]?.[index]||{}}
 function setAnalysis(s,pid,index,data){if(!s.analyses||Array.isArray(s.analyses))s.analyses={};if(!s.analyses[pid])s.analyses[pid]={};s.analyses[pid][index]={...(s.analyses[pid][index]||{}),...data}}
 function sessionPilots(s){return (s.pilotIds||[]).map(id=>db.drivers.find(d=>String(d.id)===String(id))).filter(Boolean)}
@@ -549,7 +559,7 @@ function createSession(){
   if(!champId||!raceId||!dayId||!n){toast('Seleciona campeonato, prova, dia e nome da sessão');return}
   const c=db.championships.find(x=>String(x.id)===String(champId)),r=c?.races.find(x=>String(x.id)===String(raceId)),d=r?.days.find(x=>String(x.id)===String(dayId));
   if(!d){toast('Não foi possível encontrar o dia');return}
-  const pilotIds=[...document.querySelectorAll('input[name="newSessionPilot"]:checked')].map(x=>x.value);
+  const pilotIds=[...document.querySelectorAll('input[name="newSessionPilot"]:checked')].map(x=>String(x.value));
   const s={id:Date.now(),name:n,type:document.getElementById('sessionType').value.trim(),trackId:document.getElementById('sessionTrack').value||null,pilotIds,analyses:{}};
   d.sessions.push(s);save();closeModal();ui.championship=c.id;ui.race=r.id;ui.day=d.id;ui.session=s.id;ui.page='session';render();
 }
@@ -560,45 +570,41 @@ function configureSession(){
   <div class="modalactions"><button class="btn" data-action="close">Cancelar</button><button class="btn primary" data-action="save-session">Guardar</button></div>`);
 }
 function saveSession(){
-  const s=getSession();s.trackId=document.getElementById('cfgTrack').value||null;s.pilotIds=[...document.querySelectorAll('input[name="cfgPilot"]:checked')].map(x=>x.value);if(!s.analyses)s.analyses={};save();closeModal();render();
+  const s=getSession();s.trackId=document.getElementById('cfgTrack').value||null;s.pilotIds=[...document.querySelectorAll('input[name="cfgPilot"]:checked')].map(x=>String(x.value));if(!s.analyses)s.analyses={};const r=getRace();if(r){const ids=new Set();for(const day of r.days||[])for(const ses of day.sessions||[])for(const id of ses.pilotIds||[])ids.add(String(id));r.pilotIds=[...ids];}save();closeModal();render();
 }
 function pilotRacePage(){
-  const c=db.championships.find(x=>String(x.id)===String(ui.championship));
-  const r=c?.races.find(x=>String(x.id)===String(ui.race));
+  const c=getChamp(),r=getRace();
   if(!c||!r)return myEventsPage();
   const pilotId=currentPilotId();
-  const allowed=!pilotId || r.pilotIds.includes(pilotId);
-  if(!allowed)return myEventsPage();
+  if(!hasPilotInRace(r,pilotId))return myEventsPage();
   return `<div class="breadcrumb"><span data-action="pilot-home">Os meus eventos</span> › <b>${esc(r.name)}</b></div>`+
     header(r.name,`${esc(c.name)} · ${esc(r.location||'')} · ${esc(r.date||'')}`,'')+
     '<div class="sectiontitle">Dias</div><div class="list">'+
-    (r.days.map(d=>`<div class="row"><div><b>${esc(d.name)}</b><div class="muted">${esc(d.date||'')} · ${d.sessions.length} sessões</div></div><button class="btn" data-action="pilot-day" data-id="${d.id}">Abrir</button></div>`).join('')||'<div class="empty">Ainda não existem sessões.</div>')+
+    (r.days.map(d=>`<div class="row"><div><b>${esc(d.name)}</b><div class="muted">${esc(d.date||'')} · ${(d.sessions||[]).length} sessões</div></div><button class="btn" data-action="pilot-day" data-id="${d.id}" data-race="${r.id}" data-champ="${c.id}">Abrir</button></div>`).join('')||'<div class="empty">Ainda não existem sessões.</div>')+
     '</div>';
 }
 function pilotDayPage(){
-  const r=getRace(),d=getDay();
-  return `<div class="breadcrumb"><span data-action="pilot-home">Os meus eventos</span> › <span data-action="pilot-race-back">${esc(r.name)}</span> › <b>${esc(d.name)}</b></div>`+
+  const r=getRace(),d=getDay(),pid=currentPilotId();
+  if(!r||!d||!pid)return myEventsPage();
+  return `<div class="breadcrumb"><span data-action="pilot-home">Os meus eventos</span> › <span data-action="pilot-race-back" data-champ="${getChamp()?.id||''}" data-race="${r.id}">${esc(r.name)}</span> › <b>${esc(d.name)}</b></div>`+
     header(d.name,'Sessões do dia.','')+
-    '<div class="list">'+(d.sessions.filter(s=>(s.pilotIds||[]).some(x=>String(x)===String(currentPilotId()))).map(s=>`<div class="sessionrow"><div><b>${esc(s.name)}</b><div class="muted">${esc(s.type||'')}</div></div><button class="btn" data-action="pilot-session" data-id="${s.id}">Abrir</button></div>`).join('')||'<div class="empty">Não tens sessões atribuídas neste dia.</div>')+'</div>';
+    '<div class="list">'+((d.sessions||[]).filter(s=>(s.pilotIds||[]).some(x=>String(x)===String(pid))).map(s=>`<div class="sessionrow"><div><b>${esc(s.name)}</b><div class="muted">${esc(s.type||'')}</div></div><button class="btn" data-action="pilot-session" data-id="${s.id}" data-day="${d.id}" data-race="${r.id}" data-champ="${getChamp()?.id||''}">Abrir</button></div>`).join('')||'<div class="empty">Não tens sessões atribuídas neste dia.</div>')+'</div>';
 }
 function pilotSessionPage(){
-  const s=getSession(),track=db.tracks.find(t=>String(t.id)===String(s.trackId));
+  const s=getSession(),track=s&&db.tracks.find(t=>String(t.id)===String(s.trackId));
   const pid=currentPilotId();
-  if(!s || !pid || !(s.pilotIds||[]).some(x=>String(x)===String(pid)))
-    return '<div class="empty">Esta sessão não está atribuída à tua conta.</div>';
+  if(!s||!pid||(s.pilotIds||[]).every(x=>String(x)!==String(pid)))return '<div class="empty">Esta sessão não está atribuída à tua conta.</div>';
   if(!track)return '<div class="empty">Esta sessão ainda não tem uma pista associada.</div>';
   const idx=Number.isFinite(ui.sessionPoint)?ui.sessionPoint:0;
-  const a=analysisFor(s,pid,idx);
+  const safeIdx=track.points.length?Math.min(Math.max(idx,0),track.points.length-1):0;
+  const a=analysisFor(s,pid,safeIdx);
   return `<div class="breadcrumb"><span data-action="pilot-home">Os meus eventos</span> › <b>${esc(s.name)}</b></div>`+
     header(s.name,`${esc(s.type||'Sessão')} · ${esc(track.name)}`,'')+
-    `<div class="card"><b>A tua análise</b><div class="help">Seleciona uma curva no mapa para veres o comentário do treinador.</div></div>
-    <div style="margin-top:14px"><div class="stagebox"><div class="stagehead"><b>${esc(track.name)}</b><span class="muted">${track.points.length} curvas</span></div><div class="stage"><div class="image-wrap">${track.image?`<img class="track-image" src="${track.image}" alt="">`:'<div class="empty" style="margin:auto">Imagem indisponível</div>'}</div>${track.points.map((p,i)=>`<button class="point ${i===idx?'selected':''}" style="left:${p.x}%;top:${p.y}%" data-session-point="${i}">${i+1}</button>`).join('')}</div></div></div>
-    <div class="card" style="margin-top:14px"><h3>Curva ${idx+1}</h3>
-      ${a.comment||a.braking||a.entry||a.apex||a.exit||a.trajectory||a.error||a.correction ?
-      `<div class="analysisread">
-        ${[['Comentário',a.comment],['Travagem',a.braking],['Entrada',a.entry],['Ápex',a.apex],['Saída',a.exit],['Trajetória',a.trajectory],['Erro',a.error],['Correção',a.correction]].filter(x=>x[1]).map(x=>`<div style="margin-bottom:12px"><div class="muted">${x[0]}</div><div>${esc(x[1])}</div></div>`).join('')}
-      </div>`:
-      '<div class="empty">Ainda não existe análise para esta curva.</div>'}
+    `<div class="card"><b>Análise do treinador</b><div class="help">Clica diretamente nos números das curvas para consultar cada observação.</div></div>
+    <div style="margin-top:14px"><div class="stagebox"><div class="stagehead"><b>${esc(track.name)}</b><span class="muted">${track.points.length} curvas</span></div><div class="stage"><div class="image-wrap">${track.image?`<img class="track-image" src="${track.image}" alt="Mapa da pista">`:'<div class="empty" style="margin:auto">Imagem indisponível</div>'}</div>${track.points.map((p,i)=>`<button type="button" class="point ${i===safeIdx?'selected':''}" style="left:${p.x}%;top:${p.y}%" data-session-point="${i}">${i+1}</button>`).join('')}</div></div></div>
+    <div class="card" style="margin-top:14px"><h3>Curva ${track.points.length?safeIdx+1:'—'}</h3>
+      ${track.points.length?(a.comment||a.braking||a.entry||a.apex||a.exit||a.trajectory||a.error||a.correction ?
+      `<div class="analysisread">${[['Comentário',a.comment],['Travagem',a.braking],['Entrada',a.entry],['Ápex',a.apex],['Saída',a.exit],['Trajetória',a.trajectory],['Erro',a.error],['Correção',a.correction]].filter(x=>x[1]).map(x=>`<div style="margin-bottom:12px"><div class="muted">${x[0]}</div><div>${esc(x[1])}</div></div>`).join('')}</div>`:'<div class="empty">Ainda não existe análise para esta curva.</div>'):'<div class="empty">Esta pista ainda não tem curvas marcadas.</div>'}
     </div>`;
 }
 
@@ -764,10 +770,10 @@ document.addEventListener('click',event=>{
     }
     case 'logout':logout();break;
     case 'pilot-home':ui.page='my-events';render();break;
-    case 'pilot-race-back':ui.page='pilot-race';render();break;
+    case 'pilot-race-back':ui.page='pilot-race';if(action.dataset.champ)ui.championship=action.dataset.champ;if(action.dataset.race)ui.race=action.dataset.race;render();break;
     case 'pilot-race':ui.page='pilot-race';ui.championship=action.dataset.champ;ui.race=action.dataset.race;render();break;
-    case 'pilot-day':ui.page='pilot-day';ui.day=action.dataset.id;render();break;
-    case 'pilot-session':ui.page='pilot-session';ui.session=action.dataset.id;render();break;
+    case 'pilot-day':ui.page='pilot-day';ui.day=action.dataset.id;if(action.dataset.champ)ui.championship=action.dataset.champ;if(action.dataset.race)ui.race=action.dataset.race;render();break;
+    case 'pilot-session':ui.page='pilot-session';ui.session=action.dataset.id;if(action.dataset.champ)ui.championship=action.dataset.champ;if(action.dataset.race)ui.race=action.dataset.race;if(action.dataset.day)ui.day=action.dataset.day;render();break;
     case 'new-championship':newChampionship();break;
     case 'create-championship':createChampionship();break;
     case 'open-championship':ui.page='championship';ui.championship=action.dataset.id;render();break;
