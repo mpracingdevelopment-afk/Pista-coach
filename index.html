@@ -1233,9 +1233,9 @@ function profilePage(){
   const initials=String(p.name||currentUser?.name||'P').trim().slice(0,1).toUpperCase();
   const age=calculateAge(p.birthDate)||p.age||'—';
   if(!profileEditing){
-    return header('Meu perfil','Os teus dados pessoais e desportivos.')+
+    return header('Meu perfil')+
     `<div class="card" style="max-width:760px">
-      <div class="edit-lock"><div><b>Dados do piloto</b><div class="muted" style="font-size:11px;margin-top:3px">Os dados ficam bloqueados para evitar alterações acidentais.</div></div><button class="btn primary" data-action="edit-profile">Editar informação</button></div>
+      <div class="edit-lock"><div><b>Dados do piloto</b></div><button class="btn primary" data-action="edit-profile">Editar informação</button></div>
       <div class="profile-photo-row">${photo?`<img class="avatar avatar-lg" src="${esc(photo)}" alt="Foto de perfil">`:`<div class="avatar avatar-lg avatar-placeholder">${esc(initials)}</div>`}<div><b>${esc(p.name||currentUser?.name||'Piloto')}</b><div class="muted" style="margin-top:4px">${esc(currentUser?.email||'')}</div></div></div>
       <div class="profile-readonly">
         <div class="profile-item"><div class="muted">Nome completo</div><b>${esc(p.name||'—')}</b></div>
@@ -1250,7 +1250,7 @@ function profilePage(){
       ${p.notes?`<div class="help" style="margin-top:12px">${esc(p.notes)}</div>`:''}
     </div>`;
   }
-  return header('Editar perfil','Altera os dados apenas quando necessário.','<button class="btn" data-action="cancel-profile-edit">Cancelar</button>')+
+  return header('Editar perfil','', '<button class="btn" data-action="cancel-profile-edit">Cancelar</button>')+
   `<div class="card" style="max-width:760px">
     <div class="profile-photo-row"><div id="profilePhotoPreview">${photo?`<img class="avatar avatar-lg" src="${esc(photo)}" alt="Foto de perfil">`:`<div class="avatar avatar-lg avatar-placeholder">${esc(initials)}</div>`}</div><div class="profile-photo-actions"><b>Fotografia de perfil</b><span class="muted">A fotografia fica associada ao teu perfil.</span><input id="profilePhoto" class="file-input" type="file" accept="image/*"></div></div>
     <div class="field"><label>Nome completo</label><input id="profileName" value="${esc(p.name||currentUser?.name||'')}"></div>
@@ -1497,7 +1497,7 @@ function resultsPage(){
   const pending=visible.filter(r=>!r.approved);
   const confirmed=visible.filter(r=>r.approved);
   const rows=(arr)=>arr.sort((a,b)=>String(b.createdAt).localeCompare(String(a.createdAt))).map(r=>{const d=getDriverById(r.pilotId),p=getDriverProfile(d),c=db.championships.find(x=>String(x.id)===String(r.championshipId)),race=c?.races.find(x=>String(x.id)===String(r.raceId));return `<div class="row"><div><b>${esc(p.name||d?.name||'Piloto')}</b><div class="muted">${r.type==='championship'?esc(c?.name||'Campeonato')+' · Campeonato':esc(race?.name||'Corrida')+' · '+esc(c?.name||'')}</div><div class="muted">${r.position!==''?'Posição: '+esc(r.position)+' · ':''}${r.points!==''?'Pontos: '+esc(r.points):''}${r.details?' · '+esc(r.details):''}</div></div><div class="buttons">${r.approved?'<span class="badge">Confirmado</span>':isA?`<button class="btn primary" data-action="approve-result" data-id="${esc(r.id)}">Confirmar</button><button class="btn danger" data-action="reject-result" data-id="${esc(r.id)}">Apagar</button>`:'<span class="badge">A aguardar confirmação</span>'}</div></div>`}).join('');
-  return header('Resultados','Resultados de corridas e campeonatos.','<button class="btn primary" data-action="new-result">+ Adicionar resultado</button>')+
+  return header('Resultados','', '<button class="btn primary" data-action="new-result">+ Adicionar resultado</button>')+
     (isA?`<div class="sectiontitle">Pendentes de confirmação</div><div class="list">${rows(pending)||'<div class="empty">Não existem resultados pendentes.</div>'}</div>`:'')+
     `<div class="sectiontitle">${isA?'Resultados confirmados':'Os meus resultados'}</div><div class="list">${rows(confirmed)||'<div class="empty">Ainda não existem resultados confirmados.</div>'}</div>`;
 }
@@ -1714,7 +1714,7 @@ function calendarPage(){
     const ev=(byDate[iso]||[]).map(e=>`<div class="cal-event" title="${esc(e.description||'')}" data-action="calendar-event" data-id="${esc(e.id)}"><b>${esc(e.title)}</b><span>${e.location?esc(e.location):''}</span></div>`).join('');
     cells+=`<div class="cal-day ${isToday?'today':''}"><div class="cal-num">${d}</div>${ev}</div>`;
   }
-  return header('Calendário','Todas as provas do coach num só lugar.','')+`<div class="calendar-shell"><div class="card"><div class="calendar-toolbar"><button class="btn" data-action="calendar-prev">←</button><div class="calendar-month">${new Intl.DateTimeFormat(currentLang==='pt'?'pt-PT':currentLang==='es'?'es-ES':'en-GB',{month:'long',year:'numeric'}).format(calendarMonth)}</div><button class="btn" data-action="calendar-next">→</button></div><div class="calendar-wrap"><div class="calendar"><div class="cal-head">Seg</div><div class="cal-head">Ter</div><div class="cal-head">Qua</div><div class="cal-head">Qui</div><div class="cal-head">Sex</div><div class="cal-head">Sáb</div><div class="cal-head">Dom</div>${cells}</div></div></div></div>`;
+  return header('Calendário','')+`<div class="calendar-shell"><div class="card"><div class="calendar-toolbar"><button class="btn" data-action="calendar-prev">←</button><div class="calendar-month">${new Intl.DateTimeFormat(currentLang==='pt'?'pt-PT':currentLang==='es'?'es-ES':'en-GB',{month:'long',year:'numeric'}).format(calendarMonth)}</div><button class="btn" data-action="calendar-next">→</button></div><div class="calendar-wrap"><div class="calendar"><div class="cal-head">Seg</div><div class="cal-head">Ter</div><div class="cal-head">Qua</div><div class="cal-head">Qui</div><div class="cal-head">Sex</div><div class="cal-head">Sáb</div><div class="cal-head">Dom</div>${cells}</div></div></div></div>`;
 }
 function calendarEventModal(id){
   const e=calendarEvents().find(x=>String(x.id)===String(id)); if(!e)return;
@@ -1943,7 +1943,7 @@ function dashboard(){
 
 function drivers(){
   if(!isAdmin()){
-    return header('Pilotos','Consulta os pilotos da equipa e abre o perfil de cada piloto.','')+
+    return header('Pilotos','')+
       `<div class="sectiontitle">Pilotos da equipa por categoria</div>${groupedDriverSections(db.drivers)||'<div class="empty">Ainda não existem pilotos.</div>'}`;
   }
   const pending=registeredPilotUsers();
@@ -1959,9 +1959,9 @@ function drivers(){
     const access=u?'Conta ligada':'Sem conta';
     return `<div class="admin-driver-card"><div>${photo?`<img class="avatar" src="${esc(photo)}" alt="">`:`<div class="avatar avatar-placeholder">${esc(initials)}</div>`}</div><div class="admin-driver-main"><div class="admin-driver-name">${esc(label)}</div><div class="admin-driver-meta">${esc(p.category||'Categoria por definir')}${p.team?' · '+esc(p.team):''}${p.number?' · #'+esc(p.number):''}</div><div class="admin-driver-badges"><span class="admin-driver-badge">${esc(access)}</span><span class="admin-driver-badge">${esc(p.location||'Localidade por definir')}</span></div></div><div class="admin-driver-side"><button class="btn" data-action="open-pilot-profile" data-driver-id="${esc(d.id)}">Ver perfil</button><button class="btn" data-action="edit-admin-pilot-profile" data-driver-id="${esc(d.id)}">Editar</button>${u?`<button class="btn danger" data-action="delete-pilot-account" data-user-id="${esc(u.id)}">Apagar conta</button>`:`<button class="btn danger" data-action="delete-orphan-pilot" data-driver-id="${esc(d.id)}">Apagar piloto</button>`}</div></div>`;
   }).join('');
-  return header('Pilotos','Gestão completa dos pilotos e das respetivas contas.','')+
-  `<section class="admin-drivers-hero"><div class="admin-drivers-kicker">MPRD · DRIVER MANAGEMENT</div><div class="admin-drivers-title">Pilotos da equipa</div><div class="admin-drivers-sub">Consulta perfis, edita informação, acompanha o estado das contas e remove acessos diretamente a partir deste centro.</div></section>
-  <section class="admin-drivers-stats"><div class="admin-driver-stat"><div class="admin-driver-stat-label">Pilotos na equipa</div><div class="admin-driver-stat-value">${linked.length}</div><div class="admin-driver-stat-foot">perfis associados à equipa</div></div><div class="admin-driver-stat"><div class="admin-driver-stat-label">Contas de piloto</div><div class="admin-driver-stat-value">${totalAccounts}</div><div class="admin-driver-stat-foot">contas registadas no sistema</div></div><div class="admin-driver-stat"><div class="admin-driver-stat-label">Perfis completos</div><div class="admin-driver-stat-value">${complete}</div><div class="admin-driver-stat-foot">prontos para gestão de coaching</div></div></section>
+  return header('Pilotos','')+
+  `<section class="admin-drivers-hero"><div class="admin-drivers-kicker">MPRD · DRIVER MANAGEMENT</div><div class="admin-drivers-title">Pilotos da equipa</div></section>
+  <section class="admin-drivers-stats"><div class="admin-driver-stat"><div class="admin-driver-stat-label">Pilotos na equipa</div><div class="admin-driver-stat-value">${linked.length}</div></div><div class="admin-driver-stat"><div class="admin-driver-stat-label">Contas de piloto</div><div class="admin-driver-stat-value">${totalAccounts}</div></div><div class="admin-driver-stat"><div class="admin-driver-stat-label">Perfis completos</div><div class="admin-driver-stat-value">${complete}</div></div></section>
   <div class="sectiontitle">Pilotos da equipa</div><div class="list">${cards||'<div class="empty">Ainda não existem pilotos adicionados.</div>'}</div>
   <div class="sectiontitle" style="margin-top:24px">Contas de piloto por associar</div><div class="list">${pending.map(adminDriverAccountCard).join('')||'<div class="empty">Não há contas de piloto por associar.</div>'}</div>`;
 }
@@ -2060,11 +2060,11 @@ function pilotChampionshipsPage(){
     const action=access?'<span class="badge">Acesso ativo</span>':pending?'<span class="badge">A aguardar administrador</span>':'<button class="btn primary" data-action="request-championship-access" data-id="'+esc(c.id)+'">Pedir acesso</button>';
     return '<div class="card"><div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start"><div><h3>'+esc(c.name)+'</h3><p>'+esc(c.season||'')+' · '+c.races.length+' corridas</p></div><span class="rolebadge">'+(access?'Acesso aprovado':pending?'Pedido pendente':'Disponível')+'</span></div><div class="muted" style="margin-top:10px">'+count+' piloto'+(count===1?'':'s')+' inscrito'+(count===1?'':'s')+'</div><div class="buttons" style="margin-top:12px"><button class="btn" data-action="open-championship" data-id="'+esc(c.id)+'">Ver campeonato</button>'+action+'</div></div>';
   }).join('');
-  return header('Campeonatos','Consulta os campeonatos disponíveis, vê o número de pilotos inscritos e pede acesso.','')+'<div class="cards">'+(cards||'<div class="empty">Ainda não existem campeonatos.</div>')+'</div>';
+  return header('Campeonatos','')+'<div class="cards">'+(cards||'<div class="empty">Ainda não existem campeonatos.</div>')+'</div>';
 }
 function championshipsPage(){
   if(!isAdmin())return pilotChampionshipsPage();
-  return header('Campeonatos','Organiza campeonatos e corridas.','<button class="btn primary" data-action="new-championship">+ Adicionar campeonato</button>')+'<div class="cards">'+(db.championships.map(c=>'<div class="card" style="cursor:default"><div class="cardlink" style="border:0;padding:0;background:transparent" data-action="open-championship" data-id="'+esc(c.id)+'"><h3>'+esc(c.name)+'</h3><p>'+esc(c.season||'')+' · '+c.races.length+' corridas</p></div><div class="buttons" style="margin-top:12px"><button class="btn" data-action="open-championship" data-id="'+esc(c.id)+'">Abrir</button><button class="btn danger" data-action="delete-championship" data-id="'+esc(c.id)+'">Apagar campeonato</button></div></div>').join('')||'<div class="empty">Ainda não tens campeonatos.</div>')+'</div>';
+  return header('Campeonatos','', '<button class="btn primary" data-action="new-championship">+ Adicionar campeonato</button>')+'<div class="cards">'+(db.championships.map(c=>'<div class="card" style="cursor:default"><div class="cardlink" style="border:0;padding:0;background:transparent" data-action="open-championship" data-id="'+esc(c.id)+'"><h3>'+esc(c.name)+'</h3><p>'+esc(c.season||'')+' · '+c.races.length+' corridas</p></div><div class="buttons" style="margin-top:12px"><button class="btn" data-action="open-championship" data-id="'+esc(c.id)+'">Abrir</button><button class="btn danger" data-action="delete-championship" data-id="'+esc(c.id)+'">Apagar campeonato</button></div></div>').join('')||'<div class="empty">Ainda não tens campeonatos.</div>')+'</div>';
 }
 function pilotChampionshipDetailPage(){
   const c=getChamp();
@@ -2083,8 +2083,8 @@ function pilotChampionshipDetailPage(){
   const tab=ui.champTab||'races';
   const info=(c.races||[]).map(r=>{const links=[['Live timing',r.links?.timing],['Resultados',r.links?.results],['Horários',r.links?.schedule]].filter(x=>x[1]);return `<div class="row"><div><b>${esc(r.name)}</b><div class="muted">${esc(r.location||t('Local por definir'))}</div></div><div class="links">${links.map(x=>`<a href="${esc(x[1])}" target="_blank" rel="noopener">${esc(x[0])}</a>`).join(' · ')||`<span class="muted">${t('Sem links.')}</span>`}</div></div>`}).join('');
   return '<div class="breadcrumb"><span data-action="back-championships">Campeonatos</span> › <b>'+esc(c.name)+'</b></div>'+header(c.name,esc(c.season||'')+' · '+c.races.length+' corridas','')+
-  '<div class="tabs"><button class="tab '+(tab==='races'?'active':'')+'" data-action="champ-tab" data-tab="races">'+t('Provas')+'</button><button class="tab '+(tab==='info'?'active':'')+'" data-action="champ-tab" data-tab="info">'+t('Links')+'</button></div>'+
-  (tab==='info'?'<div class="card"><div class="help">'+(access?'':(pending?t('O administrador ainda não aprovou o teu pedido. Enquanto aguardas, podes consultar esta informação pública.'):t('Podes consultar a informação pública e pedir acesso ao administrador.')))+'</div>'+(!access&&!pending?'<button class="btn primary" style="margin-top:12px" data-action="request-championship-access" data-id="'+esc(c.id)+'">'+t('Pedir acesso')+'</button>':'')+'</div><div class="sectiontitle">'+t('Links dos eventos')+'</div><div class="list">'+(info||'<div class="empty">'+t('Ainda não existem corridas.')+'</div>')+'</div>': '<div class="sectiontitle">'+t('Corridas')+'</div><div class="list">'+(races||'<div class="empty">'+t('Ainda não existem corridas.')+'</div>')+'</div>');
+  '<div class="tabs"><button class="tab '+(tab==='races'?'active':'')+'" data-action="champ-tab" data-tab="races">'+t('Provas')+'</button><button class="tab '+(tab==='info'?'active':'')+'" data-action="champ-tab" data-tab="info">'+t('Informações')+'</button></div>'+
+  (tab==='info'?'<div class="card"><h3>'+t('Informações')+'</h3><div class="help">'+(access?'':(pending?t('O administrador ainda não aprovou o teu pedido. Enquanto aguardas, podes consultar esta informação pública.'):t('Podes consultar a informação pública e pedir acesso ao administrador.')))+'</div>'+(!access&&!pending?'<button class="btn primary" style="margin-top:12px" data-action="request-championship-access" data-id="'+esc(c.id)+'">'+t('Pedir acesso')+'</button>':'')+'</div><div class="sectiontitle">'+t('Links dos eventos')+'</div><div class="list">'+(info||'<div class="empty">'+t('Ainda não existem corridas.')+'</div>')+'</div>': '<div class="sectiontitle">'+t('Corridas')+'</div><div class="list">'+(races||'<div class="empty">'+t('Ainda não existem corridas.')+'</div>')+'</div>');
 }
 function championshipPage(){
   if(!isAdmin())return pilotChampionshipDetailPage();
