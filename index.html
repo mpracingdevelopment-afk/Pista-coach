@@ -249,6 +249,8 @@ async function autoLinkPilot(){
 
 async function bootCloud(){
   localLegacyLoad();
+  const savedPage=ui.page;
+  const savedContext={championship:ui.championship,race:ui.race,day:ui.day,session:ui.session,sessionPilot:ui.sessionPilot,sessionPoint:ui.sessionPoint,editor:ui.editor};
   const {data:{session}}=await sb.auth.getSession();
   cleanAuthUrl();
   if(session?.user){
@@ -259,7 +261,17 @@ async function bootCloud(){
     await importLegacyIfNeeded();
     await autoLinkPilot();
     if(isAdmin()) await loadProfiles();
-    ui.page=isAdmin()?'dashboard':(profileComplete(currentUser)?'my-events':'profile');
+    const canRestore=savedPage && !['login','register'].includes(savedPage);
+    if(profileComplete(currentUser) || isAdmin()){
+      if(canRestore){
+        ui.page=savedPage;
+        Object.assign(ui,savedContext);
+      }else{
+        ui.page=isAdmin()?'dashboard':'my-events';
+      }
+    }else{
+      ui.page='profile';
+    }
   }else{
     currentUser=null;db=normalize({});ui.page='login';
   }
@@ -276,7 +288,11 @@ function subscribeAuth(){
       await loadCloudState();
       await importLegacyIfNeeded();
       await autoLinkPilot();
-      ui.page=isAdmin()?'dashboard':(profileComplete(currentUser)?'my-events':'profile');
+      const saved=loadUiState()||{};
+      if(profileComplete(currentUser) || isAdmin()){
+        if(saved.page && !['login','register'].includes(saved.page)) ui=Object.assign(ui,saved);
+        else ui.page=isAdmin()?'dashboard':'my-events';
+      }else ui.page='profile';
       render();
     }
   });
@@ -935,6 +951,10 @@ function render(){
   const app=document.getElementById('app');
   if(currentUser && currentUser.role==='pilot' && !profileComplete(currentUser) && !['profile','register'].includes(ui.page))ui.page='profile';
   if(!currentUser){
+    if(!cloudReady){
+      app.innerHTML='<div style="min-height:70vh;display:grid;place-items:center;padding:24px"><div class="card" style="max-width:420px;width:100%;text-align:center"><div class="kpi" style="font-size:28px">MPRacingDevelopment</div><div class="muted" style="margin-top:8px">A recuperar a sessão…</div></div></div>';
+      return;
+    }
     app.innerHTML=(ui.page==='register'?registerPage():loginPage());
     document.querySelectorAll('[data-page]').forEach(b=>b.classList.remove('active'));
     return;
