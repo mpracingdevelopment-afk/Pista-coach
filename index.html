@@ -1802,17 +1802,43 @@ async function createDay(){const r=getRace(),n=document.getElementById('dayName'
 function newSession(){
   const races=db.championships.flatMap(c=>c.races.map(r=>({c,r})));
   const templates=Array.isArray(db.sessionTemplates)?db.sessionTemplates:[];
+  const preChamp=ui.championship?String(ui.championship):'';
+  const preRace=ui.race?String(ui.race):'';
+  const preDay=ui.day?String(ui.day):'';
+  const preRaceObj=races.find(x=>String(x.r.id)===preRace)?.r||null;
+  const preDayObj=preRaceObj?.days?.find(d=>String(d.id)===preDay)||null;
+  const preDate=preDayObj?.date||preRaceObj?.startDate||preRaceObj?.date||'';
+  const dayOptions=(preRaceObj?.days||races.flatMap(x=>x.r.days.map(d=>({...d,raceId:x.r.id,raceName:x.r.name})))).map(d=>`<option value="${d.id}" ${String(d.id)===preDay?'selected':''}>${d.raceName?esc(d.raceName)+' — ':''}${esc(d.name)}${d.date?' · '+esc(d.date):''}</option>`).join('');
+  const dateText=preDate?'': '—';
   modal(`<h2>Criar sessão</h2>
-    <div class="field"><label>Campeonato</label><select id="sessionChamp"><option value="">Selecionar</option>${db.championships.map(c=>`<option value="${c.id}">${esc(c.name)}${c.season?' · '+esc(c.season):''}</option>`).join('')}</select></div>
-    <div class="field"><label>Prova</label><select id="sessionRace"><option value="">Selecionar</option>${races.map(x=>`<option value="${x.r.id}">${esc(x.c.name)} — ${esc(x.r.name)}</option>`).join('')}</select></div>
-    <div class="field"><label>Dia</label><select id="sessionDay"><option value="">Selecionar</option>${races.flatMap(x=>x.r.days.map(d=>`<option value="${d.id}">${esc(x.r.name)} — ${esc(d.name)}${d.date?' · '+esc(d.date):''}</option>`)).join('')}</select></div>
+    <div class="field"><label>Campeonato</label><select id="sessionChamp"><option value="">Selecionar</option>${db.championships.map(c=>`<option value="${c.id}" ${String(c.id)===preChamp?'selected':''}>${esc(c.name)}${c.season?' · '+esc(c.season):''}</option>`).join('')}</select></div>
+    <div class="field"><label>Prova</label><select id="sessionRace"><option value="">Selecionar</option>${races.map(x=>`<option value="${x.r.id}" ${String(x.r.id)===preRace?'selected':''}>${esc(x.c.name)} — ${esc(x.r.name)}</option>`).join('')}</select></div>
+    <div class="field"><label>Dia</label><select id="sessionDay"><option value="">Selecionar</option>${dayOptions}</select><div class="help">Escolhe um dia já programado para a prova. A data da sessão é preenchida automaticamente.</div></div>
     <div class="field"><label>Nome da sessão</label><select id="sessionName"><option value="">Selecionar nome</option>${templates.map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join('')}</select></div>
-    <div class="grid2"><div class="field"><label>Data da sessão</label><input id="sessionDate" type="date"></div><div class="field"><label>Hora</label><input id="sessionTime" type="time" value="09:00"></div></div>
+    <div class="grid2"><div class="field"><label>Data da sessão</label><input id="sessionDate" class="auto-session-date" type="date" value="${esc(preDate)}" disabled title="Preenchida automaticamente a partir do dia selecionado"></div><div class="field"><label>Hora</label><input id="sessionTime" type="time" value="09:00"></div></div>
     <div class="field"><label>Descrição</label><textarea id="sessionDescription" rows="2" placeholder="Ex.: Trabalho de travagem e entrada em curva"></textarea></div>
     <div class="field"><label>Pista</label><select id="sessionTrack"><option value="">Selecionar pista</option>${db.tracks.map(t=>`<option value="${t.id}">${esc(t.name)}</option>`).join('')}</select></div>
-    <div class="field"><label>Pilotos a analisar</label><div class="pilot-select-grid">${db.drivers.map(d=>{const u=(profileCache||[]).find(x=>String(x.id)===String(d.userId));const p=u?.profile||d;const photo=p.photo||'';const initials=String(p.name||d.name||'P').trim().slice(0,1).toUpperCase();const avatar=photo?`<img class="avatar" src="${esc(photo)}" alt="">`:`<div class="avatar avatar-placeholder">${esc(initials)}</div>`;return `<label class="pilot-select-card"><input type="checkbox" name="newSessionPilot" value="${d.id}">${avatar}<div class="pilot-select-info"><div class="pilot-select-name">${esc(p.name||d.name)}</div><div class="pilot-select-meta">${esc(categoryName(p.category||d.category))}${p.team?' · '+esc(p.team):''}</div></div><span class="pilot-select-check">✓</span></label>`}).join('')||'<span class="muted">Adiciona primeiro um piloto.</span>'}</div></div>
+    <div class="field"><label>Piloto a analisar</label><div class="pilot-select-grid">${db.drivers.map(d=>{const u=(profileCache||[]).find(x=>String(x.id)===String(d.userId));const p=u?.profile||d;const photo=p.photo||'';const initials=String(p.name||d.name||'P').trim().slice(0,1).toUpperCase();const avatar=photo?`<img class="avatar" src="${esc(photo)}" alt="">`:`<div class="avatar avatar-placeholder">${esc(initials)}</div>`;return `<label class="pilot-select-card"><input type="radio" name="newSessionPilot" value="${d.id}">${avatar}<div class="pilot-select-info"><div class="pilot-select-name">${esc(p.name||d.name)}</div><div class="pilot-select-meta">${esc(categoryName(p.category||d.category))}${p.team?' · '+esc(p.team):''}</div></div><span class="pilot-select-check">✓</span></label>`}).join('')||'<span class="muted">Adiciona primeiro um piloto.</span>'}</div><div class="help">Cada sessão pode ter apenas um piloto.</div></div>
     <div class="help">O nome é escolhido a partir dos modelos definidos em “Nomes de sessão”.</div>
     <div class="modalactions"><button class="btn" data-action="close">Cancelar</button><button class="btn primary" data-action="create-session">Criar sessão</button></div>`);
+  updateNewSessionDays(true);
+}
+
+function updateNewSessionDays(initial=false){
+  const raceSel=document.getElementById('sessionRace');
+  const daySel=document.getElementById('sessionDay');
+  const dateInput=document.getElementById('sessionDate');
+  if(!raceSel||!daySel||!dateInput)return;
+  const raceId=String(raceSel.value||'');
+  const r=db.championships.flatMap(c=>c.races||[]).find(x=>String(x.id)===raceId);
+  const previous=String(daySel.value||'');
+  const days=r?.days||[];
+  daySel.innerHTML='<option value="">Selecionar</option>'+days.map(d=>`<option value="${d.id}">${esc(d.name)}${d.date?' · '+esc(d.date):''}</option>`).join('');
+  let next=days.find(d=>String(d.id)===previous)||((initial&&ui.day)?days.find(d=>String(d.id)===String(ui.day)):null)||days[0]||null;
+  if(next){daySel.value=String(next.id);}else{daySel.value='';}
+  const selectedDay=days.find(d=>String(d.id)===String(daySel.value));
+  const autoDate=selectedDay?.date||r?.startDate||r?.date||'';
+  dateInput.value=autoDate;
 }
 
 function manageSessionTemplates(){
@@ -1844,8 +1870,10 @@ async function createSession(){
   if(!champId||!raceId||!dayId||!n){toast('Seleciona campeonato, prova, dia e nome da sessão');return}
   const c=db.championships.find(x=>String(x.id)===String(champId)),r=c?.races.find(x=>String(x.id)===String(raceId)),d=r?.days.find(x=>String(x.id)===String(dayId));
   if(!d){toast('Não foi possível encontrar o dia');return}
-  const pilotIds=[...document.querySelectorAll('input[name="newSessionPilot"]:checked')].map(x=>String(x.value));
-  const s={id:Date.now(),name:n,date:document.getElementById('sessionDate').value||d.date||r.date||'',time:document.getElementById('sessionTime').value||'09:00',description:document.getElementById('sessionDescription').value.trim(),trackId:document.getElementById('sessionTrack').value||null,pilotIds,analyses:{}};
+  const selectedPilot=document.querySelector('input[name="newSessionPilot"]:checked');
+  const pilotIds=selectedPilot?[String(selectedPilot.value)]:[];
+  const sessionDate=d.date||r.startDate||r.date||'';
+  const s={id:Date.now(),name:n,date:sessionDate,time:document.getElementById('sessionTime').value||'09:00',description:document.getElementById('sessionDescription').value.trim(),trackId:document.getElementById('sessionTrack').value||null,pilotIds,analyses:{}};
   d.sessions.push(s);
   // Keep the race-level assignment in sync immediately, so pilot accounts can see the event.
   const racePilotIds=new Set((r.pilotIds||[]).map(x=>String(x)));
@@ -1880,12 +1908,25 @@ async function deleteSessionByIds(sessionId,champId,raceId,dayId){
 
 function configureSession(){
   const s=getSession();
-  modal(`<h2>Configurar sessão</h2><div class="grid2"><div class="field"><label>Data da sessão</label><input id="cfgSessionDate" type="date" value="${esc(s.date||getDay()?.date||getRace()?.date||'')}"></div><div class="field"><label>Hora</label><input id="cfgSessionTime" type="time" value="${esc(s.time||'09:00')}"></div></div><div class="field"><label>Descrição</label><textarea id="cfgSessionDescription" rows="2">${esc(s.description||'')}</textarea></div><div class="field"><label>Pista</label><select id="cfgTrack"><option value="">Selecionar</option>${db.tracks.map(t=>`<option value="${t.id}" ${String(t.id)===String(s.trackId)?'selected':''}>${esc(t.name)}</option>`).join('')}</select></div>
-  <div class="field"><label>Pilotos desta sessão</label><div class="checklist">${db.drivers.map(d=>`<label><input type="checkbox" name="cfgPilot" value="${d.id}" ${(s.pilotIds||[]).some(id=>String(id)===String(d.id))?'checked':''}> ${esc(d.name)}</label>`).join('')||'<span class="muted">Adiciona primeiro um piloto.</span>'}</div></div>
+  const day=getDay(),race=getRace();
+  const autoDate=day?.date||race?.startDate||race?.date||s.date||'';
+  const selectedPilot=Array.isArray(s.pilotIds)&&s.pilotIds.length?s.pilotIds[0]:'';
+  modal(`<h2>Configurar sessão</h2><div class="grid2"><div class="field"><label>Data da sessão</label><input id="cfgSessionDate" class="auto-session-date" type="date" value="${esc(autoDate)}" disabled title="Preenchida automaticamente a partir do dia"></div><div class="field"><label>Hora</label><input id="cfgSessionTime" type="time" value="${esc(s.time||'09:00')}"></div></div><div class="field"><label>Descrição</label><textarea id="cfgSessionDescription" rows="2">${esc(s.description||'')}</textarea></div><div class="field"><label>Pista</label><select id="cfgTrack"><option value="">Selecionar</option>${db.tracks.map(t=>`<option value="${t.id}" ${String(t.id)===String(s.trackId)?'selected':''}>${esc(t.name)}</option>`).join('')}</select></div>
+  <div class="field"><label>Piloto desta sessão</label><div class="checklist session-single-pilot">${db.drivers.map(d=>`<label><input type="radio" name="cfgPilot" value="${d.id}" ${String(selectedPilot)===String(d.id)?'checked':''}> ${esc(d.name)}</label>`).join('')||'<span class="muted">Adiciona primeiro um piloto.</span>'}</div><div class="help">Cada sessão pode ter apenas um piloto.</div></div>
   <div class="modalactions"><button class="btn" data-action="close">Cancelar</button><button class="btn primary" data-action="save-session">Guardar</button></div>`);
 }
 async function saveSession(){
-  const s=getSession();s.date=document.getElementById('cfgSessionDate').value||'';s.time=document.getElementById('cfgSessionTime').value||'09:00';s.description=document.getElementById('cfgSessionDescription').value.trim();s.trackId=document.getElementById('cfgTrack').value||null;s.pilotIds=[...document.querySelectorAll('input[name="cfgPilot"]:checked')].map(x=>String(x.value));if(!s.analyses)s.analyses={};const r=getRace();if(r){const ids=new Set();for(const day of r.days||[])for(const ses of day.sessions||[])for(const id of ses.pilotIds||[])ids.add(String(id));r.pilotIds=[...ids];}save();closeModal();render();
+  const s=getSession();
+  const d=getDay(),r=getRace();
+  s.date=d?.date||r?.startDate||r?.date||s.date||'';
+  s.time=document.getElementById('cfgSessionTime').value||'09:00';
+  s.description=document.getElementById('cfgSessionDescription').value.trim();
+  s.trackId=document.getElementById('cfgTrack').value||null;
+  const selectedPilot=document.querySelector('input[name="cfgPilot"]:checked');
+  s.pilotIds=selectedPilot?[String(selectedPilot.value)]:[];
+  if(!s.analyses)s.analyses={};
+  if(r){const ids=new Set();for(const day of r.days||[])for(const ses of day.sessions||[])for(const id of (ses.pilotIds||[]).slice(0,1))ids.add(String(id));r.pilotIds=[...ids];}
+  await save();closeModal();render();
 }
 function pilotRacePage(){
   const c=getChamp(),r=getRace();
@@ -2125,6 +2166,15 @@ document.addEventListener('change',event=>{
   if(event.target.id==='langSelect'){setLanguage(event.target.value);return;}
   if(event.target.id==='activePilot'){ui.sessionPilot=event.target.value;ui.sessionPoint=0;render();}
   if(event.target.id==='profileBirthDate'){const age=calculateAge(event.target.value);const el=document.getElementById('profileAge');if(el)el.value=age||'';}
+  if(event.target.id==='sessionRace'){updateNewSessionDays();return;}
+  if(event.target.id==='sessionDay'){
+    const dayId=String(event.target.value||'');
+    const raceId=String(document.getElementById('sessionRace')?.value||'');
+    const r=db.championships.flatMap(c=>c.races||[]).find(x=>String(x.id)===raceId);
+    const d=r?.days?.find(x=>String(x.id)===dayId);
+    const el=document.getElementById('sessionDate');
+    if(el)el.value=d?.date||r?.startDate||r?.date||'';
+  }
 });
 document.addEventListener('click',async event=>{
 
