@@ -151,7 +151,8 @@ body:before{
   background:linear-gradient(180deg,rgba(8,9,11,.985),rgba(5,6,7,.985));
   border-right:1px solid #24282d;box-shadow:18px 0 55px rgba(0,0,0,.38);
 }
-.logo{height:76px;margin:0 8px 34px;display:flex;align-items:flex-start;justify-content:flex-start;white-space:nowrap;line-height:1}
+.logo{height:154px;margin:0 8px 30px;display:flex;align-items:flex-start;justify-content:flex-start;white-space:nowrap;line-height:1}
+.logo img{width:154px;height:154px;object-fit:contain;object-position:center;display:block;flex:0 0 154px}
 .logo-wordmark{display:block;line-height:1;font-family:Impact,Haettenschweiler,"Arial Narrow Bold",sans-serif;font-style:italic;text-transform:uppercase;transform:skewX(-4deg);transform-origin:left center}
 .logo-wordmark strong{font-size:28px;font-weight:900;letter-spacing:-.055em;color:#fff}
 .logo-wordmark>span{display:block;margin-top:4px;font-size:13px;font-weight:900;letter-spacing:.055em;color:#aeb4bb;white-space:nowrap}
@@ -354,7 +355,7 @@ main>*{width:min(1280px,100%)}
 
 /* Mobile */
 @media(max-width:850px){
-  .sidebar{width:68px;padding:14px 7px}.logo{height:auto;justify-content:center;margin:0 0 25px}.logo-wordmark{display:none}.nav:before{display:none}.nav button{font-size:0;text-align:center}.nav button:before{left:2px}
+  .sidebar{width:68px;padding:14px 7px}.logo{height:auto;justify-content:center;margin:0 0 25px}.logo img{width:44px;height:44px;flex-basis:44px}.logo-wordmark{display:none}.nav:before{display:none}.nav button{font-size:0;text-align:center}.nav button:before{left:2px}
   main{margin-left:68px;width:calc(100% - 68px);padding:24px 18px 50px}
 }
 @media(max-width:700px){
