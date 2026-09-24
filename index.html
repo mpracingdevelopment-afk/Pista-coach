@@ -247,6 +247,65 @@ main>*{width:min(1280px,100%)}
 .point.selected{background:var(--accent);color:#fff;border-color:#fff;outline-color:var(--accent);box-shadow:0 0 0 3px rgba(225,6,0,.18),0 7px 20px rgba(0,0,0,.75)}
 .comments{background:rgba(10,12,14,.94);border-color:#383f46;box-shadow:0 20px 45px rgba(0,0,0,.6);backdrop-filter:blur(12px)}
 
+
+/* V65 — Pilot dashboard */
+.pilot-dashboard-hero{position:relative;overflow:hidden;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(330px,.85fr);border:1px solid #292f35;border-radius:16px;background:radial-gradient(circle at 92% 10%,rgba(225,6,0,.2),transparent 32%),linear-gradient(135deg,#15181b 0%,#0b0d0f 58%,#08090b 100%);box-shadow:0 28px 80px rgba(0,0,0,.35);min-height:285px;margin-bottom:22px}
+.pilot-dashboard-hero:before{content:"";position:absolute;inset:0;background:linear-gradient(120deg,transparent 0 57%,rgba(255,255,255,.025) 57.1% 57.3%,transparent 57.4% 100%);pointer-events:none}
+.pilot-dashboard-hero:after{content:"DRIVER";position:absolute;right:-8px;bottom:-47px;font-size:118px;font-weight:950;letter-spacing:-.09em;color:rgba(255,255,255,.025);line-height:1;pointer-events:none}
+.pilot-dashboard-main{position:relative;z-index:2;padding:30px 32px 28px;display:flex;align-items:center;gap:20px;min-width:0}
+.pilot-dashboard-avatar{width:78px;height:78px;flex:0 0 78px;border-radius:18px;border:1px solid #3a4148;background:#111417;object-fit:cover;box-shadow:0 15px 35px rgba(0,0,0,.35)}
+.pilot-dashboard-avatar.placeholder{display:grid;place-items:center;font-size:27px;font-weight:950;color:#aeb4ba}
+.pilot-dashboard-copy{min-width:0}
+.pilot-dashboard-kicker{display:flex;align-items:center;gap:9px;color:#e10600;font-size:9px;font-weight:950;letter-spacing:.22em;text-transform:uppercase;margin-bottom:10px}
+.pilot-dashboard-kicker:before{content:"";width:24px;height:2px;background:#e10600;box-shadow:8px 0 0 rgba(225,6,0,.25)}
+.pilot-dashboard-title{font-size:clamp(30px,3.5vw,47px);font-weight:950;letter-spacing:-.065em;line-height:.98;margin:0;max-width:720px}
+.pilot-dashboard-title span{color:#e10600}
+.pilot-dashboard-sub{color:#8d949c;font-size:12px;line-height:1.6;max-width:670px;margin-top:11px}
+.pilot-dashboard-tags{display:flex;gap:7px;flex-wrap:wrap;margin-top:16px}
+.pilot-dashboard-tag{padding:6px 9px;border-radius:999px;border:1px solid #2d343b;background:#0c0f11;color:#aab1b8;font-size:8px;font-weight:900;letter-spacing:.1em;text-transform:uppercase}
+.pilot-dashboard-tag.accent{border-color:rgba(225,6,0,.45);background:rgba(225,6,0,.08);color:#f0bbb9}
+.pilot-dashboard-side{position:relative;z-index:2;padding:22px;border-left:1px solid #292f35;background:linear-gradient(180deg,rgba(255,255,255,.025),rgba(0,0,0,.08));display:flex;flex-direction:column;justify-content:center;min-width:0}
+.pilot-next-label{color:#747c85;font-size:8px;font-weight:950;letter-spacing:.18em;text-transform:uppercase}
+.pilot-next-name{font-size:24px;font-weight:950;letter-spacing:-.045em;margin-top:7px;line-height:1.05}
+.pilot-next-meta{font-size:10px;color:#858d96;margin-top:7px;line-height:1.55}
+.pilot-countdown{margin-top:16px;padding:14px;border:1px solid #343b42;border-radius:10px;background:#070809;box-shadow:inset 0 1px 0 rgba(255,255,255,.03);}
+.pilot-countdown-value{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:28px;font-weight:950;letter-spacing:.02em;color:#fff;text-align:center;text-shadow:0 0 20px rgba(225,6,0,.2);font-variant-numeric:tabular-nums}
+.pilot-countdown-caption{font-size:8px;color:#666e77;text-transform:uppercase;letter-spacing:.14em;text-align:center;margin-top:4px}
+.pilot-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:25px}
+.pilot-stat{position:relative;overflow:hidden;padding:17px 18px 16px;border:1px solid #252b31;border-radius:11px;background:linear-gradient(145deg,#111417,#0b0d0f);min-height:102px;box-shadow:0 12px 30px rgba(0,0,0,.18)}
+.pilot-stat:before{content:"";position:absolute;left:0;top:0;width:2px;height:100%;background:linear-gradient(180deg,#e10600,transparent);opacity:.75}
+.pilot-stat-label{font-size:8px;font-weight:900;letter-spacing:.16em;text-transform:uppercase;color:#707880}
+.pilot-stat-value{font-size:34px;font-weight:950;letter-spacing:-.055em;line-height:1;margin-top:11px}
+.pilot-stat-foot{font-size:9px;color:#59616a;margin-top:7px}
+.pilot-grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(300px,.75fr);gap:16px;align-items:start}
+.pilot-panel{border:1px solid #252b31;border-radius:13px;background:linear-gradient(145deg,#101316,#0a0c0e);overflow:hidden;box-shadow:0 15px 40px rgba(0,0,0,.2)}
+.pilot-panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px 17px;border-bottom:1px solid #242a30;background:rgba(255,255,255,.018)}
+.pilot-panel-title{font-size:10px;font-weight:950;letter-spacing:.14em;text-transform:uppercase;color:#d8dce0}
+.pilot-panel-kicker{font-size:8px;color:#5e666f;text-transform:uppercase;letter-spacing:.12em}
+.pilot-activity{display:grid}
+.pilot-activity-row{display:grid;grid-template-columns:62px minmax(0,1fr) auto;gap:13px;align-items:center;padding:13px 17px;border-bottom:1px solid #1d2227;transition:background .15s ease}
+.pilot-activity-row:last-child{border-bottom:0}
+.pilot-activity-row:hover{background:rgba(255,255,255,.018)}
+.pilot-activity-date{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:9px;color:#626b74}
+.pilot-activity-main{min-width:0}
+.pilot-activity-title{font-size:11px;font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pilot-activity-meta{font-size:9px;color:#68717a;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pilot-score{min-width:54px;text-align:center;padding:7px 6px;border:1px solid #343b42;border-radius:7px;background:#0a0c0e;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11px;font-weight:900}
+.pilot-score.good{border-color:rgba(100,213,138,.25);color:#a4e5ba}.pilot-score.mid{border-color:rgba(225,6,0,.28);color:#ffaaa6}.pilot-score.none{color:#606871}
+.pilot-side-list{display:grid}
+.pilot-side-row{display:flex;align-items:center;gap:10px;padding:12px 15px;border-bottom:1px solid #1d2227}
+.pilot-side-row:last-child{border-bottom:0}
+.pilot-side-icon{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;background:#171b1f;border:1px solid #2a3036;color:#e10600;font-size:10px;font-weight:950;flex:0 0 auto}
+.pilot-side-content{min-width:0;flex:1}.pilot-side-title{font-size:10px;font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.pilot-side-meta{font-size:8px;color:#666e77;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pilot-side-value{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;font-weight:900;color:#fff}
+.pilot-footer-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:16px}
+.pilot-action-card{position:relative;min-height:112px;border:1px solid #252b31;border-radius:11px;background:linear-gradient(145deg,#101316,#0b0d0f);padding:15px;cursor:pointer;transition:transform .18s ease,border-color .18s ease,background .18s ease;overflow:hidden}
+.pilot-action-card:before{content:"";position:absolute;left:0;top:0;width:2px;height:100%;background:linear-gradient(180deg,#e10600,transparent)}
+.pilot-action-card:hover{transform:translateY(-2px);border-color:#404850;background:linear-gradient(145deg,#15181b,#0d0f11)}
+.pilot-action-label{font-size:8px;color:#687079;text-transform:uppercase;letter-spacing:.14em;font-weight:900}.pilot-action-title{font-size:16px;font-weight:950;letter-spacing:-.03em;margin-top:8px}.pilot-action-meta{font-size:8px;color:#59616a;margin-top:4px}
+@media(max-width:1050px){.pilot-dashboard-hero{grid-template-columns:1fr}.pilot-dashboard-side{border-left:0;border-top:1px solid #292f35}.pilot-grid{grid-template-columns:1fr}.pilot-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.pilot-footer-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:700px){.pilot-dashboard-main{padding:23px 20px;align-items:flex-start}.pilot-dashboard-avatar{width:62px;height:62px;flex-basis:62px;border-radius:15px}.pilot-dashboard-title{font-size:30px}.pilot-dashboard-side{padding:17px 20px}.pilot-kpis{grid-template-columns:1fr 1fr;gap:7px}.pilot-stat{min-height:92px;padding:14px}.pilot-stat-value{font-size:28px}.pilot-activity-row{grid-template-columns:48px minmax(0,1fr) auto;gap:9px;padding:12px}.pilot-footer-grid{grid-template-columns:1fr}}
+
 /* Calendar */
 .calendar-toolbar .btn{min-width:40px}
 .calendar-month{font-size:19px;letter-spacing:-.02em}
@@ -1207,22 +1266,63 @@ function historyPage(){if(!isAdmin() && ui.selectedPilot && String(ui.selectedPi
   const d=getDriverById(pid),p=getDriverProfile(d);
   return header('Histórico de sessões',`${esc(p.name||d?.name||'Piloto')} · últimas sessões.`,'')+(latest?`<div class="sectiontitle">Última sessão</div><div class="card"><div class="muted">Piloto: <b>${esc(p.name||d?.name||'Piloto')}</b></div><div class="muted" style="margin-top:4px">${esc(latest.c.name)} · ${esc(latest.r.name)}</div><h2 style="margin:6px 0">${esc(latest.s.name)}</h2><div class="muted">${esc(latest.s.date||latest.d.date||'')} ${latest.s.time?'· '+esc(latest.s.time):''}</div><div class="buttons" style="margin-top:14px"><button class="btn primary" data-action="open-history-session" data-session="${esc(latest.s.id)}" data-day="${esc(latest.d.id)}" data-race="${esc(latest.r.id)}" data-champ="${esc(latest.c.id)}">${sessionScore(latest.s,pid)!=null?'Ver análise da última sessão':'Abrir última sessão'}</button></div></div>`:'')+`<div class="sectiontitle">Últimas sessões</div><div class="list">${list||'<div class="empty">Ainda não existem sessões no histórico.</div>'}</div>`;
 }
-function myEventsPage(){
-  const pid=currentPilotId(),cards=[];
-  db.championships.forEach(c=>{
-    if(!hasChampionshipAccess(c.id))return;
-    c.races.forEach(r=>{
-      const sessions=(r.days||[]).flatMap(d=>(d.sessions||[]).map(s=>({s,d}))).filter(x=>(x.s.pilotIds||[]).some(id=>String(id)===String(pid)));
-      cards.push({c,r,sessions});
-    });
-  });
-  const allNext=[]; db.championships.forEach(c=>{ if(!hasChampionshipAccess(c.id))return; c.races.forEach(r=>(r.days||[]).forEach(d=>(d.sessions||[]).forEach(s=>{ if((s.pilotIds||[]).some(id=>String(id)===String(pid))){ const date=s.date||d.date||r.date; if(date) allNext.push({c,r,d,s,date,time:s.time||'09:00'}); }}))); });
-  allNext.sort((a,b)=>new Date(`${a.date}T${a.time||'09:00'}`)-new Date(`${b.date}T${b.time||'09:00'}`));
-  const next=allNext.find(x=>new Date(`${x.date}T${x.time||'09:00'}`).getTime()>Date.now()-60000);
-  const timer=next?`<div class="timer-card"><div class="timer-label">Próxima sessão</div><div class="timer-session-name">${esc(next.s.name)}</div><div class="timer-value" data-countdown="${esc(`${next.date}T${next.time||'09:00'}`)}">--:--:--</div><div class="timer-desc">${esc(next.s.description||'Sem descrição')}<br><span class="muted">${esc(next.r.name)} · ${esc(next.c.name)} · ${esc(next.date)}${next.time?' · '+esc(next.time):''}</span></div></div>`:'';
-  return header('Os meus eventos','Campeonatos aos quais tens acesso e sessões atribuídas.','')+timer+
-  '<div class="cards">'+(cards.map(x=>`<div class="cardlink" data-action="pilot-race" data-champ="${x.c.id}" data-race="${x.r.id}"><h3>${esc(x.r.name)}</h3><p>${esc(x.c.name)} · ${esc(x.r.location||'')} · ${esc(x.r.date||'')}<br>${x.sessions.length} sessão${x.sessions.length===1?'':'ões'} atribuída${x.sessions.length===1?'':'s'}</p></div>`).join('')||'<div class="empty">Ainda não tens campeonatos com acesso aprovado.</div>')+'</div>';
+function pilotDashboard(){
+  const pid=currentPilotId();
+  if(!pid)return header(t('Os meus eventos'),t('Campeonatos aos quais tens acesso e sessões atribuídas.'),'');
+  const d=getDriverById(pid),p=getDriverProfile(d)||{};
+  const photo=p.photo||'';
+  const initials=String(p.name||d?.name||'P').trim().slice(0,1).toUpperCase();
+
+  const assigned=[];
+  for(const c of db.championships||[]){
+    if(!hasChampionshipAccess(c.id))continue;
+    for(const r of c.races||[])for(const day of r.days||[])for(const s of day.sessions||[]){
+      if((s.pilotIds||[]).some(x=>String(x)===String(pid))) assigned.push({c,r,day,s,date:s.date||day.date||r.startDate||r.date||'',time:s.time||'09:00'});
+    }
+  }
+  assigned.sort((a,b)=>new Date(`${a.date}T${a.time}`)-new Date(`${b.date}T${b.time}`));
+  const nextSession=assigned.find(x=>new Date(`${x.date}T${x.time}`).getTime()>=Date.now()-60000)||null;
+  const recent=assigned.slice().sort((a,b)=>new Date(`${b.date}T${b.time}`)-new Date(`${a.date}T${a.time}`));
+  const analyzed=assigned.filter(x=>sessionScore(x.s,pid)!=null || Object.keys(x.s.analyses?.[pid]||{}).length || x.s.generalAnalysis?.[pid]?.comment);
+  const scores=assigned.map(x=>sessionScore(x.s,pid)).filter(v=>v!=null).map(Number);
+  const avgScore=scores.length?scores.reduce((a,b)=>a+b,0)/scores.length:null;
+  const championships=(db.championships||[]).filter(c=>hasChampionshipAccess(c.id));
+  const confirmedResults=(db.results||[]).filter(r=>String(r.pilotId)===String(pid)&&r.approved).sort((a,b)=>String(b.createdAt).localeCompare(String(a.createdAt)));
+  const latestResult=confirmedResults[0];
+  const resultCount=confirmedResults.length;
+  const nextRaceItems=championships.flatMap(c=>(c.races||[]).map(r=>({c,r}))).filter(x=>x.r.startDate||x.r.date).sort((a,b)=>String(a.r.startDate||a.r.date).localeCompare(String(b.r.startDate||b.r.date)));
+  const nextRace=nextRaceItems.find(x=>new Date(`${x.r.startDate||x.r.date}T23:59:59`).getTime()>=Date.now())||null;
+
+  const heroPhoto=photo?`<img class="pilot-dashboard-avatar" src="${esc(photo)}" alt="">`:`<div class="pilot-dashboard-avatar placeholder">${esc(initials)}</div>`;
+  const heroRight=nextSession?`<div class="pilot-dashboard-side">
+    <div class="pilot-next-label">${t('Próxima sessão')}</div>
+    <div class="pilot-next-name">${esc(nextSession.s.name||t('Sessão'))}</div>
+    <div class="pilot-next-meta">${esc(nextSession.r.name||t('Corrida'))} · ${esc(nextSession.c.name||t('Campeonato'))}<br>${esc(nextSession.date)}${nextSession.time?' · '+esc(nextSession.time):''}</div>
+    <div class="pilot-countdown"><div class="pilot-countdown-value" data-countdown="${esc(`${nextSession.date}T${nextSession.time}`)}">--:--:--</div><div class="pilot-countdown-caption">${t('tempo até à sessão')}</div></div>
+  </div>`:`<div class="pilot-dashboard-side">
+    <div class="pilot-next-label">${t('Próxima sessão')}</div>
+    <div class="pilot-next-name">${t('Sem sessão agendada')}</div>
+    <div class="pilot-next-meta">${t('Quando o treinador te atribuir uma sessão, ela aparecerá aqui.')}</div>
+  </div>`;
+
+  const activity=recent.slice(0,6).map(x=>{
+    const score=sessionScore(x.s,pid); const num=score==null?null:Number(score); const cls=num==null?'none':num>=8?'good':'mid';
+    return `<div class="pilot-activity-row"><div class="pilot-activity-date">${esc(x.date||'—')}</div><div class="pilot-activity-main"><div class="pilot-activity-title">${esc(x.s.name||t('Sessão'))}</div><div class="pilot-activity-meta">${esc(x.r.name||t('Corrida'))} · ${esc(x.c.name||t('Campeonato'))}${x.s.time?' · '+esc(x.s.time):''}</div></div><div class="pilot-score ${cls}">${num==null?'—':num.toFixed(1)+'/10'}</div></div>`;
+  }).join('')||`<div class="dashboard-empty">${t('Ainda não existem sessões no histórico.')}</div>`;
+
+  const champRows=championships.slice(0,6).map(c=>{
+    const myRaces=(c.races||[]).filter(r=>hasPilotInRace(r,pid)).length;
+    const result=(db.results||[]).filter(r=>String(r.pilotId)===String(pid)&&r.approved&&String(r.championshipId)===String(c.id)).sort((a,b)=>String(b.createdAt).localeCompare(String(a.createdAt)))[0];
+    return `<div class="pilot-side-row"><div class="pilot-side-icon">C</div><div class="pilot-side-content"><div class="pilot-side-title">${esc(c.name||t('Campeonato'))}</div><div class="pilot-side-meta">${esc(c.season||'')} · ${myRaces} ${t('corridas')}</div></div><div class="pilot-side-value">${result?.points!==''&&result?.points!=null?esc(result.points):'—'}</div></div>`;
+  }).join('')||`<div class="dashboard-empty">${t('Ainda não tens campeonatos com acesso aprovado.')}</div>`;
+
+  return header(t('Dashboard'),t('O teu centro de controlo de performance.'),'')+
+  `<section class="pilot-dashboard-hero"><div class="pilot-dashboard-main">${heroPhoto}<div class="pilot-dashboard-copy"><div class="pilot-dashboard-kicker">${t('MPRD · DRIVER CONTROL')}</div><h1 class="pilot-dashboard-title">${t('Performance')} <span>${t('em pista.')}</span></h1><div class="pilot-dashboard-sub">${t('Acompanha as tuas sessões, performance, campeonatos e resultados num único centro de controlo.')}</div><div class="pilot-dashboard-tags"><span class="pilot-dashboard-tag accent">${esc(p.category||d?.category||t('Categoria por definir'))}</span>${p.team?`<span class="pilot-dashboard-tag">${esc(p.team)}</span>`:''}${p.number?`<span class="pilot-dashboard-tag">#${esc(p.number)}</span>`:''}</div></div></div>${heroRight}</section>
+  <section class="pilot-kpis"><div class="pilot-stat"><div class="pilot-stat-label">${t('Sessões')}</div><div class="pilot-stat-value">${assigned.length}</div><div class="pilot-stat-foot">${t('atribuídas')}</div></div><div class="pilot-stat"><div class="pilot-stat-label">${t('Analisadas')}</div><div class="pilot-stat-value">${analyzed.length}</div><div class="pilot-stat-foot">${t('com análise')}</div></div><div class="pilot-stat"><div class="pilot-stat-label">${t('Score médio')}</div><div class="pilot-stat-value">${avgScore==null?'—':avgScore.toFixed(1)}</div><div class="pilot-stat-foot">${t('de 10')}</div></div><div class="pilot-stat"><div class="pilot-stat-label">${t('Resultados')}</div><div class="pilot-stat-value">${resultCount}</div><div class="pilot-stat-foot">${latestResult?esc(latestResult.position?latestResult.position+'º':t('confirmados')):t('confirmados')}</div></div></section>
+  <section class="pilot-grid"><div class="pilot-panel"><div class="pilot-panel-head"><div><div class="pilot-panel-title">${t('Atividade recente')}</div><div class="pilot-panel-kicker">${t('As tuas sessões')}</div></div><button class="btn" data-page="history">${t('Ver histórico')}</button></div><div class="pilot-activity">${activity}</div></div><div class="pilot-panel"><div class="pilot-panel-head"><div><div class="pilot-panel-title">${t('Campeonatos')}</div><div class="pilot-panel-kicker">${t('Os teus acessos')}</div></div><button class="btn" data-page="championships">${t('Abrir')}</button></div><div class="pilot-side-list">${champRows}</div></div></section>
+  <section class="pilot-footer-grid"><div class="pilot-action-card" data-action="open-pilot-profile" data-driver-id="${esc(pid)}"><div class="pilot-action-label">${t('Perfil')}</div><div class="pilot-action-title">${esc(p.name||d?.name||t('Piloto'))}</div><div class="pilot-action-meta">${t('Ver dados pessoais e informação do piloto.')}</div></div><div class="pilot-action-card" data-page="calendar"><div class="pilot-action-label">${t('Calendário')}</div><div class="pilot-action-title">${nextRace?esc(nextRace.r.name):t('Ver calendário')}</div><div class="pilot-action-meta">${nextRace?esc(nextRace.r.startDate||nextRace.r.date):t('Consulta as próximas provas.')}</div></div><div class="pilot-action-card" data-action="new-result"><div class="pilot-action-label">${t('Resultados')}</div><div class="pilot-action-title">${t('Registar resultado')}</div><div class="pilot-action-meta">${t('Adiciona resultados de corridas ou campeonatos.')}</div></div></section>`;
 }
+function myEventsPage(){return pilotDashboard();}
 
 function hasPilotInRace(r,pid){
   if(!r||!pid)return false;
@@ -1773,6 +1873,13 @@ Object.assign(I18N.en,{
 });
 Object.assign(I18N.es,{
   'Biblioteca de pistas':'Biblioteca de pistas','Gestão técnica das pistas':'Gestión técnica de las pistas','Imagem da pista':'Imagen de la pista','Sem imagem':'Sin imagen','Imagem pronta':'Imagen lista','Ainda sem imagem':'Sin imagen todavía','Curvas':'Curvas','Mapa da pista':'Mapa de pista','Abrir editor':'Abrir editor','pista':'pista','configuradas':'configuradas','Sube uma imagem para usar a pista como referência visual.':'Sube una imagen para usar la pista como referencia visual.','A biblioteca ainda não tem pistas.':'La biblioteca de pistas está vacía.','Pontos de coaching':'Puntos de coaching','Estado da imagem':'Estado de la imagen','Selecionar':'Seleccionar','Curva':'Curva','Total de pistas':'Total de pistas','Total de curvas':'Total de curvas','Sem imagem carregada':'Sin imagen cargada','Imagem carregada':'Imagen cargada','Clique num ponto para o selecionar.':'Haz clic en un punto para seleccionarlo.','Clique na imagem para criar uma nova curva.':'Haz clic en la imagen para crear una nueva curva.','Nenhuma curva':'Sin curvas','Mapa':'Mapa'
+});
+
+Object.assign(I18N.en,{
+  'O teu centro de controlo de performance.':'Your performance control center.','MPRD · DRIVER CONTROL':'MPRD · DRIVER CONTROL','Acompanha as tuas sessões, performance, campeonatos e resultados num único centro de controlo.':'Track your sessions, performance, championships and results from one control center.','tempo até à sessão':'time until session','Quando o treinador te atribuir uma sessão, ela aparecerá aqui.':'When your coach assigns you a session, it will appear here.','atribuídas':'assigned','Analisadas':'Analyzed','com análise':'with analysis','Score médio':'Average score','de 10':'out of 10','confirmados':'confirmed','Os teus acessos':'Your access','As tuas sessões':'Your sessions','Ver dados pessoais e informação do piloto.':'View your personal data and driver information.','Registar resultado':'Record result','Adiciona resultados de corridas ou campeonatos.':'Add race or championship results.','Categoria por definir':'Category not defined','Ver calendário':'View calendar','Consulta as próximas provas.':'Check upcoming races.'
+});
+Object.assign(I18N.es,{
+  'O teu centro de controlo de performance.':'Tu centro de control de rendimiento.','MPRD · DRIVER CONTROL':'MPRD · DRIVER CONTROL','Acompanha as tuas sessões, performance, campeonatos e resultados num único centro de controlo.':'Controla tus sesiones, rendimiento, campeonatos y resultados desde un único centro de control.','tempo até à sessão':'tiempo hasta la sesión','Quando o treinador te atribuir uma sessão, ela aparecerá aqui.':'Cuando tu entrenador te asigne una sesión, aparecerá aquí.','atribuídas':'asignadas','Analisadas':'Analizadas','com análise':'con análisis','Score médio':'Puntuación media','de 10':'de 10','confirmados':'confirmados','Os teus acessos':'Tus accesos','As tuas sessões':'Tus sesiones','Ver dados pessoais e informação do piloto.':'Ver datos personales e información del piloto.','Registar resultado':'Registrar resultado','Adiciona resultados de corridas ou campeonatos.':'Añade resultados de carreras o campeonatos.','Categoria por definir':'Categoría no definida','Ver calendário':'Ver calendario','Consulta as próximas provas.':'Consulta las próximas carreras.'
 });
 
 Object.assign(I18N.en,EXTRA_I18N.en); Object.assign(I18N.es,EXTRA_I18N.es);
