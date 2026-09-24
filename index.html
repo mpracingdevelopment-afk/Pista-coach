@@ -94,17 +94,21 @@ main{width:min(1320px,calc(100vw - 238px));margin-left:238px;margin-right:auto;p
 .empty{width:100%;}
 @media(min-width:701px){main > .header + *{margin-top:0}.calendar-shell .card{width:100%}.calendar-shell{max-width:1240px}.cards .cardlink,.cards .eventcard{min-height:110px}.timer-card + .cards{margin-top:4px}}
 </style>
+<style>
+.nav button[data-page="drivers"],.nav button[data-page="results"]{display:none!important}
+.history-feature{border:1px solid #3a3d40;background:linear-gradient(145deg,#17191b,#0f1011);border-radius:10px;padding:18px;margin:18px 0}
+.history-feature .history-kicker{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#aeb1b5;font-weight:900}
+.history-feature .history-title{font-size:22px;font-weight:900;margin:6px 0}
+</style>
 </head>
 <body>
 <aside class="sidebar">
 <div class="logo">MP<span>RacingDevelopment</span></div>
 <div class="nav">
 <button data-page="dashboard">Dashboard</button>
-<button data-page="drivers">Pilotos</button>
 <button data-page="tracks">Pistas</button>
 <button data-page="championships">Campeonatos</button>
 <button data-page="sessions">Sessões</button>
-<button data-page="results">Resultados</button>
 <button data-page="history">Histórico</button>
 <button data-page="calendar">Calendário</button>
 <button data-page="profile">Meu perfil</button>
@@ -786,7 +790,7 @@ function driverCard(d){
 }
 function getDriverById(id){return db.drivers.find(d=>String(d.id)===String(id));}
 function getDriverProfile(driver){const u=(profileCache||[]).find(x=>String(x.id)===String(driver?.userId));return u?.profile||driver||{};}
-function pilotProfilePage(){
+function pilotProfilePage(){if(!isAdmin() && ui.selectedPilot && String(ui.selectedPilot)!==String(currentPilotId())) ui.selectedPilot=currentPilotId();
   const d=getDriverById(ui.selectedPilot); if(!d)return isAdmin()?drivers():myEventsPage();
   const p=getDriverProfile(d),photo=p.photo||'',initials=String(p.name||d.name||'P').trim().slice(0,1).toUpperCase(),age=calculateAge(p.birthDate)||p.age||'—';
   const res=(db.results||[]).filter(r=>String(r.pilotId)===String(d.id)&&r.approved).sort((a,b)=>String(b.createdAt).localeCompare(String(a.createdAt))).slice(0,5);
@@ -794,8 +798,9 @@ function pilotProfilePage(){
   return `<div class="breadcrumb"><span data-action="back-pilots">Pilotos</span> › <b>${esc(p.name||d.name)}</b></div>`+header(p.name||d.name,'Perfil do piloto.','')+
   `<div class="card" style="max-width:900px;margin:0 auto"><div class="profile-photo-row">${photo?`<img class="avatar avatar-lg" src="${esc(photo)}" alt="">`:`<div class="avatar avatar-lg avatar-placeholder">${esc(initials)}</div>`}<div><h2 style="margin:0 0 5px">${esc(p.name||d.name)}</h2><div class="muted">${esc(p.category||d.category||'Categoria por definir')}${p.team?' · '+esc(p.team):''}${p.number?' · #'+esc(p.number):''}</div></div></div>
   <div class="profile-readonly"><div class="profile-item"><div class="muted">Data de nascimento</div><b>${esc(p.birthDate||'—')}</b></div><div class="profile-item"><div class="muted">Idade</div><b>${esc(age)}${age!=='—'?' anos':''}</b></div><div class="profile-item"><div class="muted">Localidade</div><b>${esc(p.location||'—')}</b></div><div class="profile-item"><div class="muted">Início no karting</div><b>${esc(p.kartingStartYear||'—')}</b></div><div class="profile-item"><div class="muted">Equipa</div><b>${esc(p.team||'—')}</b></div><div class="profile-item"><div class="muted">Número</div><b>${esc(p.number||'—')}</b></div></div>
-  <div class="sectiontitle">Resultados confirmados</div><div class="list">${resultRows||'<div class="empty">Ainda não existem resultados confirmados.</div>'}</div>
-  <div class="buttons" style="margin-top:14px"><button class="btn" data-action="open-pilot-results" data-driver-id="${esc(d.id)}">Ver todos os resultados</button><button class="btn" data-action="open-pilot-history" data-driver-id="${esc(d.id)}">Histórico de sessões</button></div></div>`;
+  <div class="history-feature"><div class="history-kicker">Histórico de sessões</div><div class="history-title">Últimas sessões e análises</div><div class="muted">Consulta rapidamente o trabalho realizado e abre a análise da última sessão.</div><div class="buttons" style="margin-top:14px">${(isAdmin()||String(d.id)===String(currentPilotId()))?`<button class="btn primary" data-action="open-pilot-history" data-driver-id="${esc(d.id)}">Abrir histórico</button>`:''}</div></div>
+  <div class="sectiontitle">Resultados</div><div class="list">${resultRows||'<div class="empty">Ainda não existem resultados confirmados.</div>'}</div>
+  <div class="buttons" style="margin-top:14px"><button class="btn" data-action="open-pilot-results" data-driver-id="${esc(d.id)}">Ver resultados</button></div></div>`;
 }
 function resultsPage(){
   const isA=isAdmin(), pid=isA?null:currentPilotId();
@@ -823,7 +828,7 @@ async function createResult(){
 }
 async function approveResult(id){const r=(db.results||[]).find(x=>String(x.id)===String(id));if(!r||!isAdmin())return;r.approved=true;r.approvedAt=new Date().toISOString();await save();render();toast('Resultado confirmado.');}
 async function rejectResult(id){if(!isAdmin())return;db.results=(db.results||[]).filter(x=>String(x.id)!==String(id));await save();render();toast('Resultado removido.');}
-function historyPage(){
+function historyPage(){if(!isAdmin() && ui.selectedPilot && String(ui.selectedPilot)!==String(currentPilotId())) ui.selectedPilot=currentPilotId();
   const pid=ui.selectedPilot||currentPilotId();
   if(!pid)return '<div class="empty">Não foi possível identificar o piloto.</div>';
   const rows=[];
@@ -931,11 +936,24 @@ function calendarEvents(){
   const manual=Array.isArray(db.calendarEvents)?db.calendarEvents:[];
   const derived=[];
   (db.championships||[]).forEach(c=>(c.races||[]).forEach(r=>{
+    const seen=new Set();
     (r.days||[]).forEach(d=>{
       if(!d.date || !Array.isArray(d.sessions) || !d.sessions.length)return;
-      d.sessions.forEach(s=>{
-        const time=s.time||'09:00';
-        derived.push({id:'session-'+c.id+'-'+r.id+'-'+d.id+'-'+s.id,source:'session',sessionId:s.id,dayId:d.id,raceId:r.id,championshipId:c.id,title:s.name||'Sessão',date:s.date||d.date,time,location:r.location||'',championship:c.name||'',raceName:r.name||'',description:s.description||'Sessão de coaching'});
+      if(seen.has(d.date))return;
+      seen.add(d.date);
+      derived.push({
+        id:'race-day-'+c.id+'-'+r.id+'-'+d.id,
+        source:'race-day',
+        dayId:d.id,
+        raceId:r.id,
+        championshipId:c.id,
+        title:r.name||'Corrida',
+        date:d.date,
+        time:'',
+        location:r.location||'',
+        championship:c.name||'',
+        raceName:r.name||'',
+        description:`${r.name||'Corrida'} · ${c.name||''}`
       });
     });
   }));
@@ -965,8 +983,8 @@ function calendarEventModal(id){
     modal(`<h2>${esc(e.title)}</h2><div class="readonly"><b>${esc(e.date)}${e.time?' · '+esc(e.time):''}</b><div class="muted" style="margin-top:6px">${esc(e.raceName||'')} · ${esc(e.location||'Local por definir')} · ${esc(e.championship||'')}</div>${e.description?`<div style="margin-top:12px">${esc(e.description)}</div>`:''}<div class="help" style="margin-top:12px">Esta entrada é sincronizada automaticamente com a sessão. Para alterar a data ou hora, edita a sessão${c?' em '+esc(c.name):''}.</div></div><div class="modalactions"><button class="btn" data-action="close">Fechar</button></div>`);
     return;
   }
-  if(e.source==='race'){
-    modal(`<h2>${esc(e.title)}</h2><div class="readonly"><b>${esc(e.date)}${e.time?' · '+esc(e.time):''}</b><div class="muted" style="margin-top:6px">${esc(e.location||'Local por definir')} · ${esc(e.championship||'')}</div><div style="margin-top:12px">Esta prova é sincronizada automaticamente com o campeonato. Os dias visíveis no calendário são os dias com sessões.</div></div><div class="modalactions"><button class="btn" data-action="close">Fechar</button></div>`);
+  if(e.source==='race-day'){
+    modal(`<h2>${esc(e.title)}</h2><div class="readonly"><b>${esc(e.date)}${e.time?' · '+esc(e.time):''}</b><div class="muted" style="margin-top:6px">${esc(e.location||'Local por definir')} · ${esc(e.championship||'')}</div><div style="margin-top:12px">Esta prova é sincronizada automaticamente com o campeonato. O calendário mostra os dias em que existem sessões desta corrida.</div></div><div class="modalactions"><button class="btn" data-action="close">Fechar</button></div>`);
     return;
   }
   if(!isAdmin()){
@@ -1424,13 +1442,13 @@ document.addEventListener('click',async event=>{
     case 'edit-profile':profileEditing=true;render();break;
     case 'open-pilot-profile':ui.selectedPilot=action.dataset.driverId;ui.page='pilot-profile';render();break;
     case 'back-pilots':ui.page='drivers';ui.selectedPilot=null;render();break;
-    case 'open-pilot-results':ui.selectedPilot=action.dataset.driverId;ui.page='results';render();break;
-    case 'open-pilot-history':ui.selectedPilot=action.dataset.driverId;ui.page='history';render();break;
+    case 'open-pilot-results':ui.selectedPilot=action.dataset.driverId;ui.page='pilot-profile';render();break;
+    case 'open-pilot-history':if(!isAdmin()&&String(action.dataset.driverId)!==String(currentPilotId())){toast('Só podes consultar o teu próprio histórico.');break;}ui.selectedPilot=action.dataset.driverId;ui.page='history';render();break;
     case 'new-result':newResult();break;
     case 'create-result':createResult();break;
     case 'approve-result':approveResult(action.dataset.id);break;
     case 'reject-result':if(confirm('Apagar este resultado pendente?'))rejectResult(action.dataset.id);break;
-    case 'open-history-session':ui.page='pilot-session';ui.session=action.dataset.session;ui.day=action.dataset.day;ui.race=action.dataset.race;ui.championship=action.dataset.champ;ui.sessionPilot=ui.selectedPilot||currentPilotId();render();break;
+    case 'open-history-session':{const target=ui.selectedPilot||currentPilotId();if(!isAdmin()&&String(target)!==String(currentPilotId())){toast('Só podes consultar o teu próprio histórico.');break;}ui.page='pilot-session';ui.session=action.dataset.session;ui.day=action.dataset.day;ui.race=action.dataset.race;ui.championship=action.dataset.champ;ui.sessionPilot=target;render();break;}
     case 'cancel-profile-edit':profileEditing=false;render();break;
     case 'save-analysis':{
       const s=getSession(),pid=ui.sessionPilot||document.getElementById('activePilot')?.value;
@@ -1450,7 +1468,7 @@ document.addEventListener('click',async event=>{
     case 'create-calendar-event':createCalendarEvent();break;
     case 'save-calendar-event':saveCalendarEvent(action.dataset.id);break;
     case 'calendar-event':calendarEventModal(action.dataset.id);break;
-    case 'delete-calendar-event':{const id=String(action.dataset.id);if(id.startsWith('race-')){toast('As provas dos campeonatos são geridas na corrida.');break;}if(confirm('Apagar este compromisso do calendário?')){db.calendarEvents=db.calendarEvents.filter(e=>String(e.id)!==id);await save();closeModal();render();}}break;
+    case 'delete-calendar-event':{const id=String(action.dataset.id);if(id.startsWith('race-day-')){toast('As provas dos campeonatos são geridas na corrida.');break;}if(confirm('Apagar este compromisso do calendário?')){db.calendarEvents=db.calendarEvents.filter(e=>String(e.id)!==id);await save();closeModal();render();}}break;
     case 'pilot-home':ui.page='my-events';render();break;
     case 'pilot-race-back':ui.page='pilot-race';if(action.dataset.champ)ui.championship=action.dataset.champ;if(action.dataset.race)ui.race=action.dataset.race;render();break;
     case 'pilot-race':ui.page='pilot-race';ui.championship=action.dataset.champ;ui.race=action.dataset.race;render();break;
