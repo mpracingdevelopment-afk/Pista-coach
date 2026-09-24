@@ -894,13 +894,24 @@ function normalize(raw){
   const championships=Array.isArray(raw.championships)?raw.championships.map((c,i)=>({
     id:c.id||Date.now()+i,name:c.name||('Campeonato '+(i+1)),season:c.season||'',
     races:Array.isArray(c.races)?c.races.map((r,j)=>({
-      id:r.id||Date.now()+j,name:r.name||('Corrida '+(j+1)),location:r.location||'',date:r.date||'',startDate:r.startDate||r.date||'',endDate:r.endDate||r.date||'',
+      id:r.id||Date.now()+j,name:r.name||('Corrida '+(j+1)),location:r.location||'',date:r.date||'',startDate:r.startDate||r.date||'',endDate:r.endDate||r.date||'',trackId:r.trackId||null,
       links:{timing:r.links?.timing||'',results:r.links?.results||'',schedule:r.links?.schedule||''},
       days:Array.isArray(r.days)?r.days.map((d,k)=>({
         id:d.id||Date.now()+k,name:d.name||('Dia '+(k+1)),date:d.date||'',sessions:Array.isArray(d.sessions)?d.sessions.map(s=>({...s,pilotIds:Array.isArray(s.pilotIds)?s.pilotIds:[],analyses:s.analyses||{}})):[]
       })):[],pilotIds:Array.isArray(r.pilotIds)?r.pilotIds:[]
     })):[],
   })):[];
+  // Keep the race-level track association persistent. Older app states may have
+  // stored the track only on sessions, so recover it once when possible.
+  championships.forEach(c=>(c.races||[]).forEach(r=>{
+    if(!r.trackId){
+      const inferred=(r.days||[]).flatMap(d=>d.sessions||[]).find(s=>s.trackId);
+      if(inferred?.trackId) r.trackId=inferred.trackId;
+    }
+    (r.days||[]).forEach(d=>(d.sessions||[]).forEach(s=>{
+      if(!s.trackId && r.trackId) s.trackId=r.trackId;
+    }));
+  }));
 
   return {
     tracks,
