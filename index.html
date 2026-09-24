@@ -365,6 +365,107 @@ main>*{width:min(1280px,100%)}
 @media(max-width:1050px){.dashboard-hero{grid-template-columns:1fr}.dashboard-hero-side{border-left:0;border-top:1px solid #292f35}.dashboard-grid{grid-template-columns:1fr}.dashboard-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.dashboard-footer-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:700px){.dashboard-hero-main{padding:23px 20px}.dashboard-hero-side{padding:17px 20px}.dashboard-hero-title{font-size:30px}.dashboard-kpis{grid-template-columns:1fr 1fr;gap:7px}.dashboard-stat{min-height:92px;padding:14px}.dashboard-stat-value{font-size:28px}.dashboard-activity-row{grid-template-columns:48px minmax(0,1fr) auto;gap:9px;padding:12px}.dashboard-footer-grid{grid-template-columns:1fr}.dashboard-request{align-items:flex-start;flex-direction:column}.dashboard-request .buttons{width:100%}.dashboard-request .buttons .btn{flex:1}}
 
+
+/* =========================================================
+   V64 — TRACK LIBRARY / TRACK EDITOR
+   ========================================================= */
+.tracks-library{display:grid;gap:18px}
+.tracks-overview{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:end;margin-bottom:2px}
+.tracks-intro{padding:20px 22px;border:1px solid #252a30;border-radius:14px;background:radial-gradient(circle at 100% 0,rgba(225,6,0,.10),transparent 34%),linear-gradient(145deg,#121518,#0a0c0e);position:relative;overflow:hidden}
+.tracks-intro:after{content:"TRACK LIBRARY";position:absolute;right:-9px;bottom:-28px;font-size:84px;font-weight:950;letter-spacing:-.08em;color:rgba(255,255,255,.025);pointer-events:none}
+.tracks-intro-kicker{color:var(--accent);font-size:9px;font-weight:950;letter-spacing:.18em;text-transform:uppercase;margin-bottom:8px}
+.tracks-intro-title{font-size:23px;font-weight:900;letter-spacing:-.04em;position:relative;z-index:1}
+.tracks-intro-sub{font-size:11px;color:#7e858d;line-height:1.6;max-width:620px;margin-top:7px;position:relative;z-index:1}
+.tracks-library-stats{display:grid;grid-template-columns:repeat(2,minmax(112px,1fr));gap:8px}
+.track-library-stat{min-width:112px;padding:15px 16px;border:1px solid #252a30;border-radius:12px;background:#0d0f11;text-align:right}
+.track-library-stat-label{font-size:8px;color:#636a72;text-transform:uppercase;letter-spacing:.14em;font-weight:900}
+.track-library-stat-value{font-size:26px;font-weight:950;letter-spacing:-.05em;margin-top:4px;color:#fff}
+.track-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:14px}
+.track-card{background:linear-gradient(145deg,#111417,#0b0d0f);border:1px solid #272c32;border-radius:14px;overflow:hidden;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease;background-color:#0c0e10}
+.track-card:hover{transform:translateY(-3px);border-color:#444b53;box-shadow:0 18px 48px rgba(0,0,0,.30)}
+.track-card-map{height:188px;position:relative;background:radial-gradient(circle at 50% 50%,#181c20 0,#0d1013 54%,#08090b 100%);border-bottom:1px solid #252a30;overflow:hidden}
+.track-card-map:before{content:"";position:absolute;inset:0;background:linear-gradient(135deg,transparent 0 48%,rgba(225,6,0,.12) 48% 49%,transparent 49% 100%);opacity:.45}
+.track-card-map img{width:100%;height:100%;display:block;object-fit:contain;padding:16px;filter:contrast(1.02) saturate(.85)}
+.track-card-map:after{content:"";position:absolute;inset:auto 0 0 0;height:54%;background:linear-gradient(180deg,transparent,rgba(5,6,7,.84));pointer-events:none}
+.track-card-map.is-empty{display:flex;align-items:center;justify-content:center}
+.track-card-map.is-empty .track-map-empty-mark{width:66px;height:66px;border-radius:50%;border:1px solid #383f46;display:flex;align-items:center;justify-content:center;color:#555c64;font-size:18px;font-weight:950;position:relative;z-index:2}
+.track-card-map .track-map-tag{position:absolute;left:12px;top:12px;padding:5px 7px;border-radius:6px;background:rgba(5,6,7,.76);border:1px solid rgba(255,255,255,.08);color:#bbc0c6;font-size:8px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;z-index:4;backdrop-filter:blur(10px)}
+.track-card-map .track-map-index{position:absolute;right:12px;top:12px;color:#fff;font-size:22px;font-weight:950;line-height:1;z-index:4;text-shadow:0 4px 16px rgba(0,0,0,.6)}
+.track-card-body{padding:17px 17px 15px}
+.track-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.track-card-name{font-size:17px;font-weight:900;letter-spacing:-.03em;line-height:1.1}
+.track-card-variant{font-size:9px;color:#737a82;text-transform:uppercase;letter-spacing:.12em;font-weight:850;margin-top:5px}
+.track-card-status{font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.10em;padding:5px 7px;border:1px solid rgba(100,213,138,.22);background:rgba(100,213,138,.07);color:#86dca0;border-radius:99px;white-space:nowrap}
+.track-card-status.pending{border-color:#343a41;background:#111417;color:#737b84}
+.track-card-metrics{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:17px;padding-top:13px;border-top:1px solid #22272d}
+.track-card-metric{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.track-card-metric span{font-size:8px;text-transform:uppercase;letter-spacing:.12em;color:#626a72;font-weight:900}
+.track-card-metric b{font-size:12px;color:#e9ebed;font-weight:850}
+.track-card-actions{display:flex;gap:7px;margin-top:14px}
+.track-card-actions .btn{flex:1}
+.track-card-actions .btn.danger{flex:0 0 auto}
+.tracks-empty{padding:72px 24px!important}
+
+/* Editor */
+.track-editor-shell{display:grid;grid-template-columns:292px minmax(0,1fr);gap:14px;align-items:start}
+.track-editor-sidebar{display:grid;gap:10px;position:sticky;top:18px}
+.track-editor-card{background:linear-gradient(145deg,#111417,#0c0e10);border:1px solid #292f35;border-radius:12px;padding:15px;position:relative;overflow:hidden}
+.track-editor-card:before{content:"";position:absolute;left:0;top:0;bottom:0;width:2px;background:linear-gradient(180deg,var(--accent),transparent);opacity:.7}
+.track-editor-card h3{margin:0 0 10px;font-size:10px;text-transform:uppercase;letter-spacing:.13em;color:#c2c6cb}
+.track-editor-card .help{font-size:10px;line-height:1.55}
+.track-editor-image-status{display:flex;align-items:center;gap:9px;padding:9px;border-radius:8px;border:1px solid #242a30;background:#0c0e10;margin-bottom:10px}
+.track-editor-status-dot{width:8px;height:8px;border-radius:50%;background:#626a72;box-shadow:0 0 0 3px rgba(98,106,114,.08);flex:0 0 auto}
+.track-editor-status-dot.ready{background:#64d58a;box-shadow:0 0 0 3px rgba(100,213,138,.10)}
+.track-editor-status-text{font-size:10px;font-weight:800;color:#c9cdd2}
+.track-editor-status-sub{font-size:8px;color:#646b73;margin-top:2px}
+.track-mode{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px}
+.track-mode .btn{padding:10px 8px}
+.track-mode .btn.selected{background:rgba(225,6,0,.11);border-color:rgba(225,6,0,.45);color:#fff;box-shadow:inset 0 0 0 1px rgba(225,6,0,.10)}
+.track-point-list{display:grid;gap:5px;max-height:272px;overflow:auto;padding-right:2px}
+.track-point-item{display:flex;align-items:center;gap:9px;width:100%;border:1px solid #252b31;background:#0d1012;color:#aeb4ba;border-radius:8px;padding:8px 9px;text-align:left;transition:.15s}
+.track-point-item:hover{border-color:#3c444c;background:#131619;color:#fff}
+.track-point-item.active{border-color:rgba(225,6,0,.52);background:rgba(225,6,0,.08);color:#fff}
+.track-point-num{width:25px;height:25px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#20252a;color:#d6d9dc;font-size:9px;font-weight:950;flex:0 0 auto}
+.track-point-item.active .track-point-num{background:var(--accent);color:#fff;box-shadow:0 0 0 3px rgba(225,6,0,.10)}
+.track-point-name{font-size:10px;font-weight:850}
+.track-point-state{margin-left:auto;color:#626970;font-size:8px;text-transform:uppercase;letter-spacing:.08em;font-weight:900}
+.track-editor-summary{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.track-editor-summary-box{border:1px solid #242a30;background:#0c0e10;border-radius:8px;padding:10px}
+.track-editor-summary-label{font-size:8px;color:#626a72;text-transform:uppercase;letter-spacing:.12em;font-weight:900}
+.track-editor-summary-value{font-size:20px;font-weight:950;margin-top:3px;letter-spacing:-.04em}
+.track-editor-main{min-width:0}
+.track-editor-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 13px;border:1px solid #292f35;border-bottom:0;border-radius:12px 12px 0 0;background:linear-gradient(90deg,#121518,#0d0f11)}
+.track-editor-toolbar-left{display:flex;align-items:center;gap:10px;min-width:0}
+.track-editor-toolbar-name{font-size:13px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.track-editor-toolbar-meta{font-size:9px;color:#626a72;text-transform:uppercase;letter-spacing:.10em;font-weight:900}
+.track-editor-map .stage{height:calc(100vh - 255px);min-height:590px}
+.track-editor-map .stagehead{display:none}
+.track-editor-map .point{width:34px;height:34px;border-radius:50%;font-size:11px;border-width:2px}
+.track-editor-map .point:hover{transform:translate(-50%,-50%) scale(1.06)}
+.track-editor-map .point.selected{box-shadow:0 0 0 4px rgba(225,6,0,.13),0 8px 22px rgba(0,0,0,.78)}
+.track-editor-map .image-wrap{background:radial-gradient(circle at 50% 50%,#0d1114,#07090b 75%)}
+.track-editor-hint{display:flex;align-items:center;gap:8px;margin-top:9px;color:#656d75;font-size:9px}
+.track-editor-hint b{color:#c5cad0}
+
+@media(max-width:1050px){
+  .tracks-overview{grid-template-columns:1fr}
+  .tracks-library-stats{grid-template-columns:repeat(2,160px)}
+  .track-editor-shell{grid-template-columns:1fr}
+  .track-editor-sidebar{position:static;grid-template-columns:repeat(2,minmax(0,1fr))}
+  .track-editor-sidebar .track-points-card{grid-column:1/-1}
+  .track-editor-map .stage{height:66vh;min-height:480px}
+}
+@media(max-width:700px){
+  .tracks-library-stats{grid-template-columns:1fr 1fr}
+  .track-grid{grid-template-columns:1fr}
+  .track-card-map{height:205px}
+  .track-editor-sidebar{grid-template-columns:1fr}
+  .track-editor-sidebar .track-points-card{grid-column:auto}
+  .track-editor-toolbar{align-items:flex-start;flex-direction:column}
+  .track-editor-toolbar-left{width:100%}
+  .track-editor-map .stage{height:62vh;min-height:400px}
+}
+
 </style>
 </head>
 <body>
@@ -1239,18 +1340,45 @@ function calendarEventModal(id){
 }
 function tracksPage(){
   if(!isAdmin())return '<div class="empty">Apenas o administrador pode gerir pistas.</div>';
-  return header('Pistas','Imagem + pontos de coaching.',
-    '<button class="btn primary" data-action="new-track">+ Nova pista</button>')+
-    `<div class="list">${
-      db.tracks.map(t=>`<div class="row">
-        <div><b>${esc(t.name)}</b><div class="muted">${esc(t.variant)} · ${t.points.length} curvas</div></div>
-        <div class="buttons">
-          <button class="btn" data-action="edit" data-id="${t.id}">Editar pista</button>
-          <button class="btn danger" data-action="delete" data-id="${t.id}">Apagar</button>
+  const tracks=db.tracks||[];
+  const totalCorners=tracks.reduce((n,x)=>n+(x.points||[]).length,0);
+  const withImages=tracks.filter(x=>!!x.image).length;
+  const cards=tracks.map((track,i)=>{
+    const points=track.points||[];
+    const ready=!!track.image;
+    return `<article class="track-card">
+      <div class="track-card-map ${ready?'':'is-empty'}">
+        <div class="track-map-tag">${t('Mapa da pista')}</div>
+        <div class="track-map-index">${String(i+1).padStart(2,'0')}</div>
+        ${ready?`<img src="${esc(track.image)}" alt="${esc(track.name)}">`:`<div class="track-map-empty-mark">MP</div>`}
+      </div>
+      <div class="track-card-body">
+        <div class="track-card-top">
+          <div><div class="track-card-name">${esc(track.name)}</div><div class="track-card-variant">${esc(track.variant||'Karting')}</div></div>
+          <div class="track-card-status ${ready?'':'pending'}">${ready?t('Imagem pronta'):t('Sem imagem')}</div>
         </div>
-      </div>`).join('') ||
-      '<div class="empty">Ainda não tens pistas.</div>'
-    }</div>`;
+        <div class="track-card-metrics">
+          <div class="track-card-metric"><span>${t('Curvas')}</span><b>${points.length}</b></div>
+          <div class="track-card-metric"><span>${t('Estado da imagem')}</span><b>${ready?t('Disponível'):t('Pendente')}</b></div>
+        </div>
+        <div class="track-card-actions">
+          <button class="btn primary" data-action="edit" data-id="${track.id}">${t('Abrir editor')}</button>
+          <button class="btn danger" data-action="delete" data-id="${track.id}">${t('Apagar')}</button>
+        </div>
+      </div>
+    </article>`;
+  }).join('');
+  return header(t('Pistas'),t('Imagem + pontos de coaching.'),'<button class="btn primary" data-action="new-track">+ Nova pista</button>')+
+    `<section class="tracks-library">
+      <div class="tracks-overview">
+        <div class="tracks-intro"><div class="tracks-intro-kicker">MPRD · TRACK LIBRARY</div><div class="tracks-intro-title">${t('Gestão técnica das pistas')}</div><div class="tracks-intro-sub">${t('Imagem + pontos de coaching.')}</div></div>
+        <div class="tracks-library-stats">
+          <div class="track-library-stat"><div class="track-library-stat-label">${t('Total de pistas')}</div><div class="track-library-stat-value">${tracks.length}</div></div>
+          <div class="track-library-stat"><div class="track-library-stat-label">${t('Total de curvas')}</div><div class="track-library-stat-value">${totalCorners}</div></div>
+        </div>
+      </div>
+      <div class="track-grid">${cards||`<div class="empty tracks-empty" style="grid-column:1/-1"><b>${t('A biblioteca ainda não tem pistas.')}</b><div class="help" style="margin-top:7px">${t('Sube uma imagem para usar a pista como referência visual.')}</div></div>`}</div>
+    </section>`;
 }
 
 
@@ -1360,17 +1488,45 @@ function sessions(){
   return header('Sessões','Todas as sessões de coaching, com o piloto em destaque.','<button class="btn" data-action="manage-session-templates">Nomes de sessão</button><button class="btn primary" data-action="new-session">+ Criar sessão</button>')+`<div class="list">${rows.map(x=>{const names=(x.s.pilotIds||[]).map(id=>{const d=getDriverById(id);const p=getDriverProfile(d);return p.name||d?.name;}).filter(Boolean);return `<div class="sessionrow"><div><b>${esc(names.join(', ')||'Sem piloto associado')}</b><div style="font-weight:800;margin-top:4px">${esc(x.s.name)}</div><div class="muted">${esc(x.c.name)} · ${esc(x.r.name)} · ${esc(x.d.name)} · ${esc(x.s.date||x.d.date||'')} ${esc(x.s.time||'')}</div></div><div class="buttons"><button class="btn" data-action="open-session" data-id="${x.s.id}" data-champ="${x.c.id}" data-race="${x.r.id}" data-day="${x.d.id}">Abrir</button><button class="btn danger" data-action="delete-session" data-id="${x.s.id}" data-champ="${x.c.id}" data-race="${x.r.id}" data-day="${x.d.id}">Apagar</button></div></div>`}).join('')||'<div class="empty">Ainda não existem sessões.</div>'}</div>`;
 }
 function editor(){
-  const t=db.tracks.find(x=>String(x.id)===String(ui.editor));
-  if(!t){ui.page='tracks';return tracksPage();}
-  const points=t.points.map((p,i)=>`<button class="point ${ui.selected===i?'selected':''}" data-point="${i}" data-map-point="${i}" title="Curva ${i+1}">${i+1}</button>`).join('');
-  return `<div style="margin-bottom:12px"><button class="btn" data-action="back">← Pistas</button></div>
-  ${header('Editar · '+t.name,'Aqui defines apenas os pontos das curvas. Os comentários ficam nas sessões.','<button class="btn primary" data-action="save">Guardar pista</button>')}
-  <div class="editor"><div class="panel">
-    <div class="card"><h3>Imagem da pista</h3><button type="button" class="btn primary" data-action="image">Carregar imagem</button><input id="file" type="file" accept="image/*" style="display:none"><div class="help">A imagem é a referência visual. Escolhe uma imagem do computador para a pista.</div></div>
-    <div class="card"><h3>Pontos das curvas</h3><div class="mode"><button class="btn ${ui.mode==='add'?'selected':''}" data-mode="add">Adicionar</button><button class="btn ${ui.mode==='select'?'selected':''}" data-mode="select">Selecionar</button></div><button class="btn danger" data-action="remove">Apagar selecionado</button><div class="help">Clica na imagem para criar Curva 1, Curva 2, Curva 3...</div></div>
-    <div class="card"><h3>Estado</h3><b>${t.points.length}</b> curvas configuradas</div>
-  </div><div class="stagebox"><div class="stagehead"><b>${esc(t.name)}</b><span class="muted">${t.points.length} curvas</span></div><div class="stage" id="stage"><div class="image-wrap">${t.image?`<img id="trackImage" class="track-image" src="${t.image}" alt="">`:'<div class="empty" style="margin:auto">Carrega uma imagem da pista</div>'}</div><div class="click-layer" id="clickLayer"></div>${points}</div></div></div>`;
+  const track=db.tracks.find(x=>String(x.id)===String(ui.editor));
+  if(!track){ui.page='tracks';return tracksPage();}
+  const points=track.points||[];
+  const pointButtons=points.map((p,i)=>`<button type="button" class="point ${ui.selected===i?'selected':''}" data-point="${i}" data-map-point="${i}" title="${t('Curva')} ${i+1}">${i+1}</button>`).join('');
+  const pointList=points.map((p,i)=>`<button type="button" class="track-point-item ${ui.selected===i?'active':''}" data-point="${i}"><span class="track-point-num">${i+1}</span><span class="track-point-name">${t('Curva')} ${i+1}</span><span class="track-point-state">${ui.selected===i?t('Selecionar'):''}</span></button>`).join('');
+  return `<div style="margin-bottom:12px"><button class="btn backbtn" data-action="back">← ${t('Pistas')}</button></div>
+  ${header(t('Editar · '+track.name),t('Aqui defines apenas os pontos das curvas. Os comentários ficam nas sessões.'),'<button class="btn primary" data-action="save">Guardar pista</button>')}
+  <div class="track-editor-shell">
+    <aside class="track-editor-sidebar">
+      <div class="track-editor-card">
+        <h3>${t('Imagem da pista')}</h3>
+        <div class="track-editor-image-status"><span class="track-editor-status-dot ${track.image?'ready':''}"></span><div><div class="track-editor-status-text">${track.image?t('Imagem carregada'):t('Ainda sem imagem')}</div><div class="track-editor-status-sub">${track.image?t('Imagem pronta'):t('Sem imagem carregada')}</div></div></div>
+        <button type="button" class="btn primary" data-action="image" style="width:100%">${t('Carrega uma imagem da pista')}</button>
+        <input id="file" type="file" accept="image/*" style="display:none">
+        <div class="help" style="margin-top:9px">${t('Aqui defines apenas os pontos das curvas. Os comentários ficam nas sessões.')}</div>
+      </div>
+      <div class="track-editor-card">
+        <h3>${t('Pontos de coaching')}</h3>
+        <div class="track-mode"><button class="btn ${ui.mode==='add'?'selected':''}" data-mode="add">${t('Adicionar')}</button><button class="btn ${ui.mode==='select'?'selected':''}" data-mode="select">${t('Selecionar')}</button></div>
+        <button class="btn danger" data-action="remove" style="width:100%">${t('Apagar')} ${t('Selecionar')}</button>
+        <div class="help" style="margin-top:9px">${t('Clica na imagem para criar Curva 1, Curva 2, Curva 3...')}</div>
+      </div>
+      <div class="track-editor-card track-points-card">
+        <h3>${t('Curvas')}</h3>
+        <div class="track-point-list">${pointList||`<div class="empty" style="padding:20px 10px">${t('Nenhuma curva')}</div>`}</div>
+      </div>
+      <div class="track-editor-card">
+        <h3>${t('Estado')}</h3>
+        <div class="track-editor-summary"><div class="track-editor-summary-box"><div class="track-editor-summary-label">${t('Curvas')}</div><div class="track-editor-summary-value">${points.length}</div></div><div class="track-editor-summary-box"><div class="track-editor-summary-label">${t('Mapa')}</div><div class="track-editor-summary-value">${track.image?'01':'—'}</div></div></div>
+      </div>
+    </aside>
+    <section class="track-editor-main">
+      <div class="track-editor-toolbar"><div class="track-editor-toolbar-left"><div class="track-editor-toolbar-name">${esc(track.name)}</div><div class="track-editor-toolbar-meta">${esc(track.variant||'Karting')} · ${points.length} ${t('Curvas')}</div></div><div class="track-editor-toolbar-meta">MPRD / MAP</div></div>
+      <div class="stagebox track-editor-map"><div class="stage" id="stage"><div class="image-wrap">${track.image?`<img id="trackImage" class="track-image" src="${track.image}" alt="Mapa da pista">`:'<div class="empty" style="margin:auto">Carrega uma imagem da pista</div>'}</div><div class="click-layer" id="clickLayer"></div>${pointButtons}</div></div>
+      <div class="track-editor-hint"><span>●</span><span><b>${t('Adicionar')}</b> ${t('Clique na imagem para criar uma nova curva.')} · <b>${t('Selecionar')}</b> ${t('Clique num ponto para o selecionar.')}</span></div>
+    </section>
+  </div>`;
 }
+
 function positionMapPoints(){
   const stage=document.getElementById('stage');
   const image=document.getElementById('trackImage');
@@ -1609,6 +1765,16 @@ Object.assign(I18N.en,{
 Object.assign(I18N.es,{
   'Próximo evento':'Próximo evento','até à prova':'hasta la carrera','Sem provas agendadas':'No hay carreras programadas','Cria uma corrida para começares a organizar o calendário.':'Crea una carrera para empezar a organizar el calendario.','Centro de controlo da atividade de coaching.':'Centro de control de la actividad de coaching.','MPRD · RACE CONTROL':'MPRD · RACE CONTROL','Performance':'Rendimiento','em pista.':'en pista.','Acompanha pilotos, sessões, campeonatos e resultados num único centro de controlo.':'Controla pilotos, sesiones, campeonatos y resultados desde un único centro de control.','Abrir sessões':'Abrir sesiones','Ver pistas':'Ver pistas','na equipa':'en el equipo','ativos e publicados':'activos y publicados','registadas':'registradas','Último score':'Última puntuación','sem análise ainda':'sin análisis todavía','média da sessão':'media de la sesión','Atividade recente':'Actividad reciente','Sessões de coaching':'Sesiones de coaching','Ver histórico':'Ver historial','Estrutura atual':'Estructura actual','Pedidos de acesso':'Solicitudes de acceso','pendentes':'pendientes','planeamento':'planificación','Sem sessão agendada':'Sin sesión programada','Adiciona uma sessão ao calendário.':'Añade una sesión al calendario.','corridas':'carreras'
 });
+
+
+// V64 track-library translations
+Object.assign(I18N.en,{
+  'Biblioteca de pistas':'Track library','Gestão técnica das pistas':'Technical track management','Imagem da pista':'Track image','Sem imagem':'No image','Imagem pronta':'Image ready','Ainda sem imagem':'No image yet','Curvas':'Corners','Mapa da pista':'Track map','Abrir editor':'Open editor','pista':'track','configuradas':'configured','Sube uma imagem para usar a pista como referência visual.':'Upload an image to use the track as a visual reference.','A biblioteca ainda não tem pistas.':'The track library is empty.','Pontos de coaching':'Coaching points','Estado da imagem':'Image status','Adicionar':'Add','Selecionar':'Select','Curva':'Corner','Total de pistas':'Total tracks','Total de curvas':'Total corners','Sem imagem carregada':'No image uploaded','Imagem carregada':'Image uploaded','Clique num ponto para o selecionar.':'Click a point to select it.','Clique na imagem para criar uma nova curva.':'Click the image to create a new corner.','Nenhuma curva':'No corners','Mapa':'Map'
+});
+Object.assign(I18N.es,{
+  'Biblioteca de pistas':'Biblioteca de pistas','Gestão técnica das pistas':'Gestión técnica de las pistas','Imagem da pista':'Imagen de la pista','Sem imagem':'Sin imagen','Imagem pronta':'Imagen lista','Ainda sem imagem':'Sin imagen todavía','Curvas':'Curvas','Mapa da pista':'Mapa de pista','Abrir editor':'Abrir editor','pista':'pista','configuradas':'configuradas','Sube uma imagem para usar a pista como referência visual.':'Sube una imagen para usar la pista como referencia visual.','A biblioteca ainda não tem pistas.':'La biblioteca de pistas está vacía.','Pontos de coaching':'Puntos de coaching','Estado da imagem':'Estado de la imagen','Selecionar':'Seleccionar','Curva':'Curva','Total de pistas':'Total de pistas','Total de curvas':'Total de curvas','Sem imagem carregada':'Sin imagen cargada','Imagem carregada':'Imagen cargada','Clique num ponto para o selecionar.':'Haz clic en un punto para seleccionarlo.','Clique na imagem para criar uma nova curva.':'Haz clic en la imagen para crear una nueva curva.','Nenhuma curva':'Sin curvas','Mapa':'Mapa'
+});
+
 Object.assign(I18N.en,EXTRA_I18N.en); Object.assign(I18N.es,EXTRA_I18N.es);
 function t(s){return currentLang==='pt'?s:(I18N[currentLang]?.[s]||s)}
 function applyTranslations(){
