@@ -300,6 +300,71 @@ main>*{width:min(1280px,100%)}
   main{margin-left:0;width:100%;padding:18px 12px 88px}.userbar{border-radius:9px}.title{font-size:24px}.header{padding-bottom:15px;margin-bottom:20px}
   .card,.cardlink,.eventcard,.row,.sessionrow{border-radius:10px}.btn{min-height:38px}
 }
+
+
+/* V63 — Dashboard / Race Control redesign */
+.dashboard-hero{position:relative;overflow:hidden;display:grid;grid-template-columns:minmax(0,1.35fr) minmax(300px,.65fr);gap:0;border:1px solid #292f35;border-radius:16px;background:radial-gradient(circle at 78% 0,rgba(225,6,0,.18),transparent 32%),linear-gradient(135deg,#15181b 0%,#0b0d0f 62%,#090a0c 100%);box-shadow:0 28px 80px rgba(0,0,0,.35);min-height:270px;margin-bottom:22px}
+.dashboard-hero:before{content:"";position:absolute;inset:0;background:linear-gradient(120deg,transparent 0 52%,rgba(255,255,255,.025) 52.1% 52.3%,transparent 52.4% 100%);pointer-events:none}
+.dashboard-hero:after{content:"MPRD";position:absolute;right:-16px;bottom:-58px;font-size:180px;font-weight:950;letter-spacing:-.12em;color:rgba(255,255,255,.025);line-height:1;pointer-events:none}
+.dashboard-hero-main{position:relative;z-index:2;padding:30px 32px 28px;display:flex;flex-direction:column;justify-content:center;min-width:0}
+.dashboard-kicker{display:flex;align-items:center;gap:9px;color:#e10600;font-size:9px;font-weight:950;letter-spacing:.22em;text-transform:uppercase;margin-bottom:13px}
+.dashboard-kicker:before{content:"";width:24px;height:2px;background:#e10600;box-shadow:8px 0 0 rgba(225,6,0,.25)}
+.dashboard-hero-title{font-size:clamp(28px,3.4vw,46px);font-weight:950;letter-spacing:-.065em;line-height:.98;margin:0;max-width:720px}
+.dashboard-hero-title span{color:#e10600}
+.dashboard-hero-sub{color:#8d949c;font-size:12px;line-height:1.6;max-width:650px;margin-top:12px}
+.dashboard-hero-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:20px}
+.dashboard-hero-side{position:relative;z-index:2;padding:22px;border-left:1px solid #292f35;background:linear-gradient(180deg,rgba(255,255,255,.025),rgba(0,0,0,.08));display:flex;flex-direction:column;justify-content:center;min-width:0}
+.dashboard-next-label{color:#747c85;font-size:8px;font-weight:950;letter-spacing:.18em;text-transform:uppercase}
+.dashboard-next-name{font-size:22px;font-weight:900;letter-spacing:-.04em;margin-top:7px;line-height:1.05}
+.dashboard-next-meta{font-size:10px;color:#858d96;margin-top:7px;line-height:1.5}
+.dashboard-countdown{margin-top:16px;padding:13px 14px;border:1px solid #323940;border-radius:10px;background:#070809;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.dashboard-countdown-value{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:22px;font-weight:950;letter-spacing:.03em;color:#fff;text-shadow:0 0 18px rgba(225,6,0,.2);font-variant-numeric:tabular-nums}
+.dashboard-countdown-label{font-size:8px;color:#666e77;text-transform:uppercase;letter-spacing:.12em;text-align:right}
+.dashboard-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:25px}
+.dashboard-stat{position:relative;overflow:hidden;padding:17px 18px 16px;border:1px solid #252b31;border-radius:11px;background:linear-gradient(145deg,#111417,#0b0d0f);min-height:102px;box-shadow:0 12px 30px rgba(0,0,0,.18)}
+.dashboard-stat:before{content:"";position:absolute;left:0;top:0;width:2px;height:100%;background:linear-gradient(180deg,#e10600,transparent);opacity:.75}
+.dashboard-stat:after{content:"";position:absolute;right:-30px;top:-42px;width:100px;height:100px;border:1px solid rgba(255,255,255,.05);transform:rotate(45deg)}
+.dashboard-stat-label{font-size:8px;font-weight:900;letter-spacing:.16em;text-transform:uppercase;color:#707880}
+.dashboard-stat-value{font-size:34px;font-weight:950;letter-spacing:-.055em;line-height:1;margin-top:11px}
+.dashboard-stat-foot{font-size:9px;color:#59616a;margin-top:7px}
+.dashboard-grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(300px,.75fr);gap:16px;align-items:start}
+.dashboard-panel{border:1px solid #252b31;border-radius:13px;background:linear-gradient(145deg,#101316,#0a0c0e);overflow:hidden;box-shadow:0 15px 40px rgba(0,0,0,.2)}
+.dashboard-panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px 17px;border-bottom:1px solid #242a30;background:rgba(255,255,255,.018)}
+.dashboard-panel-title{font-size:10px;font-weight:950;letter-spacing:.14em;text-transform:uppercase;color:#d8dce0}
+.dashboard-panel-kicker{font-size:8px;color:#5e666f;text-transform:uppercase;letter-spacing:.12em}
+.dashboard-activity{display:grid}
+.dashboard-activity-row{display:grid;grid-template-columns:62px minmax(0,1fr) auto;gap:13px;align-items:center;padding:13px 17px;border-bottom:1px solid #1d2227;transition:background .15s ease}
+.dashboard-activity-row:last-child{border-bottom:0}
+.dashboard-activity-row:hover{background:rgba(255,255,255,.018)}
+.dashboard-activity-date{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:9px;color:#626b74}
+.dashboard-activity-main{min-width:0}
+.dashboard-activity-title{font-size:11px;font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dashboard-activity-meta{font-size:9px;color:#68717a;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dashboard-score{min-width:54px;text-align:center;padding:7px 6px;border:1px solid #343b42;border-radius:7px;background:#0a0c0e;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11px;font-weight:900}
+.dashboard-score.good{border-color:rgba(100,213,138,.25);color:#a4e5ba}
+.dashboard-score.mid{border-color:rgba(225,6,0,.28);color:#ffaaa6}
+.dashboard-score.none{color:#606871}
+.dashboard-side-list{display:grid}
+.dashboard-side-row{display:flex;align-items:center;gap:10px;padding:12px 15px;border-bottom:1px solid #1d2227}
+.dashboard-side-row:last-child{border-bottom:0}
+.dashboard-side-icon{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;background:#171b1f;border:1px solid #2a3036;color:#e10600;font-size:10px;font-weight:950;flex:0 0 auto}
+.dashboard-side-content{min-width:0;flex:1}
+.dashboard-side-title{font-size:10px;font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dashboard-side-meta{font-size:8px;color:#666e77;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dashboard-side-count{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;font-weight:900;color:#fff}
+.dashboard-request{border-top:1px solid #1d2227;padding:12px 15px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.dashboard-request:first-child{border-top:0}
+.dashboard-request .buttons{display:flex;flex-wrap:nowrap;width:auto}
+.dashboard-request .btn{padding:7px 9px;font-size:9px}
+.dashboard-empty{padding:28px 18px;text-align:center;color:#626a73;font-size:10px}
+.dashboard-footer-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:16px}
+.dashboard-mini-card{border:1px solid #252b31;border-radius:11px;background:#0d1012;padding:14px 15px;min-height:88px}
+.dashboard-mini-label{font-size:8px;color:#687079;text-transform:uppercase;letter-spacing:.14em;font-weight:900}
+.dashboard-mini-value{font-size:16px;font-weight:900;margin-top:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dashboard-mini-meta{font-size:8px;color:#59616a;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media(max-width:1050px){.dashboard-hero{grid-template-columns:1fr}.dashboard-hero-side{border-left:0;border-top:1px solid #292f35}.dashboard-grid{grid-template-columns:1fr}.dashboard-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.dashboard-footer-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:700px){.dashboard-hero-main{padding:23px 20px}.dashboard-hero-side{padding:17px 20px}.dashboard-hero-title{font-size:30px}.dashboard-kpis{grid-template-columns:1fr 1fr;gap:7px}.dashboard-stat{min-height:92px;padding:14px}.dashboard-stat-value{font-size:28px}.dashboard-activity-row{grid-template-columns:48px minmax(0,1fr) auto;gap:9px;padding:12px}.dashboard-footer-grid{grid-template-columns:1fr}.dashboard-request{align-items:flex-start;flex-direction:column}.dashboard-request .buttons{width:100%}.dashboard-request .buttons .btn{flex:1}}
+
 </style>
 </head>
 <body>
@@ -1197,17 +1262,84 @@ function storageStatus(){
 }
 function dashboard(){
   if(!isAdmin())return myEventsPage();
-  const totalSessions=db.championships.reduce((n,c)=>n+c.races.reduce((a,r)=>a+r.days.reduce((b,d)=>b+d.sessions.length,0),0),0);
+  const totalSessions=db.championships.reduce((n,c)=>n+(c.races||[]).reduce((a,r)=>a+(r.days||[]).reduce((b,d)=>b+(d.sessions||[]).length,0),0),0);
   const requests=championshipRequestsForAdmin();
-  const reqHtml=requests.map(x=>{
+  const pendingResults=(db.results||[]).filter(r=>!r.approved);
+
+  // Upcoming race: based strictly on the race start date.
+  const now=new Date();
+  const races=(db.championships||[]).flatMap(c=>(c.races||[]).map(r=>({c,r}))).filter(x=>x.r.startDate||x.r.date);
+  races.sort((a,b)=>String(a.r.startDate||a.r.date).localeCompare(String(b.r.startDate||b.r.date)));
+  const upcoming=races.find(x=>new Date(`${x.r.startDate||x.r.date}T23:59:59`).getTime()>=now.getTime())||races[races.length-1];
+
+  // Recent sessions, with score when available.
+  const recent=[];
+  for(const c of db.championships||[])for(const r of c.races||[])for(const d of r.days||[])for(const s of d.sessions||[]){
+    const date=s.date||d.date||r.startDate||r.date||'';
+    const names=(s.pilotIds||[]).map(id=>{const dvr=getDriverById(id),p=getDriverProfile(dvr);return p.name||dvr?.name;}).filter(Boolean);
+    const scores=(s.pilotIds||[]).map(pid=>sessionScore(s,pid)).filter(v=>v!=null).map(Number);
+    const score=scores.length?scores.reduce((a,b)=>a+b,0)/scores.length:null;
+    recent.push({c,r,d,s,date,names,score});
+  }
+  recent.sort((a,b)=>`${b.date} ${b.s.time||''}`.localeCompare(`${a.date} ${a.s.time||''}`));
+
+  const heroNext=upcoming?`<div class="dashboard-hero-side">
+    <div class="dashboard-next-label">${t('Próximo evento')}</div>
+    <div class="dashboard-next-name">${esc(upcoming.r.name||t('Corrida'))}</div>
+    <div class="dashboard-next-meta">${esc(upcoming.c.name||t('Campeonato'))}${upcoming.r.location?' · '+esc(upcoming.r.location):''}<br>${esc(upcoming.r.startDate||upcoming.r.date||t('Data por definir'))}${upcoming.r.endDate&&upcoming.r.endDate!==upcoming.r.startDate?' → '+esc(upcoming.r.endDate):''}</div>
+    <div class="dashboard-countdown"><div class="dashboard-countdown-value" data-race-countdown="${esc(`${upcoming.r.startDate||upcoming.r.date}T09:00`)}">--:--:--</div><div class="dashboard-countdown-label">${t('até à prova')}</div></div>
+  </div>`:`<div class="dashboard-hero-side"><div class="dashboard-next-label">${t('Próximo evento')}</div><div class="dashboard-next-name">${t('Sem provas agendadas')}</div><div class="dashboard-next-meta">${t('Cria uma corrida para começares a organizar o calendário.')}</div></div>`;
+
+  const activity=recent.slice(0,6).map(x=>{
+    const score=x.score==null?null:Number(x.score);
+    const cls=score==null?'none':score>=8?'good':'mid';
+    const scoreText=score==null?'—':score.toFixed(1)+'/10';
+    return `<div class="dashboard-activity-row">
+      <div class="dashboard-activity-date">${esc(x.date||'—')}</div>
+      <div class="dashboard-activity-main"><div class="dashboard-activity-title">${esc(x.names.join(', ')||t('Sem piloto associado'))}</div><div class="dashboard-activity-meta">${esc(x.s.name||t('Sessão'))} · ${esc(x.r.name||t('Corrida'))} · ${esc(x.c.name||t('Campeonato'))}</div></div>
+      <div class="dashboard-score ${cls}">${scoreText}</div>
+    </div>`;
+  }).join('')||`<div class="dashboard-empty">${t('Ainda não existem sessões.')}</div>`;
+
+  const requestHtml=requests.slice(0,5).map(x=>{
     const p=x.user.profile||{};
-    return '<div class="row"><div><b>'+esc(p.name||x.user.name||'Piloto')+'</b><div class="muted">'+esc(x.user.email)+' · pediu acesso a <b>'+esc(x.championship.name)+'</b></div></div><div class="buttons"><button class="btn primary" data-action="approve-championship-access" data-user-id="'+esc(x.user.id)+'" data-champ-id="'+esc(x.championshipId)+'">Aceitar</button><button class="btn danger" data-action="reject-championship-access" data-user-id="'+esc(x.user.id)+'" data-champ-id="'+esc(x.championshipId)+'">Recusar</button></div></div>';
-  }).join('');
-  return header('Dashboard','Visão geral da atividade de coaching.','')+
-  '<div class="cards"><div class="card"><div class="muted">Pilotos</div><div class="kpi">'+db.drivers.length+'</div></div><div class="card"><div class="muted">Campeonatos</div><div class="kpi">'+db.championships.length+'</div></div><div class="card"><div class="muted">Pistas</div><div class="kpi">'+db.tracks.length+'</div></div><div class="card"><div class="muted">Sessões</div><div class="kpi">'+totalSessions+'</div></div></div>'+
-  '<div class="sectiontitle">Pedidos de acesso a campeonatos</div><div class="list">'+(reqHtml||'<div class="empty">Não existem pedidos pendentes.</div>')+'</div>'+
-  '<div class="sectiontitle">Resultados pendentes de confirmação</div><div class="list">'+((db.results||[]).filter(r=>!r.approved).map(r=>{const d=getDriverById(r.pilotId),p=getDriverProfile(d),c=db.championships.find(x=>String(x.id)===String(r.championshipId)),race=c?.races.find(x=>String(x.id)===String(r.raceId));return '<div class="row"><div><b>'+esc(p.name||d?.name||'Piloto')+'</b><div class="muted">'+esc(r.type==='championship'?(c?.name||'Campeonato'):(race?.name||'Corrida'))+' · '+esc(r.points||'')+' pts</div></div><button class="btn primary" data-action="approve-result" data-id="'+esc(r.id)+'">Confirmar</button></div>'}).join('')||'<div class="empty">Não existem resultados pendentes.</div>')+'</div>'+
-  '<div class="sectiontitle">Pilotos da equipa</div>'+(groupedDriverSections(db.drivers)||'<div class="empty">Ainda não tens pilotos.</div>');
+    return `<div class="dashboard-request"><div class="dashboard-side-content"><div class="dashboard-side-title">${esc(p.name||x.user.name||t('Piloto'))}</div><div class="dashboard-side-meta">${esc(x.championship.name||t('Campeonato'))} · ${esc(x.user.email||'')}</div></div><div class="buttons"><button class="btn primary" data-action="approve-championship-access" data-user-id="${esc(x.user.id)}" data-champ-id="${esc(x.championshipId)}">${t('Aceitar')}</button><button class="btn danger" data-action="reject-championship-access" data-user-id="${esc(x.user.id)}" data-champ-id="${esc(x.championshipId)}">${t('Recusar')}</button></div></div>`;
+  }).join('')||`<div class="dashboard-empty">${t('Não existem pedidos pendentes.')}</div>`;
+
+  const pendingHtml=pendingResults.slice(0,5).map(r=>{
+    const d=getDriverById(r.pilotId),p=getDriverProfile(d),c=db.championships.find(x=>String(x.id)===String(r.championshipId)),race=c?.races.find(x=>String(x.id)===String(r.raceId));
+    return `<div class="dashboard-request"><div class="dashboard-side-content"><div class="dashboard-side-title">${esc(p.name||d?.name||t('Piloto'))}</div><div class="dashboard-side-meta">${esc(r.type==='championship'?(c?.name||t('Campeonato')):(race?.name||t('Corrida')))}${r.points!==''?' · '+esc(r.points)+' pts':''}</div></div><div class="buttons"><button class="btn primary" data-action="approve-result" data-id="${esc(r.id)}">${t('Confirmar')}</button></div></div>`;
+  }).join('')||`<div class="dashboard-empty">${t('Não existem resultados pendentes.')}</div>`;
+
+  const topChampionships=(db.championships||[]).slice(0,4).map(c=>`<div class="dashboard-side-row"><div class="dashboard-side-icon">C</div><div class="dashboard-side-content"><div class="dashboard-side-title">${esc(c.name||t('Campeonato'))}</div><div class="dashboard-side-meta">${esc(c.season||'')} · ${(c.races||[]).length} ${t('corridas')}</div></div><div class="dashboard-side-count">${(c.pilotIds||[]).length||0}</div></div>`).join('')||`<div class="dashboard-empty">${t('Ainda não existem campeonatos.')}</div>`;
+
+  const nextSession=recent.slice().sort((a,b)=>`${a.date} ${a.s.time||''}`.localeCompare(`${b.date} ${b.s.time||''}`)).find(x=>new Date(`${x.date||'2999-12-31'}T${x.s.time||'09:00'}`).getTime()>Date.now());
+  const latestScore=recent.find(x=>x.score!=null)?.score;
+
+  return header(t('Dashboard'),t('Centro de controlo da atividade de coaching.'),'')+
+  `<section class="dashboard-hero">
+    <div class="dashboard-hero-main">
+      <div class="dashboard-kicker">${t('MPRD · RACE CONTROL')}</div>
+      <h1 class="dashboard-hero-title">${t('Performance')} <span>${t('em pista.')}</span></h1>
+      <div class="dashboard-hero-sub">${t('Acompanha pilotos, sessões, campeonatos e resultados num único centro de controlo.')}</div>
+      <div class="dashboard-hero-actions"><button class="btn primary" data-page="sessions">${t('Abrir sessões')}</button><button class="btn" data-page="tracks">${t('Ver pistas')}</button></div>
+    </div>${heroNext}
+  </section>
+  <section class="dashboard-kpis">
+    <div class="dashboard-stat"><div class="dashboard-stat-label">${t('Pilotos')}</div><div class="dashboard-stat-value">${db.drivers.length}</div><div class="dashboard-stat-foot">${t('na equipa')}</div></div>
+    <div class="dashboard-stat"><div class="dashboard-stat-label">${t('Campeonatos')}</div><div class="dashboard-stat-value">${db.championships.length}</div><div class="dashboard-stat-foot">${t('ativos e publicados')}</div></div>
+    <div class="dashboard-stat"><div class="dashboard-stat-label">${t('Sessões')}</div><div class="dashboard-stat-value">${totalSessions}</div><div class="dashboard-stat-foot">${t('registadas')}</div></div>
+    <div class="dashboard-stat"><div class="dashboard-stat-label">${t('Último score')}</div><div class="dashboard-stat-value">${latestScore==null?'—':latestScore.toFixed(1)}</div><div class="dashboard-stat-foot">${latestScore==null?t('sem análise ainda'):t('média da sessão')}</div></div>
+  </section>
+  <section class="dashboard-grid">
+    <div class="dashboard-panel"><div class="dashboard-panel-head"><div><div class="dashboard-panel-title">${t('Atividade recente')}</div><div class="dashboard-panel-kicker">${t('Sessões de coaching')}</div></div><button class="btn" data-page="history">${t('Ver histórico')}</button></div><div class="dashboard-activity">${activity}</div></div>
+    <div class="dashboard-panel"><div class="dashboard-panel-head"><div><div class="dashboard-panel-title">${t('Campeonatos')}</div><div class="dashboard-panel-kicker">${t('Estrutura atual')}</div></div><button class="btn" data-page="championships">${t('Abrir')}</button></div><div class="dashboard-side-list">${topChampionships}</div></div>
+  </section>
+  <section class="dashboard-footer-grid">
+    <div class="dashboard-panel"><div class="dashboard-panel-head"><div><div class="dashboard-panel-title">${t('Pedidos de acesso')}</div><div class="dashboard-panel-kicker">${requests.length} ${t('pendentes')}</div></div></div>${requestHtml}</div>
+    <div class="dashboard-panel"><div class="dashboard-panel-head"><div><div class="dashboard-panel-title">${t('Resultados')}</div><div class="dashboard-panel-kicker">${pendingResults.length} ${t('pendentes')}</div></div></div>${pendingHtml}</div>
+    <div class="dashboard-panel"><div class="dashboard-panel-head"><div><div class="dashboard-panel-title">${t('Próxima sessão')}</div><div class="dashboard-panel-kicker">${t('planeamento')}</div></div></div><div class="dashboard-mini-card" style="border:0;border-radius:0;background:transparent"><div class="dashboard-mini-label">${nextSession?esc(nextSession.s.name):t('Sem sessão agendada')}</div><div class="dashboard-mini-value">${nextSession?esc(nextSession.names.join(', ')||t('Sem piloto associado')):'—'}</div><div class="dashboard-mini-meta">${nextSession?esc(nextSession.date)+' · '+esc(nextSession.r.name):t('Adiciona uma sessão ao calendário.')}</div></div></div>
+  </section>`;
 }
 
 function drivers(){
@@ -1469,6 +1601,14 @@ const EXTRA_I18N={
   'Entrar na plataforma':'Entrar en la plataforma','Criar conta de piloto':'Crear cuenta de piloto','A mesma conta funciona em qualquer dispositivo. Os dados são sincronizados online.':'La misma cuenta funciona en cualquier dispositivo. Los datos se sincronizan online.','Cria a tua conta e vê os campeonatos disponíveis. Podes pedir acesso já no registo.':'Crea tu cuenta y consulta los campeonatos disponibles. Puedes solicitar acceso durante el registro.','Campeonatos disponíveis':'Campeonatos disponibles','Seleciona os campeonatos aos quais queres pedir acesso. Enquanto aguardas, podes consultar a informação e os pilotos inscritos.':'Selecciona los campeonatos a los que quieres solicitar acceso. Mientras esperas, puedes consultar la información y los pilotos inscritos.','Dados do piloto':'Datos del piloto','Os dados ficam bloqueados para evitar alterações acidentais.':'Los datos quedan bloqueados para evitar cambios accidentales.','Editar informação':'Editar información','Idade atual':'Edad actual','Ano de início no karting':'Año de inicio en karting','Notas de contexto':'Notas de contexto','Guardar alterações':'Guardar cambios','A fotografia fica associada ao teu perfil.':'La foto queda asociada a tu perfil.','Só aparecem contas de piloto que já estão registadas e ainda não foram adicionadas.':'Solo aparecen cuentas de piloto registradas que todavía no han sido añadidas.','Conta de piloto':'Cuenta de piloto','Selecionar':'Seleccionar','Apagar conta':'Eliminar cuenta','Apagar piloto':'Eliminar piloto','Conta de piloto eliminada.':'Cuenta de piloto eliminada.','Conta de piloto não encontrada.':'Cuenta de piloto no encontrada.','Piloto sem conta eliminado.':'Piloto sin cuenta eliminado.','Falha a ler a imagem':'Error al leer la imagen','Imagem inválida':'Imagen no válida','Falha a ler a fotografia':'Error al leer la foto','Fotografia inválida':'Foto no válida','Erro ao carregar a conta.':'Error al cargar la cuenta.','Erro ao carregar as contas de piloto.':'Error al cargar las cuentas de piloto.','Indica o teu nome.':'Indica tu nombre.','Indica a tua data de nascimento.':'Indica tu fecha de nacimiento.','A password tem de ter pelo menos 6 caracteres.':'La contraseña debe tener al menos 6 caracteres.','A criar conta…':'Creando cuenta…','erro desconhecido':'error desconocido','Este email já está registado. Usa o Login em vez de criar outra conta.':'Este email ya está registrado. Usa el Login en lugar de crear otra cuenta.','Altera os dados apenas quando necessário.':'Cambia los datos solo cuando sea necesario.','Não existem contas de piloto registadas e disponíveis.':'No hay cuentas de piloto registradas y disponibles.','Acesso reservado ao administrador':'Acceso reservado al administrador','este piloto':'este piloto','Piloto não encontrado.':'Piloto no encontrado.','Seleciona uma conta registada':'Selecciona una cuenta registrada','Não foi possível associar o piloto.':'No se pudo vincular el piloto.','Perfil do piloto.':'Perfil del piloto.','Resultados de corridas e campeonatos.':'Resultados de carreras y campeonatos.','Seleciona o piloto e o campeonato.':'Selecciona el piloto y el campeonato.','Seleciona a corrida.':'Selecciona la carrera.','Resultado registado e confirmado.':'Resultado registrado y confirmado.','Resultado enviado para confirmação do administrador.':'Resultado enviado para confirmación del administrador.','Resultado confirmado.':'Resultado confirmado.','Resultado removido.':'Resultado eliminado.','Não foi possível identificar o piloto.':'No se pudo identificar al piloto.','Ver análise':'Ver análisis','Abrir sessão':'Abrir sesión','Abrir última sessão':'Abrir última sesión','Abrir corrida':'Abrir carrera','Os meus eventos':'Mis eventos','Campeonatos aos quais tens acesso e sessões atribuídas.':'Campeonatos a los que tienes acceso y sesiones asignadas.','Visão geral da atividade de coaching.':'Resumen de la actividad de coaching.','Organiza campeonatos e corridas.':'Gestiona campeonatos y carreras.','Todas as provas do coach num só lugar.':'Todas las pruebas del coach en un solo lugar.','Local por definir':'Ubicación por definir','Data por definir':'Fecha por definir','Pista por definir':'Pista por definir','Pista definida':'Pista definida','Categoria por definir':'Categoría por definir','Equipa por definir':'Equipo por definir','Perfil ainda não preenchido':'Perfil aún no completado','Piloto sem perfil':'Piloto sin perfil','Dados locais ativos':'Datos locales activos','Dados locais indisponíveis':'Datos locales no disponibles','Armazenamento indisponível':'Almacenamiento no disponible','As contas e os pilotos da equipa ficam ligados pelo ID da conta.':'Las cuentas y los pilotos del equipo están vinculados por el ID de la cuenta.','Consulta os pilotos da equipa e abre o perfil de cada piloto.':'Consulta los pilotos del equipo y abre el perfil de cada piloto.','Ainda não tens pilotos.':'Todavía no tienes pilotos.','Ainda não tens pilotos adicionados.':'Todavía no has añadido pilotos.','Apenas o administrador pode gerir todas as sessões.':'Solo el administrador puede gestionar todas las sesiones.','Todas as sessões de coaching, com o piloto em destaque.':'Todas las sesiones de coaching, con el piloto destacado.','Aqui defines apenas os pontos das curvas. Os comentários ficam nas sessões.':'Aquí solo defines los puntos de las curvas. Los comentarios se añaden en las sesiones.','Carrega uma imagem da pista':'Sube una imagen de la pista','Guardar pista':'Guardar pista','Imagem + pontos de coaching.':'Imagen + puntos de coaching.','Carrega primeiro uma imagem.':'Sube primero una imagen.','Escolhe um ficheiro de imagem':'Elige un archivo de imagen','A processar imagem…':'Procesando imagen…','Imagem carregada e guardada':'Imagen subida y guardada','A imagem foi lida, mas não foi possível guardá-la online.':'La imagen se leyó, pero no se pudo guardar online.','Apenas o administrador pode gerir pistas.':'Solo el administrador puede gestionar las pistas.','Pista guardada':'Pista guardada','Pista eliminada':'Pista eliminada','As provas dos campeonatos são geridas na corrida.':'Las pruebas de los campeonatos se gestionan desde la carrera.','Tens acesso a este campeonato':'Tienes acceso a este campeonato','Pedido de acesso pendente':'Solicitud de acceso pendiente','Acesso ainda não aprovado':'Acceso aún no aprobado','Podes consultar os detalhes e os eventos deste campeonato.':'Puedes consultar los detalles y eventos de este campeonato.','Podes consultar a informação pública e pedir acesso ao administrador.':'Puedes consultar la información pública y solicitar acceso al administrador.','Ainda não há pilotos inscritos neste campeonato.':'Todavía no hay pilotos inscritos en este campeonato.','Corridas deste campeonato.':'Carreras de este campeonato.','Sessões do dia.':'Sesiones del día.','Descrição':'Descripción','Data da sessão':'Fecha de la sesión','Hora':'Hora','Pilotos desta sessão':'Pilotos de esta sesión','Adiciona primeiro um piloto.':'Añade primero un piloto.','Configurar sessão':'Configurar sesión','Nomes de sessão':'Nombres de sesión','Cria os nomes que queres reutilizar sempre que abres uma nova sessão.':'Crea los nombres que quieres reutilizar cada vez que abras una nueva sesión.','Ainda não existem nomes.':'Todavía no hay nombres.','Novo nome':'Nuevo nombre','Apagar selecionado':'Eliminar seleccionados','Mantém pelo menos um nome de sessão':'Mantén al menos un nombre de sesión','Seleciona campeonato, prova, dia e nome da sessão':'Selecciona campeonato, carrera, día y nombre de sesión','Não foi possível encontrar o dia':'No se pudo encontrar el día','Sessão não encontrada':'Sesión no encontrada','Terminar análise e guardar sessão':'Finalizar análisis y guardar sesión','Guardar análise da curva':'Guardar análisis de la curva','Nota automática da curva':'Nota automática de la curva','Análise geral':'Análisis general','Análise do treinador':'Análisis del entrenador','Clica diretamente nos números das curvas para consultar cada avaliação.':'Haz clic directamente en los números de las curvas para consultar cada evaluación.','Esta pista ainda não tem curvas marcadas.':'Esta pista todavía no tiene curvas marcadas.','Adiciona um piloto à sessão para começar a análise.':'Añade un piloto a la sesión para empezar el análisis.','Nota da curva':'Nota de la curva','Trajetória de entrada':'Trayectoria de entrada','Trajetória de meio':'Trayectoria de mitad','Trajetória de saída':'Trayectoria de salida','Rotação do kart':'Rotación del kart','-10 cedo · +10 tarde':'-10 temprano · +10 tarde','-10 sem rotação · +10 excesso':'-10 sin rotación · +10 exceso','Ainda não existe análise para esta curva.':'Todavía no existe análisis para esta curva.','Ainda sem análise suficiente.':'Todavía no hay suficiente análisis.','Não tens sessões atribuídas neste dia.':'No tienes sesiones asignadas en este día.','Esta sessão não está atribuída à tua conta.':'Esta sesión no está asignada a tu cuenta.','Esta sessão ainda não tem uma pista associada.':'Esta sesión todavía no tiene una pista asociada.','Score da sessão':'Nota de la sesión','Ainda sem análise.':'Sin análisis todavía.','A nota é calculada automaticamente pelos pesos definidos.':'La nota se calcula automáticamente según los pesos definidos.','Apagar este compromisso do calendário?':'¿Eliminar este evento del calendario?','Apagar este resultado pendente?':'¿Eliminar este resultado pendiente?','Seleciona primeiro uma curva':'Selecciona primero una curva','Seleciona um piloto':'Selecciona un piloto','Nenhum piloto':'Ningún piloto','Sem descrição':'Sin descripción','Sem piloto associado':'Sin piloto asociado','Início no karting':'Inicio en karting','Última sessão':'Última sesión','Últimas sessões':'Últimas sesiones','Horários':'Horarios','Qualificação':'Clasificación','Treino 1':'Entrenamiento 1','Treino 2':'Entrenamiento 2','Treino 3':'Entrenamiento 3','Corrida':'Carrera','Adicionar à equipa':'Añadir al equipo','Apagar campeonato':'Eliminar campeonato','Indica o nome e o início/fim da prova.':'Indica el nombre y las fechas de inicio/fin de la carrera.','Indica um email válido.':'Indica un email válido.','Indica um nome':'Indica un nombre','O fim da prova não pode ser anterior ao início.':'El final de la carrera no puede ser anterior al inicio.','Dados deste dispositivo importados para a nuvem.':'Datos de este dispositivo importados a la nube.','Erro ao criar a conta:':'Error al crear la cuenta:','Não foi possível criar a conta:':'No se pudo crear la cuenta:','Não foi possível guardar o perfil.':'No se pudo guardar el perfil.','Não foi possível guardar os dados online.':'No se pudieron guardar los datos online.','Não foi possível enviar o pedido.':'No se pudo enviar la solicitud.','Não foi possível atualizar o acesso.':'No se pudo actualizar el acceso.','Não foi possível apagar a conta.':'No se pudo eliminar la cuenta.','Não foi possível processar a fotografia.':'No se pudo procesar la foto.','Não foi possível ler a imagem.':'No se pudo leer la imagen.','Supabase não devolveu uma conta. Tenta novamente.':'Supabase no devolvió una cuenta. Inténtalo de nuevo.','O Supabase não devolveu uma conta. Tenta novamente.':'Supabase no devolvió una cuenta. Inténtalo de nuevo.','Acesso concedido.':'Acceso concedido.','Pedido recusado.':'Solicitud rechazada.','Comentário guardado':'Comentario guardado','Análise guardada':'Análisis guardado','Sessão analisada e guardada':'Sesión analizada y guardada','Conta criada. Completa agora o teu perfil.':'Cuenta creada. Completa ahora tu perfil.','Conta criada. Confirma o email recebido e depois entra na plataforma.':'Cuenta creada. Confirma el email recibido y después entra en la plataforma.','Conta registada':'Cuenta registrada','A recuperar a sessão…':'Recuperando la sesión…','A começar agora':'Comenzando ahora','Não existem pedidos pendentes.':'No hay solicitudes pendientes.','Não existem resultados pendentes.':'No hay resultados pendientes.','Não há contas de piloto pendentes.':'No hay cuentas de piloto pendientes.','Não existem resultados confirmados.':'No hay resultados confirmados.','Ainda não existem pilotos.':'Todavía no hay pilotos.','Ainda não existem pistas.':'Todavía no hay pistas.','Ainda não existem campeonatos.':'Todavía no hay campeonatos.','Ainda não existem campeonatos publicados.':'Todavía no hay campeonatos publicados.','Ainda não existem corridas.':'Todavía no hay carreras.','Ainda não existem sessões.':'Todavía no hay sesiones.','Ainda não existem sessões no histórico.':'Todavía no hay sesiones en el historial.','Ainda não existem resultados confirmados.':'Todavía no hay resultados confirmados.'
  }
 };
+
+// V63 dashboard translations
+Object.assign(I18N.en,{
+  'Próximo evento':'Next event','até à prova':'until race','Sem provas agendadas':'No races scheduled','Cria uma corrida para começares a organizar o calendário.':'Create a race to start building the calendar.','Centro de controlo da atividade de coaching.':'Coaching activity control center.','MPRD · RACE CONTROL':'MPRD · RACE CONTROL','Performance':'Performance','em pista.':'on track.','Acompanha pilotos, sessões, campeonatos e resultados num único centro de controlo.':'Track drivers, sessions, championships and results from one control center.','Abrir sessões':'Open sessions','Ver pistas':'View tracks','na equipa':'on the team','ativos e publicados':'active and published','registadas':'recorded','Último score':'Latest score','sem análise ainda':'no analysis yet','média da sessão':'session average','Atividade recente':'Recent activity','Sessões de coaching':'Coaching sessions','Ver histórico':'View history','Estrutura atual':'Current structure','Pedidos de acesso':'Access requests','pendentes':'pending','planeamento':'planning','Sem sessão agendada':'No session scheduled','Adiciona uma sessão ao calendário.':'Add a session to the calendar.','corridas':'races'
+});
+Object.assign(I18N.es,{
+  'Próximo evento':'Próximo evento','até à prova':'hasta la carrera','Sem provas agendadas':'No hay carreras programadas','Cria uma corrida para começares a organizar o calendário.':'Crea una carrera para empezar a organizar el calendario.','Centro de controlo da atividade de coaching.':'Centro de control de la actividad de coaching.','MPRD · RACE CONTROL':'MPRD · RACE CONTROL','Performance':'Rendimiento','em pista.':'en pista.','Acompanha pilotos, sessões, campeonatos e resultados num único centro de controlo.':'Controla pilotos, sesiones, campeonatos y resultados desde un único centro de control.','Abrir sessões':'Abrir sesiones','Ver pistas':'Ver pistas','na equipa':'en el equipo','ativos e publicados':'activos y publicados','registadas':'registradas','Último score':'Última puntuación','sem análise ainda':'sin análisis todavía','média da sessão':'media de la sesión','Atividade recente':'Actividad reciente','Sessões de coaching':'Sesiones de coaching','Ver histórico':'Ver historial','Estrutura atual':'Estructura actual','Pedidos de acesso':'Solicitudes de acceso','pendentes':'pendientes','planeamento':'planificación','Sem sessão agendada':'Sin sesión programada','Adiciona uma sessão ao calendário.':'Añade una sesión al calendario.','corridas':'carreras'
+});
 Object.assign(I18N.en,EXTRA_I18N.en); Object.assign(I18N.es,EXTRA_I18N.es);
 function t(s){return currentLang==='pt'?s:(I18N[currentLang]?.[s]||s)}
 function applyTranslations(){
@@ -1484,6 +1624,19 @@ function applyTranslations(){
   document.querySelectorAll('option').forEach(el=>{const v=el.textContent.trim();if(map[v])el.textContent=map[v]});
 }
 function setLanguage(lang){currentLang=['pt','es','en'].includes(lang)?lang:'pt';localStorage.setItem('mpr_lang',currentLang);render();}
+
+
+function updateDashboardCountdown(){
+  document.querySelectorAll('[data-race-countdown]').forEach(el=>{
+    const target=new Date(el.getAttribute('data-race-countdown')).getTime();
+    if(!Number.isFinite(target))return;
+    const diff=target-Date.now();
+    if(diff<=0){el.textContent='LIVE';return;}
+    const d=Math.floor(diff/86400000),h=Math.floor(diff%86400000/3600000),m=Math.floor(diff%3600000/60000);
+    el.textContent=`${String(d).padStart(2,'0')}d ${String(h).padStart(2,'0')}h ${String(m).padStart(2,'0')}m`;
+  });
+}
+setInterval(updateDashboardCountdown,30000);
 
 function render(){
   persistUi();
@@ -1548,6 +1701,7 @@ function render(){
     }
   }
   applyTranslations();
+  updateDashboardCountdown();
   persistUi();
 }
 function modal(content){
