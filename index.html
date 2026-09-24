@@ -931,6 +931,7 @@ function pilotSessionPage(){
 
 
 function render(){
+  persistUi();
   const app=document.getElementById('app');
   if(currentUser && currentUser.role==='pilot' && !profileComplete(currentUser) && !['profile','register'].includes(ui.page))ui.page='profile';
   if(!currentUser){
@@ -1170,6 +1171,10 @@ document.addEventListener('click',async event=>{
     }
   }
 });
+
+window.addEventListener('beforeunload',()=>persistUi());
+window.addEventListener('pagehide',()=>persistUi());
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')persistUi();});
 
 render();
 subscribeAuth();
