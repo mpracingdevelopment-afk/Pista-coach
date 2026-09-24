@@ -15,7 +15,7 @@ button,input,textarea,select{font:inherit}button{cursor:pointer}
 .logo{font-size:17px;font-weight:850;margin:2px 9px 34px;white-space:nowrap;letter-spacing:-.02em}.logo span{display:block;color:#85888c;font-size:10px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;margin-top:5px}
 .nav{display:grid;gap:4px}.nav button{position:relative;border:0;background:transparent;color:#96999d;text-align:left;padding:12px 13px;border-radius:7px;font-size:13px;font-weight:650;transition:.15s}.nav button:before{content:"";position:absolute;left:0;top:9px;bottom:9px;width:2px;background:#fff;opacity:0}.nav button.active,.nav button:hover{background:#191a1c;color:#fff}.nav button.active:before{opacity:1}
 main{margin-left:238px;padding:34px 38px 50px;min-height:100vh;max-width:1500px}
-.header{display:flex;justify-content:space-between;align-items:flex-end;gap:15px;margin-bottom:25px;padding-bottom:16px;border-bottom:1px solid var(--line)}
+.backbtn{margin-bottom:8px;display:inline-flex;align-items:center;gap:6px}.header{display:flex;justify-content:space-between;align-items:flex-end;gap:15px;margin-bottom:25px;padding-bottom:16px;border-bottom:1px solid var(--line)}
 .title{font-size:29px;font-weight:850;letter-spacing:-.035em}.sub,.muted{color:var(--muted)}
 .btn{background:#171819;color:#eee;border:1px solid #303235;border-radius:6px;padding:9px 13px;font-size:12px;font-weight:700;letter-spacing:.02em;transition:.15s}.btn:hover{background:#222426;border-color:#505256}.btn.primary{background:#f1f1f1;color:#0b0b0c;border-color:#f1f1f1;font-weight:800}.btn.primary:hover{background:#fff}.btn.danger{color:var(--danger);border-color:#593636}.buttons{display:flex;gap:8px;flex-wrap:wrap}
 .list{display:grid;gap:8px}.row{background:var(--panel);border:1px solid var(--line);border-radius:7px;padding:14px;display:flex;justify-content:space-between;align-items:center;gap:15px;transition:.15s}.row:hover{border-color:#45474a;background:#121314}
@@ -92,7 +92,12 @@ function cleanAuthUrl(){ try { const u=new URL(window.location.href); if(u.searc
 const KEY='mpracingdevelopment_cloud';
 const LEGACY_KEYS=['mpracingdevelopment_v27','mpracingdevelopment_v26','mpracingdevelopment_v25','pista_coach_v24','pista_coach_v23','pista_coach_v22','pista_coach_v21','pista_coach_v20','pista_coach_v19','pista_coach_v18','pista_coach_v17','pista_coach_v16'];
 let db=normalize({});
-let ui={page:'dashboard',editor:null,mode:'add',selected:null,championship:null,race:null,day:null,session:null};
+function loadUiState(){try{const raw=localStorage.getItem('mpracingdevelopment_ui');return raw?JSON.parse(raw):null;}catch(e){return null;}}
+const _savedUi=loadUiState();
+let ui=Object.assign({page:'dashboard',editor:null,mode:'add',selected:null,championship:null,race:null,day:null,session:null,sessionPilot:null,sessionPoint:0},_savedUi||{});
+function persistUi(){try{localStorage.setItem('mpracingdevelopment_ui',JSON.stringify({page:ui.page,editor:ui.editor,mode:ui.mode,selected:ui.selected,championship:ui.championship,race:ui.race,day:ui.day,session:ui.session,sessionPilot:ui.sessionPilot,sessionPoint:ui.sessionPoint}));}catch(e){}}
+function goBackPage(){const parent={editor:'tracks',championship:'championships',race:'championship',day:'race',session:'day','pilot-race':'my-events','pilot-day':'pilot-race','pilot-session':'pilot-day'}[ui.page];if(!parent)return false;ui.page=parent;if(parent==='tracks'){ui.editor=null;ui.selected=null;}if(parent==='championships'){ui.championship=null;ui.race=null;ui.day=null;ui.session=null;}if(parent==='championship'){ui.race=null;ui.day=null;ui.session=null;}if(parent==='race'){ui.day=null;ui.session=null;}if(parent==='day'){ui.session=null;ui.sessionPoint=0;ui.sessionPilot=null;}if(parent==='pilot-race'){ui.day=null;ui.session=null;}if(parent==='pilot-day'){ui.session=null;}persistUi();render();return true;}
+
 let currentUser=null;
 let profileCache=[];
 const PILOT_CATEGORIES=['Cadete','Mini','Junior','Sénior','DD2','Shifter'];
@@ -683,7 +688,9 @@ function toast(text){
 }
 
 function header(title,sub,actions=''){
-  return `<div class="header"><div><div class="title">${esc(title)}</div><div class="sub">${esc(sub)}</div></div><div>${actions}</div></div>`;
+  const internal=['editor','championship','race','day','session','pilot-race','pilot-day','pilot-session'].includes(ui.page);
+  const back=internal?`<button class="btn backbtn" data-action="go-back">← Voltar</button>`:'';
+  return `<div class="header"><div>${back}<div class="title">${esc(title)}</div><div class="sub">${esc(sub)}</div></div><div>${actions}</div></div>`;
 }
 
 function tracksPage(){
@@ -976,6 +983,7 @@ function render(){
       window._mpResizeObserver.observe(document.getElementById('stage'));
     }
   }
+  persistUi();
 }
 function modal(content){
   document.getElementById('modal').innerHTML=`<div class="modalbg"><div class="modal">${content}</div></div>`;
@@ -1043,7 +1051,7 @@ document.addEventListener('click',async event=>{
 
   const page=event.target.closest('[data-page]');
   if(page){
-    ui.page=page.dataset.page;ui.editor=null;ui.selected=null;render();return;
+    ui.page=page.dataset.page;ui.editor=null;ui.selected=null;persistUi();render();return;
   }
 
   const mode=event.target.closest('[data-mode]');
@@ -1066,6 +1074,7 @@ document.addEventListener('click',async event=>{
 
   switch(action.dataset.action){
     case 'login':login();break;
+    case 'go-back':goBackPage();break;
     case 'go-register':ui.page='register';render();break;
     case 'back-login':ui.page='login';render();break;
     case 'register-pilot':registerPilot();break;
