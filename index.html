@@ -96,6 +96,8 @@ main{width:min(1320px,calc(100vw - 238px));margin-left:238px;margin-right:auto;p
 .empty{width:100%;}
 @media(min-width:701px){main > .header + *{margin-top:0}.calendar-shell .card{width:100%}.calendar-shell{max-width:1240px}.cards .cardlink,.cards .eventcard{min-height:110px}.timer-card + .cards{margin-top:4px}}
 .tabs{display:flex;gap:8px;margin:14px 0 18px;border-bottom:1px solid var(--border);padding-bottom:8px}.tab{background:transparent;border:1px solid transparent;color:var(--muted);padding:10px 16px;border-radius:10px;cursor:pointer;font-weight:800}.tab.active{background:var(--panel);border-color:var(--border);color:var(--text);box-shadow:inset 0 -2px 0 var(--accent)}
+.nav-social{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:8px;padding:10px 12px;border:1px solid #292f35;border-radius:10px;color:#f4f4f4;text-decoration:none;font-size:12px;font-weight:800;letter-spacing:.04em;background:#101214;transition:.18s ease}.nav-social:hover{border-color:#e10600;color:#fff;transform:translateY(-1px);box-shadow:0 8px 22px rgba(0,0,0,.22)}
+.media-shell{max-width:1240px;margin:0 auto}.media-hero{display:flex;justify-content:space-between;gap:20px;align-items:flex-end;padding:28px;border:1px solid #292f35;border-radius:18px;background:linear-gradient(135deg,#111416,#0a0b0c);box-shadow:0 18px 50px rgba(0,0,0,.24);margin-bottom:18px}.media-kicker{font-size:10px;font-weight:900;letter-spacing:.18em;color:#e10600}.media-title{font-size:34px;font-weight:950;margin-top:7px}.media-sub{color:#8d969e;margin-top:7px;max-width:720px}.media-folder-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.media-folder{border:1px solid #292f35;border-radius:16px;background:#101214;padding:18px;min-height:170px;display:flex;flex-direction:column;justify-content:space-between;transition:.18s ease}.media-folder:hover{border-color:#555d65;transform:translateY(-2px)}.media-folder-name{font-size:19px;font-weight:900}.media-folder-meta{color:#89939b;font-size:12px;margin-top:5px}.media-photo-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.media-photo{position:relative;aspect-ratio:1/1;overflow:hidden;border:1px solid #292f35;border-radius:14px;background:#0b0c0d}.media-photo img{width:100%;height:100%;object-fit:cover;display:block}.media-photo-name{position:absolute;left:8px;right:8px;bottom:8px;padding:7px 9px;border-radius:8px;background:rgba(0,0,0,.78);font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.media-folder-head{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:14px}.media-section{margin-top:18px}.media-empty{padding:28px;text-align:center;border:1px dashed #30363b;border-radius:14px;color:#89939b}.media-upload-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.media-instagram{display:inline-flex;align-items:center;gap:8px;color:#fff;text-decoration:none;font-weight:850}.media-instagram:hover{color:#e10600}@media(max-width:900px){.media-folder-grid{grid-template-columns:1fr 1fr}.media-photo-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:600px){.media-hero{padding:20px;align-items:flex-start;flex-direction:column}.media-title{font-size:28px}.media-folder-grid{grid-template-columns:1fr}.media-photo-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style>
 <style>
 .nav button[data-page="results"]{display:none!important}
@@ -545,6 +547,38 @@ main>*{width:min(1280px,100%)}
 .pilot-activity-featured{width:100%;margin-top:18px}
 .pilot-activity-featured .pilot-activity{min-height:180px}
 </style>
+
+/* V88 — navigation and auth polish */
+.backbtn{
+  display:inline-flex !important;
+  align-items:center;
+  gap:8px;
+  min-height:34px;
+  padding:8px 13px !important;
+  border:1px solid #3a424a !important;
+  border-radius:8px !important;
+  background:linear-gradient(180deg,#171a1d,#101214) !important;
+  color:#e7eaed !important;
+  font-size:11px !important;
+  font-weight:850 !important;
+  letter-spacing:.02em;
+  box-shadow:0 5px 16px rgba(0,0,0,.22);
+  transition:all .16s ease;
+}
+.backbtn:hover{
+  color:#fff !important;
+  border-color:rgba(225,6,0,.72) !important;
+  background:linear-gradient(180deg,rgba(225,6,0,.16),rgba(225,6,0,.06)) !important;
+  transform:translateX(-2px);
+  box-shadow:0 7px 20px rgba(0,0,0,.3),0 0 0 1px rgba(225,6,0,.08);
+}
+.backbtn:active{transform:translateX(-1px) scale(.99)}
+.loginbox{width:min(360px,100%) !important; padding:22px !important; border-radius:12px !important}
+.loginbox .auth-logo{width:64px;height:64px;margin-bottom:9px}
+.loginbox h1{font-size:22px;margin-bottom:5px}
+.loginbox>.sub{font-size:11px;line-height:1.5;margin-bottom:16px !important}
+@media(max-width:700px){.loginbox{max-width:360px !important;padding:19px !important}.backbtn{min-height:33px;padding:7px 11px !important}}
+
 </head>
 <body>
 <aside class="sidebar">
@@ -557,7 +591,9 @@ main>*{width:min(1280px,100%)}
 <button data-page="sessions">Sessões</button>
 <button data-page="history">Histórico</button>
 <button data-page="calendar">Calendário</button>
+<button data-page="media">Media</button>
 <button data-page="profile">Meu perfil</button>
+<a class="nav-social" href="https://www.instagram.com/mp_racingdevelopment/" target="_blank" rel="noopener noreferrer">Instagram ↗</a>
 <div class="lang-switch"><label for="langSelect">Idioma</label><select id="langSelect" aria-label="Idioma"><option value="pt">Português</option><option value="es">Español</option><option value="en">English</option></select></div>
 </div>
 </aside>
@@ -579,7 +615,7 @@ function loadUiState(){try{const raw=localStorage.getItem('mpracingdevelopment_u
 const _savedUi=loadUiState();
 let ui=Object.assign({page:'dashboard',editor:null,mode:'add',selected:null,championship:null,race:null,day:null,session:null,sessionPilot:null,sessionPoint:0,selectedPilot:null,champTab:'races'},_savedUi||{});
 function persistUi(){try{localStorage.setItem('mpracingdevelopment_ui',JSON.stringify({page:ui.page,editor:ui.editor,mode:ui.mode,selected:ui.selected,championship:ui.championship,race:ui.race,day:ui.day,session:ui.session,sessionPilot:ui.sessionPilot,sessionPoint:ui.sessionPoint,selectedPilot:ui.selectedPilot,champTab:ui.champTab}));}catch(e){}}
-function goBackPage(){const parent={editor:'tracks',championship:'championships',race:'championship',day:'race',session:'day','pilot-race':'dashboard','pilot-day':'pilot-race','pilot-session':'pilot-day','pilot-profile':'drivers'}[ui.page];if(!parent)return false;ui.page=parent;if(parent==='tracks'){ui.editor=null;ui.selected=null;}if(parent==='championships'){ui.championship=null;ui.race=null;ui.day=null;ui.session=null;}if(parent==='championship'){ui.race=null;ui.day=null;ui.session=null;}if(parent==='race'){ui.day=null;ui.session=null;}if(parent==='day'){ui.session=null;ui.sessionPoint=0;ui.sessionPilot=null;}if(parent==='pilot-race'){ui.day=null;ui.session=null;}if(parent==='pilot-day'){ui.session=null;}persistUi();render();return true;}
+function goBackPage(){const parent={editor:'tracks',championship:'championships',race:'championship',day:'race',session:'day','pilot-race':'dashboard','pilot-day':'pilot-race','pilot-session':'pilot-day','pilot-profile':'drivers','media-folder':'media'}[ui.page];if(!parent)return false;ui.page=parent;if(parent==='tracks'){ui.editor=null;ui.selected=null;}if(parent==='championships'){ui.championship=null;ui.race=null;ui.day=null;ui.session=null;}if(parent==='championship'){ui.race=null;ui.day=null;ui.session=null;}if(parent==='race'){ui.day=null;ui.session=null;}if(parent==='day'){ui.session=null;ui.sessionPoint=0;ui.sessionPilot=null;}if(parent==='pilot-race'){ui.day=null;ui.session=null;}if(parent==='pilot-day'){ui.session=null;}persistUi();render();return true;}
 
 let currentUser=null;
 let profileCache=[];
@@ -1747,6 +1783,68 @@ function tracksPage(){
 }
 
 
+
+let mediaLoaded=false, mediaLoading=false;
+async function loadMediaData(){
+  if(!cloudReady)return {folders:[],files:[]};
+  try{
+    const [f,fi]=await Promise.all([
+      sb.from('media_folders').select('*').order('created_at',{ascending:false}),
+      sb.from('media_files').select('*').order('created_at',{ascending:false})
+    ]);
+    if(f.error||fi.error){console.warn('Media tables unavailable',f.error||fi.error);return {folders:[],files:[]};}
+    return {folders:f.data||[],files:fi.data||[]};
+  }catch(e){console.warn(e);return {folders:[],files:[]};}
+}
+async function refreshMediaAndRender(){mediaLoading=true;const d=await loadMediaData();window._mediaFolders=d.folders;window._mediaFiles=d.files;mediaLoaded=true;mediaLoading=false;render();}
+async function mediaCreateFolder(){
+  if(!isAdmin())return;
+  const races=(db.championships||[]).flatMap(c=>(c.races||[]).map(r=>({c,r})));
+  modal(`<h2>${t('Nova pasta')}</h2><div class="field"><label>${t('Nome da pasta')}</label><input id="mediaFolderName" placeholder="${t('Ex.: Rotax Grand Finals 2026')}" /></div><div class="field"><label>${t('Prova')}</label><select id="mediaFolderRace"><option value="">${t('Sem prova associada')}</option>${races.map(x=>`<option value="${esc(String(x.r.id))}" data-champ="${esc(String(x.c.id))}">${esc(x.r.name||t('Prova'))} · ${esc(x.c.name||'')}</option>`).join('')}</select></div><div class="modalactions"><button class="btn" data-action="close">${t('Cancelar')}</button><button class="btn primary" data-action="create-media-folder">${t('Criar pasta')}</button></div>`);
+}
+async function createMediaFolder(){
+  if(!isAdmin())return;
+  const name=document.getElementById('mediaFolderName')?.value.trim(); if(!name){toast(t('Indica um nome para a pasta.'));return;}
+  const sel=document.getElementById('mediaFolderRace');const raceId=sel?.value||null;const champId=sel?.selectedOptions?.[0]?.dataset?.champ||null;
+  const {error}=await sb.from('media_folders').insert({name,race_id:raceId,championship_id:champId});
+  if(error){console.error(error);toast(t('Não foi possível criar a pasta. Verifica a configuração de Media no Supabase.'));return;}
+  closeModal();await refreshMediaAndRender();
+}
+async function mediaUploadFiles(folderId,files){
+  if(!isAdmin()||!files?.length)return;
+  for(const file of Array.from(files)){
+    if(!file.type.startsWith('image/')){toast(t('Escolhe apenas fotografias.'));continue;}
+    try{
+      const safe=(file.name.replace(/[^a-zA-Z0-9._-]/g,'_').replace(/_+/g,'_').slice(0,80)||'photo');
+      const path=`${folderId}/${Date.now()}_${Math.random().toString(36).slice(2,8)}_${safe}`;
+      const up=await sb.storage.from('mpr-media').upload(path,file,{cacheControl:'31536000',upsert:false});
+      if(up.error){console.error(up.error);toast(t('Não foi possível carregar a fotografia.'));continue;}
+      const pub=sb.storage.from('mpr-media').getPublicUrl(path);
+      const {error}=await sb.from('media_files').insert({folder_id:folderId,name:file.name,storage_path:path,public_url:pub.data.publicUrl});
+      if(error){console.error(error);await sb.storage.from('mpr-media').remove([path]);toast(t('A fotografia não pôde ser registada.'));continue;}
+    }catch(e){console.error(e);toast(t('Erro ao carregar fotografia.'));}
+  }
+  await refreshMediaAndRender();
+}
+async function mediaDeleteFile(id,path){
+  if(!isAdmin())return;
+  if(!confirm(t('Apagar esta fotografia?')))return;
+  const r=await sb.from('media_files').delete().eq('id',id);if(r.error){toast(t('Não foi possível apagar a fotografia.'));return;}
+  if(path)await sb.storage.from('mpr-media').remove([path]);
+  await refreshMediaAndRender();
+}
+function mediaPage(){
+  const folders=window._mediaFolders||[],files=window._mediaFiles||[];const raceMap={};
+  for(const c of db.championships||[])for(const r of c.races||[])raceMap[String(r.id)]={c,r};
+  const folderCards=folders.map(f=>{const count=files.filter(x=>String(x.folder_id)===String(f.id)).length;const rr=raceMap[String(f.race_id)];return `<article class="media-folder"><div><div class="media-kicker">${rr?esc(rr.c.name||''):t('MPRD MEDIA')}</div><div class="media-folder-name">${esc(f.name)}</div><div class="media-folder-meta">${count} ${count===1?t('fotografia'):t('fotografias')}${rr?` · ${esc(rr.r.name||'')}`:''}</div></div><div class="buttons"><button class="btn primary" data-action="open-media-folder" data-id="${esc(String(f.id))}">${t('Abrir pasta')}</button></div></article>`}).join('');
+  return header(t('Media'),t('Arquivo fotográfico do MPRacingDevelopment.'),isAdmin()?`<button class="btn primary" data-action="new-media-folder">+ ${t('Nova pasta')}</button>`:'')+`<section class="media-shell"><div class="media-hero"><div><div class="media-kicker">MPRD · MEDIA</div><div class="media-title">${t('Arquivo de provas')}</div><div class="media-sub">${t('Fotografias organizadas por prova e evento.')}</div></div><a class="media-instagram" href="https://www.instagram.com/mp_racingdevelopment/" target="_blank" rel="noopener noreferrer">Instagram ↗</a></div><div class="sectiontitle"><div><b>${t('Pastas')}</b><div class="help">${isAdmin()?t('Só o administrador pode criar pastas e adicionar fotografias.'):t('Consulta as fotografias das provas.')}</div></div></div><div class="media-folder-grid">${folderCards||`<div class="media-empty" style="grid-column:1/-1">${t('Ainda não existem pastas de Media.')}</div>`}</div></section>`;
+}
+function mediaFolderPage(){
+  const folder=(window._mediaFolders||[]).find(f=>String(f.id)===String(ui.mediaFolder));const files=(window._mediaFiles||[]).filter(x=>String(x.folder_id)===String(ui.mediaFolder));
+  if(!folder){ui.page='media';return mediaPage();}
+  return header(t('Media'),esc(folder.name),`<button class="btn backbtn" data-action="go-back">← ${t('Voltar')}</button>`)+`<section class="media-shell"><div class="media-folder-head"><div><div class="media-kicker">MPRD · MEDIA</div><h2 style="margin:5px 0 0">${esc(folder.name)}</h2></div>${isAdmin()?`<div class="media-upload-row"><input id="mediaUpload" type="file" accept="image/*" multiple><button class="btn primary" data-action="upload-media">${t('Adicionar fotografias')}</button></div>`:''}</div><div class="media-photo-grid">${files.map(f=>`<article class="media-photo"><img src="${esc(f.public_url)}" alt="${esc(f.name)}"><div class="media-photo-name">${esc(f.name)}${isAdmin()?` <button class="btn danger" style="float:right;padding:2px 6px" data-action="delete-media-file" data-id="${esc(String(f.id))}" data-path="${esc(f.storage_path||'')}">×</button>`:''}</div></article>`).join('')||`<div class="media-empty" style="grid-column:1/-1">${t('Ainda não existem fotografias nesta pasta.')}</div>`}</div></section>`;
+}
+
 function storageStatus(){
   try{
     const ok=!!localStorage.getItem(KEY);
@@ -1987,7 +2085,7 @@ function championshipPage(){
   const info=(c.races||[]).map(r=>{const links=[['Live timing',r.links?.timing],['Resultados',r.links?.results],['Horários',r.links?.schedule]].filter(x=>x[1]);return `<div class="row"><div><b>${esc(r.name)}</b><div class="muted">${esc(r.location||'Local por definir')}</div></div><div class="links">${links.map(x=>`<a href="${esc(x[1])}" target="_blank" rel="noopener">${esc(x[0])}</a>`).join(' · ')||'<span class="muted">Sem links.</span>'}</div></div>`}).join('');
   return `<div class="breadcrumb"><span data-action="back-championships">Campeonatos</span> › <b>${esc(c.name)}</b></div>`+header(c.name,'Corridas deste campeonato.','<button class="btn primary" data-action="new-race">+ Adicionar corrida</button>')+`<div class="tabs"><button class="tab ${tab==='races'?'active':''}" data-action="champ-tab" data-tab="races">${t('Provas')}</button><button class="tab ${tab==='info'?'active':''}" data-action="champ-tab" data-tab="info">${t('Informações')}</button></div>`+(tab==='info'?`<div class="sectiontitle">${t('Links dos eventos')}</div><div class="list">${info||`<div class="empty">${t('Ainda não existem corridas.')}</div>`}</div>`:`<div class="sectiontitle">${t('Corridas')}</div><div class="eventgrid">${(c.races.map(r=>`<div class="eventcard"><h3>${esc(r.name)}</h3><div class="eventmeta">${esc(r.location||'Local por definir')}<br>${r.startDate&&r.endDate&&r.startDate!==r.endDate?esc(r.startDate)+' → '+esc(r.endDate):esc(r.startDate||r.date||'Data por definir')}<br>${r.days.length} dias</div><div class="buttons"><button class="btn" data-action="open-race" data-id="${r.id}">Abrir corrida</button><button class="btn danger" data-action="delete-race" data-id="${r.id}">Apagar</button></div></div>`).join('')||'<div class="empty">Adiciona a primeira corrida.</div>')}</div>`);
 }
-function racePage(){const c=getChamp(),r=getRace(),ls=[['Live timing',r.links.timing],['Resultados',r.links.results],['Horários',r.links.schedule]].filter(x=>x[1]);const period=r.startDate&&r.endDate&&r.startDate!==r.endDate?`${esc(r.startDate)} → ${esc(r.endDate)}`:esc(r.startDate||r.date||'Data por definir');return `<div class="breadcrumb"><span data-action="back-championships">Campeonatos</span> › <span data-action="back-races">${esc(c.name)}</span> › <b>${esc(r.name)}</b></div>`+header(r.name,`${esc(r.location||'Local por definir')} · ${period}`,'<div class="buttons"><button class="btn" data-action="edit-race">Editar prova</button><button class="btn primary" data-action="new-day">+ Adicionar dia</button></div>')+`<div class="readonly"><b>Período da prova</b><div class="muted" style="margin-top:6px">${period}</div></div><div class="readonly" style="margin-top:10px"><b>Pista associada</b><div class="muted" style="margin-top:6px">${esc(r.trackId?(db.tracks.find(t=>String(t.id)===String(r.trackId))?.name||'Pista não encontrada'):'Pista por definir')}</div></div><div class="readonly" style="margin-top:10px"><b>Links do evento</b><div class="links">${ls.map(x=>`<a href="${esc(x[1])}" target="_blank" rel="noopener">${esc(x[0])}</a>`).join('')||'<span class="muted">Sem links.</span>'}</div></div><div class="sectiontitle">Dias</div><div class="list">`+(r.days.map(d=>`<div class="row"><div><b>${esc(d.name)}</b><div class="muted">${esc(d.date||'Data por definir')} · ${d.sessions.length} sessões</div></div><button class="btn" data-action="open-day" data-id="${d.id}">Abrir dia</button><button class="btn danger" data-action="delete-day" data-id="${d.id}" data-champ="${c.id}" data-race="${r.id}">Apagar</button></div>`).join('')||'<div class="empty">Adiciona um dia.</div>')+'</div>'}
+function racePage(){const c=getChamp(),r=getRace(),ls=[['Live timing',r.links.timing],['Resultados',r.links.results],['Horários',r.links.schedule]].filter(x=>x[1]);const period=r.startDate&&r.endDate&&r.startDate!==r.endDate?`${esc(r.startDate)} → ${esc(r.endDate)}`:esc(r.startDate||r.date||'Data por definir');return `<div class="breadcrumb"><span data-action="back-championships">Campeonatos</span> › <span data-action="back-races">${esc(c.name)}</span> › <b>${esc(r.name)}</b></div>`+header(r.name,`${esc(r.location||'Local por definir')} · ${period}`,'<div class="buttons"><button class="btn" data-action="edit-race">Editar prova</button><button class="btn primary" data-action="new-day">+ Adicionar dia</button></div>')+`<div class="sectiontitle">Dias</div><div class="list">`+(r.days.map(d=>`<div class="row"><div><b>${esc(d.name)}</b><div class="muted">${esc(d.date||'Data por definir')} · ${d.sessions.length} sessões</div></div><button class="btn" data-action="open-day" data-id="${d.id}">Abrir dia</button><button class="btn danger" data-action="delete-day" data-id="${d.id}" data-champ="${c.id}" data-race="${r.id}">Apagar</button></div>`).join('')||'<div class="empty">Adiciona um dia.</div>')+'</div>'}
 function dayPage(){const r=getRace(),d=getDay();return `<div class="breadcrumb"><span data-action="back-championships">Campeonatos</span> › <span data-action="back-races">${esc(r.name)}</span> › <b>${esc(d.name)}</b></div>`+header(d.name,`Sessões do dia · ${esc(d.date)}`,'<button class="btn primary" data-action="new-session">+ Adicionar sessão</button>')+'<div class="list">'+(d.sessions.map(s=>{const names=(s.pilotIds||[]).map(id=>{const pd=getDriverById(id),pp=getDriverProfile(pd);return pp.name||pd?.name;}).filter(Boolean);return `<div class="sessionrow"><div><b>${esc(names.join(', ')||'Sem piloto associado')}</b><div style="font-weight:800;margin-top:4px">${esc(s.name)}</div><div class="muted">${s.trackId?'Pista definida':'Pista por definir'}${s.time?' · '+esc(s.time):''}</div></div><div class="buttons"><button class="btn" data-action="open-session" data-id="${s.id}">Abrir sessão</button><button class="btn danger" data-action="delete-session" data-id="${s.id}">Apagar</button></div></div>`}).join('')||'<div class="empty">Ainda não existem sessões.</div>')+'</div>'}
 function sessionPage(){
   const d=getDay(),s=getSession(),track=db.tracks.find(t=>String(t.id)===String(s?.trackId)),pilots=s?sessionPilots(s):[],pid=ui.sessionPilot||pilots[0]?.id||'';const pilotNames=pilots.map(p=>getDriverProfile(p).name||p.name).filter(Boolean),idx=Number.isFinite(ui.sessionPoint)?ui.sessionPoint:0,a=pid&&track?analysisFor(s,pid,idx):{},general=pid?sessionGeneral(s,pid):{},score=pid?sessionScore(s,pid):null;
@@ -2328,6 +2426,8 @@ function render(){
   else if(ui.page==='sessions')app.innerHTML=sessions();
   else if(ui.page==='calendar')app.innerHTML=calendarPage();
   else if(ui.page==='tracks')app.innerHTML=tracksPage();
+  else if(ui.page==='media')app.innerHTML=mediaPage();
+  else if(ui.page==='media-folder')app.innerHTML=mediaFolderPage();
   else if(ui.page==='championships')app.innerHTML=championshipsPage();
   else if(ui.page==='championship')app.innerHTML=championshipPage();
   else if(ui.page==='race')app.innerHTML=racePage();
@@ -2362,6 +2462,7 @@ function render(){
   applyTranslations();
   updateDashboardCountdown();
   persistUi();
+  if(currentUser && ui.page==='media' && !mediaLoaded && !mediaLoading){loadMediaData().then(d=>{window._mediaFolders=d.folders;window._mediaFiles=d.files;mediaLoaded=true;render();});}
 }
 function modal(content){
   document.getElementById('modal').innerHTML=`<div class="modalbg"><div class="modal">${content}</div></div>`;
@@ -2429,6 +2530,9 @@ Object.assign(I18N.en,{
 Object.assign(I18N.es,{
   'Pilotos inscritos':'Pilotos inscritos','Contas com acesso aprovado a este campeonato. Associa primeiro o piloto à equipa para o poderes selecionar nas sessões.':'Cuentas con acceso aprobado a este campeonato. Vincula primero al piloto al equipo para poder seleccionarlo en las sesiones.','registados':'registrados','Associado à equipa':'Asociado al equipo','Adicionar à equipa':'Añadir al equipo','ainda não está':'todavía no está','ainda não estão':'todavía no están','associado':'asociado','associados':'asociados','não há pilotos associados à equipa':'no hay pilotos asociados al equipo','Vai a “Campeonato → Pilotos inscritos” para adicionar o piloto à equipa.':'Ve a “Campeonato → Pilotos inscritos” para añadir el piloto al equipo.'
 });
+Object.assign(I18N.en,{'Media':'Media','Arquivo fotográfico do MPRacingDevelopment.':'MPRacingDevelopment photo archive.','Arquivo de provas':'Event archive','Fotografias organizadas por prova e evento.':'Photos organized by race and event.','Pastas':'Folders','Só o administrador pode criar pastas e adicionar fotografias.':'Only the administrator can create folders and add photos.','Consulta as fotografias das provas.':'Browse race photos.','Ainda não existem pastas de Media.':'There are no Media folders yet.','Nova pasta':'New folder','Nome da pasta':'Folder name','Sem prova associada':'No race linked','Criar pasta':'Create folder','Adicionar fotografias':'Add photos','Ainda não existem fotografias nesta pasta.':'There are no photos in this folder yet.','Abrir pasta':'Open folder','fotografia':'photo','fotografias':'photos','Escolhe apenas fotografias.':'Choose image files only.','Não foi possível carregar a fotografia.':'The photo could not be uploaded.','Não foi possível criar a pasta. Verifica a configuração de Media no Supabase.':'The folder could not be created. Check the Media setup in Supabase.','Apagar esta fotografia?':'Delete this photo?','Não foi possível apagar a fotografia.':'The photo could not be deleted.','Erro ao carregar fotografia.':'Error uploading photo.','Indica um nome para a pasta.':'Enter a folder name.','Voltar':'Back'});
+Object.assign(I18N.es,{'Media':'Media','Arquivo fotográfico do MPRacingDevelopment.':'Archivo fotográfico de MPRacingDevelopment.','Arquivo de provas':'Archivo de eventos','Fotografias organizadas por prova e evento.':'Fotografías organizadas por carrera y evento.','Pastas':'Carpetas','Só o administrador pode criar pastas e adicionar fotografias.':'Solo el administrador puede crear carpetas y añadir fotos.','Consulta as fotografias das provas.':'Consulta las fotos de las carreras.','Ainda não existem pastas de Media.':'Todavía no hay carpetas de Media.','Nova pasta':'Nueva carpeta','Nome da pasta':'Nombre de la carpeta','Sem prova associada':'Sin carrera asociada','Criar pasta':'Crear carpeta','Adicionar fotografias':'Añadir fotos','Ainda não existem fotografias nesta pasta.':'Todavía no hay fotos en esta carpeta.','Abrir pasta':'Abrir carpeta','fotografia':'foto','fotografias':'fotos','Escolhe apenas fotografias.':'Elige solo imágenes.','Não foi possível carregar a fotografia.':'No se pudo subir la foto.','Não foi possível criar a pasta. Verifica a configuração de Media no Supabase.':'No se pudo crear la carpeta. Comprueba la configuración de Media en Supabase.','Apagar esta fotografia?':'¿Eliminar esta foto?','Não foi possível apagar a fotografia.':'No se pudo eliminar la foto.','Erro ao carregar fotografia.':'Error al subir la foto.','Indica um nome para a pasta.':'Indica un nombre para la carpeta.','Voltar':'Volver'});
+
 
 document.addEventListener('change',event=>{
   if(event.target.id==='langSelect'){setLanguage(event.target.value);return;}
@@ -2455,7 +2559,9 @@ document.addEventListener('click',async event=>{
   const page=event.target.closest('[data-page]');
   if(page){
     ui.page=page.dataset.page;
-    profileEditing=false;ui.editor=null;ui.selected=null;persistUi();render();return;
+    profileEditing=false;ui.editor=null;ui.selected=null;persistUi();
+    if(ui.page==='media')await refreshMediaAndRender(); else render();
+    return;
   }
 
   const mode=event.target.closest('[data-mode]');
@@ -2473,11 +2579,16 @@ document.addEventListener('click',async event=>{
 
   const action=event.target.closest('[data-action]');
   if(!action)return;
-  const protectedActions=['new-track','create-track','delete','new-driver','add-registered-pilot','new-championship','create-championship','new-race','create-race','edit-race','save-race','new-day','create-day','delete-day','new-session','create-session','configure-session','save-session','manage-session-templates','add-session-template','delete-session-template','delete-session','delete-pilot-account','delete-orphan-pilot','edit-admin-pilot-profile','edit-admin-pilot-account','save-admin-pilot-profile','new-calendar-event','create-calendar-event','delete-calendar-event','save-calendar-event','approve-championship-access','reject-championship-access','approve-result','reject-result','edit','image','remove'];
+  const protectedActions=['new-track','create-track','delete','new-driver','add-registered-pilot','new-championship','create-championship','new-race','create-race','edit-race','save-race','new-day','create-day','delete-day','new-session','create-session','configure-session','save-session','manage-session-templates','add-session-template','delete-session-template','delete-session','delete-pilot-account','delete-orphan-pilot','edit-admin-pilot-profile','edit-admin-pilot-account','save-admin-pilot-profile','new-calendar-event','create-calendar-event','delete-calendar-event','save-calendar-event','approve-championship-access','reject-championship-access','approve-result','reject-result','new-media-folder','create-media-folder','upload-media','delete-media-file','edit','image','remove'];
   if(!isAdmin()&&protectedActions.includes(action.dataset.action)){toast('Acesso reservado ao administrador');return;}
 
   switch(action.dataset.action){
     case 'login':login();break;
+    case 'new-media-folder':mediaCreateFolder();break;
+    case 'create-media-folder':createMediaFolder();break;
+    case 'open-media-folder':ui.page='media-folder';ui.mediaFolder=action.dataset.id;persistUi();render();break;
+    case 'upload-media':{const files=document.getElementById('mediaUpload')?.files;await mediaUploadFiles(ui.mediaFolder,files);break;}
+    case 'delete-media-file':await mediaDeleteFile(action.dataset.id,action.dataset.path);break;
     case 'go-back':goBackPage();break;
     case 'go-register':ui.page='register';render();break;
     case 'request-championship-access':requestChampionshipAccess(action.dataset.id);break;
