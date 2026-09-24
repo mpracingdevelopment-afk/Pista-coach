@@ -937,6 +937,53 @@ function profileComplete(u){return !!(u&&u.role==='pilot'&&u.profile&&u.profile.
 function requestedChampionshipIds(u){return Array.isArray(u?.profile?.requestedChampionships)?u.profile.requestedChampionships.map(String):[]}
 function approvedChampionshipIds(u){return Array.isArray(u?.profile?.championshipAccess)?u.profile.championshipAccess.map(String):[]}
 function hasChampionshipAccess(champId,u=currentUser){return approvedChampionshipIds(u).includes(String(champId))}
+function raceAccessKey(champId,raceId){return `${String(champId)}::${String(raceId)}`}
+function requestedRaceKeys(u){return Array.isArray(u?.profile?.requestedRaces)?u.profile.requestedRaces.map(String):[]}
+function approvedRaceKeys(u){return Array.isArray(u?.profile?.raceAccess)?u.profile.raceAccess.map(String):[]}
+function hasRaceAccess(champId,raceId,u=currentUser){
+  if(!u)return false;
+  if(hasChampionshipAccess(champId,u))return true;
+  const key=raceAccessKey(champId,raceId);
+  if(approvedRaceKeys(u).includes(key))return true;
+  const c=db.championships.find(x=>String(x.id)===String(champId));
+  const r=c?.races?.find(x=>String(x.id)===String(raceId));
+  return !!(r&&hasPilotInRace(r,u.pilotId));
+}
+function raceRequestsForAdmin(){
+  const out=[];
+  (profileCache||[]).filter(u=>u.role==='pilot').forEach(u=>requestedRaceKeys(u).forEach(key=>{
+    const [championshipId,raceId]=String(key).split('::');
+    const championship=db.championships.find(c=>String(c.id)===String(championshipId));
+    const race=championship?.races?.find(r=>String(r.id)===String(raceId));
+    if(championship&&race&&!approvedRaceKeys(u).includes(key)&&!hasChampionshipAccess(championship.id,u)){
+      out.push({user:u,championship,race,championshipId:String(championship.id),raceId:String(race.id),kind:'race'});
+    }
+  }));
+  return out;
+}
+async function requestRaceAccess(champId,raceId){
+  if(!currentUser||currentUser.role!=='pilot')return;
+  const key=raceAccessKey(champId,raceId);
+  if(hasRaceAccess(champId,raceId)){toast(t('Já tens acesso a esta prova.'));return;}
+  const ids=[...new Set([...requestedRaceKeys(currentUser),key])];
+  const profile={...(currentUser.profile||{}),requestedRaces:ids};
+  const {error}=await sb.from('profiles').update({profile,updated_at:new Date().toISOString()}).eq('id',currentUser.id);
+  if(error){console.error(error);toast(t('Não foi possível enviar o pedido de acesso.'));return;}
+  currentUser.profile=profile;await loadProfiles();render();toast(t('Pedido de acesso à prova enviado.'));
+}
+async function decideRaceAccess(userId,champId,raceId,approve){
+  if(!isAdmin())return;
+  const u=(profileCache||[]).find(x=>String(x.id)===String(userId));
+  if(!u)return;
+  const key=raceAccessKey(champId,raceId);
+  const requested=requestedRaceKeys(u).filter(x=>String(x)!==key);
+  const access=new Set(approvedRaceKeys(u));
+  if(approve)access.add(key); else access.delete(key);
+  const profile={...(u.profile||{}),requestedRaces:requested,raceAccess:[...access]};
+  const {error}=await sb.from('profiles').update({profile,updated_at:new Date().toISOString()}).eq('id',u.id);
+  if(error){console.error(error);toast(t('Não foi possível atualizar o acesso.'));return;}
+  await loadProfiles();render();toast(approve?t('Acesso à prova concedido.'):t('Pedido de acesso à prova recusado.'));
+}
 function championshipRequestsForAdmin(){
   const out=[];
   (profileCache||[]).filter(u=>u.role==='pilot').forEach(u=>requestedChampionshipIds(u).forEach(cid=>{
@@ -1435,8 +1482,28 @@ function calendarPage(){
 }
 function calendarEventModal(id){
   const e=calendarEvents().find(x=>String(x.id)===String(id)); if(!e)return;
+  const c=db.championships.find(x=>String(x.id)===String(e.championshipId));
+  const r=c?.races?.find(x=>String(x.id)===String(e.raceId));
+  if(!c||!r)return;
   const period=e.startDate&&e.endDate&&e.startDate!==e.endDate?`${esc(e.startDate)} → ${esc(e.endDate)}`:esc(e.startDate||e.date||'');
-  modal(`<h2>${esc(e.title)}</h2><div class="readonly"><b>${period}</b><div class="muted" style="margin-top:6px">${esc(e.location||'Local por definir')} · ${esc(e.championship||'')}</div><div style="margin-top:12px">Esta prova é sincronizada automaticamente com o campeonato. Para alterar as datas, edita a corrida.</div></div><div class="modalactions"><button class="btn" data-action="close">Fechar</button></div>`);
+  if(isAdmin()){
+    modal(`<h2>${esc(e.title)}</h2><div class="readonly"><b>${period}</b><div class="muted" style="margin-top:6px">${esc(e.location||'Local por definir')} · ${esc(e.championship||'')}</div><div style="margin-top:12px">${t('Esta prova é gerida dentro do campeonato. No painel do administrador podes abrir a prova e alterar as datas.')}</div></div><div class="modalactions"><button class="btn" data-action="close">${t('Fechar')}</button><button class="btn primary" data-action="open-calendar-race" data-champ="${esc(c.id)}" data-race="${esc(r.id)}">${t('Abrir prova')}</button></div>`);
+    return;
+  }
+  const key=raceAccessKey(c.id,r.id);
+  const access=hasRaceAccess(c.id,r.id);
+  const pending=requestedRaceKeys(currentUser).includes(key);
+  let body='',actions=`<button class="btn" data-action="close">${t('Fechar')}</button>`;
+  if(access){
+    body=`<b>${t('Acesso aprovado')}</b><div class="help" style="margin-top:8px">${t('Já tens acesso a esta prova. Podes abrir os dias e as sessões que te foram atribuídos.')}</div>`;
+    actions+=`<button class="btn primary" data-action="open-pilot-calendar-race" data-champ="${esc(c.id)}" data-race="${esc(r.id)}">${t('Abrir prova')}</button>`;
+  }else if(pending){
+    body=`<b>${t('Pedido de acesso pendente')}</b><div class="help" style="margin-top:8px">${t('O teu pedido para esta prova já foi enviado ao administrador.')}</div>`;
+  }else{
+    body=`<b>${t('Acesso ainda não aprovado')}</b><div class="help" style="margin-top:8px">${t('Podes consultar a informação da prova e pedir acesso ao administrador para veres os detalhes e sessões atribuídas.')}</div>`;
+    actions+=`<button class="btn primary" data-action="request-race-access" data-champ="${esc(c.id)}" data-race="${esc(r.id)}">${t('Pedir acesso à prova')}</button>`;
+  }
+  modal(`<h2>${esc(e.title)}</h2><div class="readonly"><b>${period}</b><div class="muted" style="margin-top:6px">${esc(e.location||'Local por definir')} · ${esc(e.championship||'')}</div><div style="margin-top:12px">${body}</div></div><div class="modalactions">${actions}</div>`);
 }
 function tracksPage(){
   if(!isAdmin())return '<div class="empty">Apenas o administrador pode gerir pistas.</div>';
@@ -1491,7 +1558,9 @@ function storageStatus(){
 function dashboard(){
   if(!isAdmin())return myEventsPage();
   const totalSessions=db.championships.reduce((n,c)=>n+(c.races||[]).reduce((a,r)=>a+(r.days||[]).reduce((b,d)=>b+(d.sessions||[]).length,0),0),0);
-  const requests=championshipRequestsForAdmin();
+  const championshipRequests=championshipRequestsForAdmin();
+  const raceRequests=raceRequestsForAdmin();
+  const requests=[...championshipRequests,...raceRequests];
   const pendingResults=(db.results||[]).filter(r=>!r.approved);
 
   // Upcoming race: based strictly on the race start date.
@@ -1529,8 +1598,11 @@ function dashboard(){
     </div>`;
   }).join('')||`<div class="dashboard-empty">${t('Ainda não existem sessões.')}</div>`;
 
-  const requestHtml=requests.slice(0,5).map(x=>{
+  const requestHtml=requests.slice(0,8).map(x=>{
     const p=x.user.profile||{};
+    if(x.kind==='race'){
+      return `<div class="dashboard-request"><div class="dashboard-side-content"><div class="dashboard-side-title">${esc(p.name||x.user.name||t('Piloto'))}</div><div class="dashboard-side-meta">${esc(x.race.name||t('Corrida'))} · ${esc(x.championship.name||t('Campeonato'))} · ${esc(x.user.email||'')}</div></div><div class="buttons"><button class="btn primary" data-action="approve-race-access" data-user-id="${esc(x.user.id)}" data-champ-id="${esc(x.championshipId)}" data-race-id="${esc(x.raceId)}">${t('Aceitar')}</button><button class="btn danger" data-action="reject-race-access" data-user-id="${esc(x.user.id)}" data-champ-id="${esc(x.championshipId)}" data-race-id="${esc(x.raceId)}">${t('Recusar')}</button></div></div>`;
+    }
     return `<div class="dashboard-request"><div class="dashboard-side-content"><div class="dashboard-side-title">${esc(p.name||x.user.name||t('Piloto'))}</div><div class="dashboard-side-meta">${esc(x.championship.name||t('Campeonato'))} · ${esc(x.user.email||'')}</div></div><div class="buttons"><button class="btn primary" data-action="approve-championship-access" data-user-id="${esc(x.user.id)}" data-champ-id="${esc(x.championshipId)}">${t('Aceitar')}</button><button class="btn danger" data-action="reject-championship-access" data-user-id="${esc(x.user.id)}" data-champ-id="${esc(x.championshipId)}">${t('Recusar')}</button></div></div>`;
   }).join('')||`<div class="dashboard-empty">${t('Não existem pedidos pendentes.')}</div>`;
 
@@ -1692,7 +1764,14 @@ function pilotChampionshipDetailPage(){
   for(const r of c.races||[]){(r.pilotIds||[]).forEach(id=>participants.add(String(id)));for(const d of r.days||[])for(const sess of d.sessions||[])(sess.pilotIds||[]).forEach(id=>participants.add(String(id)));}
   const names=[...participants].map(id=>db.drivers.find(d=>String(d.id)===id)).filter(Boolean);
   const people=names.map(d=>'<div class="row" style="cursor:pointer" data-action="open-pilot-profile" data-driver-id="'+esc(d.id)+'"><div><b>'+esc(d.name)+'</b><div class="muted">'+esc(categoryName(d.category))+(d.team?' · '+esc(d.team):'')+'</div></div><span class="muted">Ver perfil →</span></div>').join('');
-  const races=(c.races||[]).map(r=>'<div class="row"><div><b>'+esc(r.name)+'</b><div class="muted">'+esc(r.location||'Local por definir')+' · '+esc(r.date||'Data por definir')+'</div></div><span class="badge">'+(access?'Acesso ativo':'Informação pública')+'</span></div>').join('');
+  const races=(c.races||[]).map(r=>{
+    const raceAccess=hasRaceAccess(c.id,r.id);
+    const racePending=requestedRaceKeys(currentUser).includes(raceAccessKey(c.id,r.id));
+    const status=raceAccess?t('Acesso aprovado'):racePending?t('Pedido pendente'):t('Disponível');
+    const button=raceAccess?`<button class="btn" data-action="open-pilot-calendar-race" data-champ="${esc(c.id)}" data-race="${esc(r.id)}">${t('Abrir')}</button>`:racePending?`<span class="badge">${t('A aguardar administrador')}</span>`:`<button class="btn primary" data-action="request-race-access" data-champ="${esc(c.id)}" data-race="${esc(r.id)}">${t('Pedir acesso à prova')}</button>`;
+    const period=r.startDate&&r.endDate&&r.startDate!==r.endDate?`${esc(r.startDate)} → ${esc(r.endDate)}`:esc(r.startDate||r.date||t('Data por definir'));
+    return `<div class="row"><div><b>${esc(r.name)}</b><div class="muted">${esc(r.location||t('Local por definir'))} · ${period}</div></div><div class="buttons"><span class="badge">${status}</span>${button}</div></div>`;
+  }).join('');
   return '<div class="breadcrumb"><span data-action="back-championships">Campeonatos</span> › <b>'+esc(c.name)+'</b></div>'+header(c.name,esc(c.season||'')+' · '+c.races.length+' corridas','')+
   '<div class="card"><b>'+(access?'Tens acesso a este campeonato':pending?'Pedido de acesso pendente':'Acesso ainda não aprovado')+'</b><div class="help" style="margin-top:8px">'+(access?'Podes consultar os detalhes e os eventos deste campeonato.':pending?'O administrador ainda não aprovou o teu pedido. Enquanto aguardas, podes consultar esta informação pública.':'Podes consultar a informação pública e pedir acesso ao administrador.')+'</div>'+(!access&&!pending?'<button class="btn primary" style="margin-top:12px" data-action="request-championship-access" data-id="'+esc(c.id)+'">Pedir acesso</button>':'')+'</div>'+
   '<div class="sectiontitle">Pilotos inscritos</div><div class="list">'+(people||'<div class="empty">Ainda não há pilotos inscritos neste campeonato.</div>')+'</div>'+
@@ -1812,7 +1891,7 @@ function pilotRacePage(){
   const c=getChamp(),r=getRace();
   if(!c||!r)return myEventsPage();
   const pilotId=currentPilotId();
-  if(!hasPilotInRace(r,pilotId) && !hasChampionshipAccess(c.id))return myEventsPage();
+  if(!hasPilotInRace(r,pilotId) && !hasRaceAccess(c.id,r.id))return myEventsPage();
   return `<div class="breadcrumb"><span data-action="pilot-home">Os meus eventos</span> › <b>${esc(r.name)}</b></div>`+
     header(r.name,`${esc(c.name)} · ${esc(r.location||'')} · ${esc(r.date||'')}`,'')+
     '<div class="sectiontitle">Dias</div><div class="list">'+
@@ -1882,6 +1961,12 @@ Object.assign(I18N.es,{
   'O teu centro de controlo de performance.':'Tu centro de control de rendimiento.','MPRD · DRIVER CONTROL':'MPRD · DRIVER CONTROL','Acompanha as tuas sessões, performance, campeonatos e resultados num único centro de controlo.':'Controla tus sesiones, rendimiento, campeonatos y resultados desde un único centro de control.','tempo até à sessão':'tiempo hasta la sesión','Quando o treinador te atribuir uma sessão, ela aparecerá aqui.':'Cuando tu entrenador te asigne una sesión, aparecerá aquí.','atribuídas':'asignadas','Analisadas':'Analizadas','com análise':'con análisis','Score médio':'Puntuación media','de 10':'de 10','confirmados':'confirmados','Os teus acessos':'Tus accesos','As tuas sessões':'Tus sesiones','Ver dados pessoais e informação do piloto.':'Ver datos personales e información del piloto.','Registar resultado':'Registrar resultado','Adiciona resultados de corridas ou campeonatos.':'Añade resultados de carreras o campeonatos.','Categoria por definir':'Categoría no definida','Ver calendário':'Ver calendario','Consulta as próximas provas.':'Consulta las próximas carreras.'
 });
 
+Object.assign(I18N.en,{
+  'Abrir prova':'Open race','Pedir acesso à prova':'Request race access','Já tens acesso a esta prova.':'You already have access to this race.','O teu pedido para esta prova já foi enviado ao administrador.':'Your request for this race has already been sent to the administrator.','Podes consultar a informação da prova e pedir acesso ao administrador para veres os detalhes e sessões atribuídas.':'You can view the race information and request access from the administrator to see its details and assigned sessions.','Já tens acesso a esta prova. Podes abrir os dias e as sessões que te foram atribuídos.':'You already have access to this race. You can open the days and sessions assigned to you.','Pedido de acesso à prova enviado.':'Race access request sent.','Acesso à prova concedido.':'Race access granted.','Pedido de acesso à prova recusado.':'Race access request rejected.','Esta prova é gerida dentro do campeonato. No painel do administrador podes abrir a prova e alterar as datas.':'This race is managed inside the championship. In the administrator panel you can open the race and change its dates.'
+});
+Object.assign(I18N.es,{
+  'Abrir prova':'Abrir carrera','Pedir acesso à prova':'Solicitar acceso a la carrera','Já tens acesso a esta prova.':'Ya tienes acceso a esta carrera.','O teu pedido para esta prova já foi enviado ao administrador.':'Tu solicitud para esta carrera ya fue enviada al administrador.','Podes consultar a informação da prova e pedir acesso ao administrador para veres os detalhes e sessões atribuídas.':'Puedes consultar la información de la carrera y solicitar acceso al administrador para ver sus detalles y sesiones asignadas.','Já tens acesso a esta prova. Podes abrir os dias e as sessões que te foram atribuídos.':'Ya tienes acceso a esta carrera. Puedes abrir los días y las sesiones que te han asignado.','Pedido de acesso à prova enviado.':'Solicitud de acceso a la carrera enviada.','Acesso à prova concedido.':'Acceso a la carrera concedido.','Pedido de acesso à prova recusado.':'Solicitud de acceso a la carrera rechazada.','Esta prova é gerida dentro do campeonato. No painel do administrador podes abrir a prova e alterar as datas.':'Esta carrera se gestiona dentro del campeonato. En el panel del administrador puedes abrir la carrera y cambiar las fechas.'
+});
 Object.assign(I18N.en,EXTRA_I18N.en); Object.assign(I18N.es,EXTRA_I18N.es);
 function t(s){return currentLang==='pt'?s:(I18N[currentLang]?.[s]||s)}
 function applyTranslations(){
@@ -2106,6 +2191,11 @@ document.addEventListener('click',async event=>{
     case 'create-calendar-event':createCalendarEvent();break;
     case 'save-calendar-event':saveCalendarEvent(action.dataset.id);break;
     case 'calendar-event':calendarEventModal(action.dataset.id);break;
+    case 'request-race-access':requestRaceAccess(action.dataset.champ,action.dataset.race);break;
+    case 'open-calendar-race':ui.page='race';ui.championship=action.dataset.champ;ui.race=action.dataset.race;render();break;
+    case 'open-pilot-calendar-race':ui.page='pilot-race';ui.championship=action.dataset.champ;ui.race=action.dataset.race;render();break;
+    case 'approve-race-access':decideRaceAccess(action.dataset.userId,action.dataset.champId,action.dataset.raceId,true);break;
+    case 'reject-race-access':decideRaceAccess(action.dataset.userId,action.dataset.champId,action.dataset.raceId,false);break;
     case 'delete-calendar-event':{const id=String(action.dataset.id);if(id.startsWith('race-day-')){toast('As provas dos campeonatos são geridas na corrida.');break;}if(confirm('Apagar este compromisso do calendário?')){db.calendarEvents=db.calendarEvents.filter(e=>String(e.id)!==id);await save();closeModal();render();}}break;
     case 'pilot-home':ui.page='my-events';render();break;
     case 'pilot-race-back':ui.page='pilot-race';if(action.dataset.champ)ui.championship=action.dataset.champ;if(action.dataset.race)ui.race=action.dataset.race;render();break;
