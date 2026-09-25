@@ -889,15 +889,11 @@ async function bootCloud(){
     await autoLinkPilot();
     if(isAdmin()){ await loadProfiles(); await autoAssociateApprovedPilots(); }
     const canRestore=savedPage && !['login','register'].includes(savedPage);
-    if(profileComplete(currentUser) || isAdmin()){
-      if(canRestore){
-        ui.page=savedPage;
-        Object.assign(ui,savedContext);
-      }else{
-        ui.page='dashboard';
-      }
+    if(canRestore){
+      ui.page=savedPage;
+      Object.assign(ui,savedContext);
     }else{
-      ui.page='profile';
+      ui.page='dashboard';
     }
   }else{
     currentUser=null;
@@ -920,10 +916,8 @@ function subscribeAuth(){
       await autoLinkPilot();
       if(isAdmin()){ await loadProfiles(); await autoAssociateApprovedPilots(); }
       const saved=loadUiState()||{};
-      if(profileComplete(currentUser) || isAdmin()){
-        if(saved.page && !['login','register'].includes(saved.page)) ui=Object.assign(ui,saved);
-        else ui.page='dashboard';
-      }else ui.page='profile';
+      if(saved.page && !['login','register'].includes(saved.page)) ui=Object.assign(ui,saved);
+      else ui.page='dashboard';
       render();
     }
   });
@@ -2411,7 +2405,7 @@ setInterval(updateDashboardCountdown,30000);
 function render(){
   persistUi();
   const app=document.getElementById('app');
-  if(currentUser && currentUser.role==='pilot' && !profileComplete(currentUser) && !['profile','register','championships','championship'].includes(ui.page))ui.page='profile';
+  // A new pilot account can navigate the full application immediately. Profile completion does not block Calendar, Media, Championships or other shared areas.
   if(currentUser && !isAdmin() && ['drivers','pilot-profile'].includes(ui.page)) ui.page='dashboard';
   if(currentUser && !isAdmin() && ui.page==='my-events') ui.page='dashboard';
   if(!currentUser){
