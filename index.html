@@ -586,8 +586,48 @@ main>*{width:min(1280px,100%)}
 @media(max-width:700px){.loginbox{max-width:360px !important;padding:19px !important}.backbtn{min-height:33px;padding:7px 11px !important}}
 </style>
 
-.mode-switch{margin-top:8px;padding:10px 12px;border:1px solid #292f35;border-radius:10px;background:#101214}.mode-switch label{display:block;margin-bottom:5px;color:#777d84;font-size:9px;font-weight:900;letter-spacing:.12em;text-transform:uppercase}.mode-switch select{width:100%;height:34px;background:#17191b;color:#fff;border:1px solid #343a41;border-radius:7px;padding:0 8px;font-size:11px;font-weight:750}.mode-switch select:focus{outline:none;border-color:var(--accent)}
-@media(max-width:850px){.mode-switch label{display:none}.mode-switch{padding:0 4px;border:0;background:transparent;margin:0}.mode-switch select{height:48px;min-width:120px}}
+<style id="mprd-navigation-layout-fix">
+/* Shared navigation layout: same controls and destinations as V93. */
+.mode-switch{margin:10px 9px 0;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;display:grid;gap:7px;min-width:0}
+.mode-switch label{margin:0;color:#626970;font-size:8px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;line-height:1.5}
+.mode-switch select{display:block;width:100%;min-width:0;min-height:38px;height:auto;background:#0f1113;color:#dfe2e6;border:1px solid #292e34;border-radius:8px;padding:9px 10px;font-size:11px;font-weight:400;line-height:1.4;box-shadow:none}
+.mode-switch select:hover{border-color:#454b53}
+.mode-switch select:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-color:var(--accent)}
+@media(min-width:701px){
+ .sidebar{overflow-y:auto;overflow-x:hidden}
+ .nav{align-content:start}
+}
+/* Keep labels and the mode selector inside the tablet sidebar. */
+@media(min-width:701px) and (max-width:1000px){
+ .sidebar{width:208px;padding:18px 12px}
+ .sidebar .logo{height:80px;margin:0 8px 20px;justify-content:flex-start}
+ .sidebar .logo:after{display:none}
+ .sidebar .logo img{width:80px;height:80px;flex-basis:80px}
+ .sidebar .nav button{font-size:12px;text-align:left;line-height:1.4}
+ main{margin-left:208px;width:calc(100% - 208px)}
+}
+/* One scrollable navigation row, including language and mode, on mobile. */
+@media(max-width:700px){
+ .sidebar{height:calc(68px + env(safe-area-inset-bottom,0px));padding-bottom:calc(6px + env(safe-area-inset-bottom,0px))}
+ .sidebar .nav{display:grid;grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:max-content;grid-template-rows:1fr;align-items:stretch;height:54px;overflow-x:auto;overflow-y:hidden}
+ .sidebar .nav>button{min-width:76px;white-space:nowrap}
+ .sidebar .lang-switch,.sidebar .mode-switch{margin:0;padding:0 4px;border:0;display:flex;align-items:center;background:transparent;box-shadow:none}
+ .sidebar .lang-switch label,.sidebar .mode-switch label{display:none}
+ .sidebar .lang-switch select,.sidebar .mode-switch select{height:44px;min-height:44px;font-size:11px;padding:8px;border-radius:8px}
+ .sidebar .mode-switch select{width:174px;min-width:174px}
+ main{padding-bottom:calc(88px + env(safe-area-inset-bottom,0px))}
+}
+/* Physical Preparation only: let long labels and actions wrap naturally. */
+.fitness-wrap{min-width:0}
+.fitness-wrap .fitness-head,.fitness-wrap .page-title-row{flex-wrap:wrap}
+.fitness-wrap .fitness-head>div,.fitness-wrap .page-title-row>div,.fitness-wrap .fitness-row>div,.fitness-wrap .fitness-test-card>*{min-width:0}
+.fitness-wrap .fitness-card,.fitness-wrap .fitness-row{overflow-wrap:anywhere}
+.fitness-wrap .fitness-head h1{font-size:clamp(24px,3vw,32px);line-height:1.2}
+.fitness-wrap .fitness-row .buttons{flex-wrap:wrap}
+.fitness-wrap .rep-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+.fitness-wrap .fitness-result{min-width:0}
+@media(max-width:1000px){.fitness-wrap .fitness-grid{grid-template-columns:1fr}.fitness-wrap .fitness-test-card{grid-template-columns:1fr}}
+</style>
 </head>
 <body>
 <aside class="sidebar">
