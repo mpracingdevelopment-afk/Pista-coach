@@ -617,8 +617,40 @@ let db=normalize({});
 function loadUiState(){try{const raw=localStorage.getItem('mpracingdevelopment_ui');return raw?JSON.parse(raw):null;}catch(e){return null;}}
 const _savedUi=loadUiState();
 let ui=Object.assign({page:'dashboard',editor:null,mode:'add',selected:null,championship:null,race:null,day:null,session:null,sessionPilot:null,sessionPoint:0,selectedPilot:null,champTab:'races'},_savedUi||{});
-function persistUi(){try{localStorage.setItem('mpracingdevelopment_ui',JSON.stringify({page:ui.page,editor:ui.editor,mode:ui.mode,selected:ui.selected,championship:ui.championship,race:ui.race,day:ui.day,session:ui.session,sessionPilot:ui.sessionPilot,sessionPoint:ui.sessionPoint,selectedPilot:ui.selectedPilot,champTab:ui.champTab}));}catch(e){}}
-function goBackPage(){const parent={editor:'tracks',championship:'championships',race:'championship',day:'race',session:'day','pilot-race':'dashboard','pilot-day':'pilot-race','pilot-session':'pilot-day','pilot-profile':'drivers','media-folder':'media'}[ui.page];if(!parent)return false;ui.page=parent;if(parent==='tracks'){ui.editor=null;ui.selected=null;}if(parent==='championships'){ui.championship=null;ui.race=null;ui.day=null;ui.session=null;}if(parent==='championship'){ui.race=null;ui.day=null;ui.session=null;}if(parent==='race'){ui.day=null;ui.session=null;}if(parent==='day'){ui.session=null;ui.sessionPoint=0;ui.sessionPilot=null;}if(parent==='pilot-race'){ui.day=null;ui.session=null;}if(parent==='pilot-day'){ui.session=null;}persistUi();render();return true;}
+function persistUi(){try{localStorage.setItem('mpracingdevelopment_ui',JSON.stringify({page:ui.page,editor:ui.editor,mode:ui.mode,selected:ui.selected,championship:ui.championship,race:ui.race,day:ui.day,session:ui.session,sessionPilot:ui.sessionPilot,sessionPoint:ui.sessionPoint,selectedPilot:ui.selectedPilot,champTab:ui.champTab,mediaFolder:ui.mediaFolder||null}));}catch(e){}}
+
+// Navegação interna: guarda o contexto real de cada página para que "Voltar"
+// regresse ao ponto de onde o utilizador veio, em vez de assumir sempre Dashboard.
+let appHistoryReady=false;
+let appHistoryRestoring=false;
+function appUiSnapshot(){return {page:ui.page,editor:ui.editor||null,mode:ui.mode||'add',selected:ui.selected??null,championship:ui.championship||null,race:ui.race||null,day:ui.day||null,session:ui.session||null,sessionPilot:ui.sessionPilot||null,sessionPoint:Number(ui.sessionPoint||0),selectedPilot:ui.selectedPilot||null,champTab:ui.champTab||'races',mediaFolder:ui.mediaFolder||null};}
+function appUiKey(x){return JSON.stringify(x||appUiSnapshot());}
+function syncAppHistory(){
+  const snap=appUiSnapshot(), key=appUiKey(snap);
+  if(!appHistoryReady){
+    try{history.replaceState({__mprd:true,key,ui:snap},'',window.location.href);}catch(e){}
+    appHistoryReady=true;
+    return;
+  }
+  if(appHistoryRestoring)return;
+  if(history.state?.__mprd && history.state.key===key)return;
+  try{history.pushState({__mprd:true,key,ui:snap},'',window.location.href);}catch(e){}
+}
+function goBackPage(){
+  if(appHistoryReady && history.state?.__mprd){
+    try{history.back();return true;}catch(e){}
+  }
+  return false;
+}
+window.addEventListener('popstate',event=>{
+  const snap=event.state?.__mprd?event.state.ui:null;
+  if(!snap)return;
+  appHistoryRestoring=true;
+  ui=Object.assign(ui,snap);
+  persistUi();
+  render();
+  appHistoryRestoring=false;
+});
 
 let currentUser=null;
 let profileCache=[];
@@ -2412,6 +2444,7 @@ function render(){
   // A new pilot account can navigate the full application immediately. Profile completion does not block Calendar, Media, Championships or other shared areas.
   if(currentUser && !isAdmin() && ['drivers','pilot-profile'].includes(ui.page)) ui.page='dashboard';
   if(currentUser && !isAdmin() && ui.page==='my-events') ui.page='dashboard';
+  syncAppHistory();
   if(!currentUser){
     if(!cloudReady){
       app.innerHTML='<div style="min-height:70vh;display:grid;place-items:center;padding:24px"><div class="card" style="max-width:420px;width:100%;text-align:center"><div class="kpi" style="font-size:28px">MPRacingDevelopment</div><div class="muted" style="margin-top:8px">A recuperar a sessão…</div></div></div>';
