@@ -639,6 +639,32 @@ main>*{width:min(1280px,100%)}
 .fitness-wrap .tabs{flex-wrap:wrap}
 @media(max-width:600px){.fitness-plan-item{flex-direction:column}.fitness-plan-item .buttons{width:auto}.fitness-wrap .page-title-row>.buttons{width:100%}}
 </style>
+
+<style id="fitness-v95-session-layout">
+.fitness-userbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.fitness-userbar>.btn{margin-left:auto}
+.fitness-session-layout{display:grid;grid-template-columns:minmax(0,1fr);gap:20px;align-items:start}
+.fitness-session-layout.has-details{grid-template-columns:minmax(0,1fr) 320px}
+.fitness-session-layout>div{min-width:0}
+.fitness-result-card{padding:20px;background:var(--panel);border:1px solid var(--line);border-radius:10px;margin-bottom:14px}
+.fitness-result-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.fitness-result-heading h3{margin:0;font-size:17px;overflow-wrap:anywhere}
+.fitness-result-heading .btn{font-size:11px}
+.fitness-result-fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:12px}
+.fitness-value-label{display:grid;gap:6px;min-width:0;color:var(--muted);font-size:11px}
+.fitness-value-entry{display:flex;align-items:center;border:1px solid var(--line2);border-radius:8px;background:var(--bg);min-width:0;overflow:hidden}
+.fitness-value-entry:focus-within{outline:2px solid var(--accent);outline-offset:2px}
+.fitness-value-entry input.fitness-result{border:0;border-radius:0;min-width:0;width:100%;font-size:24px;font-weight:800;padding:12px;outline:none;background:transparent}
+.fitness-value-unit{flex-shrink:0;padding:0 12px 0 4px;color:var(--text);font-size:16px;font-weight:700;max-width:45%;overflow-wrap:anywhere}
+.fitness-saved-value{font-size:26px;font-weight:850;padding:12px 0}
+.fitness-test-details{position:sticky;top:20px;border:1px solid var(--line2);border-radius:10px;padding:18px;background:var(--panel2);max-height:calc(100vh - 40px);overflow-y:auto}
+.fitness-test-details[hidden]{display:none!important}.fitness-test-details h3{margin:0;font-size:17px}.fitness-test-details h4{font-size:12px;margin-bottom:8px}
+.fitness-test-details dl{display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:12px}.fitness-test-details dt{color:var(--muted)}.fitness-test-details dd{margin:0;overflow-wrap:anywhere}
+.fitness-protocol-notes{margin:20px 0}.fitness-protocol-notes textarea{display:block;width:100%;margin-top:10px;padding:12px;background:var(--bg);border:1px solid var(--line2);border-radius:8px;color:var(--text);resize:vertical}
+.fitness-history-filters{display:flex;flex-wrap:wrap;gap:12px;margin:20px 0}.fitness-history-filters>.field{flex:1;min-width:180px}
+.fitness-history-session{padding:16px;border:1px solid var(--line);border-radius:8px}.fitness-history-values{display:grid;gap:10px}.fitness-history-values>div{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:13px}.fitness-history-values span{font-weight:800}
+@media(max-width:1100px){.fitness-session-layout.has-details{grid-template-columns:minmax(0,1fr)}.fitness-test-details{position:relative;top:auto;max-height:none;grid-row:1}}
+@media(max-width:500px){.fitness-result-card{padding:14px}.fitness-result-heading{align-items:flex-start}.fitness-result-fields{grid-template-columns:1fr 1fr}.fitness-value-entry input.fitness-result{font-size:21px}.fitness-userbar .brand-name{width:100%;white-space:normal}.fitness-test-details dl{grid-template-columns:1fr 1fr}}
+</style>
 </head>
 <body>
 <aside class="sidebar">
@@ -661,7 +687,9 @@ const LEGACY_KEYS=['mpracingdevelopment_v27','mpracingdevelopment_v26','mpracing
 let db=normalize({});
 function loadUiState(){try{const raw=localStorage.getItem('mpracingdevelopment_ui');return raw?JSON.parse(raw):null;}catch(e){return null;}}
 const _savedUi=loadUiState();
+let workspaceModeChosen=false;
 let ui=Object.assign({page:'dashboard',editor:null,mode:'add',selected:null,championship:null,race:null,day:null,session:null,sessionPilot:null,sessionPoint:0,selectedPilot:null,champTab:'races',area:null},_savedUi||{});
+ui.area=null;
 function persistUi(){try{localStorage.setItem('mpracingdevelopment_ui',JSON.stringify({page:ui.page,editor:ui.editor,mode:ui.mode,selected:ui.selected,championship:ui.championship,race:ui.race,day:ui.day,session:ui.session,sessionPilot:ui.sessionPilot,sessionPoint:ui.sessionPoint,selectedPilot:ui.selectedPilot,champTab:ui.champTab,mediaFolder:ui.mediaFolder||null,area:ui.area||null}));}catch(e){}}
 
 // Navegação interna: guarda o contexto real de cada página para que "Voltar"
@@ -982,9 +1010,10 @@ async function bootCloud(){
 
 function subscribeAuth(){
   sb.auth.onAuthStateChange(async (event,session)=>{
-    if(event==='SIGNED_OUT'){cleanAuthUrl();currentUser=null;profileCache=[];db=normalize({});ui.page='login';render();return;}
+    if(event==='SIGNED_OUT'){cleanAuthUrl();currentUser=null;profileCache=[];db=normalize({});ui.page='login';ui.area=null;workspaceModeChosen=false;fitnessResetData();render();return;}
     if(session?.user && ['INITIAL_SESSION','SIGNED_IN','TOKEN_REFRESHED','USER_UPDATED'].includes(event)){
       cleanAuthUrl();
+      if(currentUser && String(currentUser.id)!==String(session.user.id)){workspaceModeChosen=false;fitnessResetData();}
       currentUser={id:session.user.id,email:session.user.email||'',role:'pilot',name:session.user.user_metadata?.name||session.user.email||'Piloto',pilotId:null,profile:null};
       await loadProfiles();
       await syncAccessRequestsFromAuth();
@@ -2487,7 +2516,7 @@ function sidebarButton(page,label,active=ui.page){return `<button data-page="${p
 function renderSidebar(){
   const nav=document.getElementById('mainNav');
   if(!nav)return;
-  if(!currentUser){
+  if(!currentUser||!workspaceModeChosen){
     nav.innerHTML=`<div class="lang-switch"><label for="langSelect">Idioma</label><select id="langSelect" aria-label="Idioma"><option value="pt">Português</option><option value="es">Español</option><option value="en">English</option></select></div>`;
     return;
   }
@@ -2596,16 +2625,38 @@ function renderCore(){
 }
 
 /* ================= FITNESS PERFORMANCE MODULE ================= */
+let fitnessLoadGeneration=0;
+let fitnessResultsSaving=false;
+function fitnessUserbar(){return `<div class="userbar fitness-userbar"><span class="brand-name">MPRacingDevelopment</span><span>${esc(currentUser?.name||'')}</span><span class="rolebadge">${fitnessRole()}</span><button class="btn" data-action="logout">Sair</button></div>`;}
+function fitnessResetData(){fitnessLoadGeneration++;fitness={tests:[],batteries:[],batteryTests:[],assessments:[],results:[],loaded:false,loading:false,error:null};}
+function fitnessUnit(unit){const raw=String(unit||'').trim();const key=raw.toLowerCase().replace(/[.\s_-]+/g,'');const names={kg:'kg',quilo:'kg',quilos:'kg',quilograma:'kg',quilogramas:'kg',nm:'Nm',newtonmetro:'Nm',newtonmetros:'Nm',n:'N',newton:'N',newtons:'N',numero:'',numeros:'',número:'',números:'',semunidade:'',contagem:''};return Object.prototype.hasOwnProperty.call(names,key)?names[key]:raw;}
+function fitnessFormatResult(value,unit){if(value===null||value===undefined||value==='')return '—';const suffix=fitnessUnit(unit);return `${String(value)}${suffix?' '+suffix:''}`;}
+function fitnessSessionTests(a){
+ if(Array.isArray(a.test_snapshot))return a.test_snapshot;
+ const current=fitnessPlanTests(a.battery_id).map(bt=>{const t=fitness.tests.find(t=>String(t.id)===String(bt.test_id));const r=fitness.results.find(r=>String(r.assessment_id)===String(a.id)&&String(r.test_id)===String(bt.test_id));return {...(t||{}),id:bt.test_id,name:r?.test_name||t?.name||'Teste',unit:r?.unit||t?.unit||'',repetitions:Math.max(Number(t?.repetitions)||1,r?.values?.length||0)};});
+ for(const r of fitness.results.filter(r=>String(r.assessment_id)===String(a.id))){if(!current.some(t=>String(t.id)===String(r.test_id)))current.push({id:r.test_id,name:r.test_name||'Teste',unit:r.unit||'',repetitions:r.values?.length||1});}
+ return current;
+}
+function fitnessDate(value){return value?new Date(String(value).slice(0,10)+'T12:00:00').toLocaleDateString('pt-PT'):'';}
+function fitnessShowTestDetails(id){
+ const a=fitness.assessments.find(a=>String(a.id)===String(ui.fitnessAssessment));if(!a)return;
+ const t=fitnessSessionTests(a).find(t=>String(t.id)===String(id));if(!t)return;
+ const panel=document.getElementById('fitnessTestDetails');if(!panel)return;
+ panel.innerHTML=`<div class="page-title-row"><h3>${esc(t.name)}</h3><button class="btn" data-action="fitness-close-test-details" aria-label="Fechar descrição do teste">Fechar</button></div><dl><dt>Tipo de teste</dt><dd>${esc(t.test_type||'—')}</dd><dt>Medida</dt><dd>${esc(t.measurement_type||'—')}</dd><dt>Equipamento</dt><dd>${esc(t.equipment||'—')}</dd><dt>Unidade</dt><dd>${esc(fitnessUnit(t.unit)||'Número sem unidade')}</dd><dt>Repetições</dt><dd>${Number(t.repetitions)||1}</dd></dl><h4>Procedimento padronizado</h4><div class="protocol-box">${esc(t.protocol||'Sem descrição adicional.')}</div>${t.instructions?`<h4>Instruções</h4><div class="protocol-box">${esc(t.instructions)}</div>`:''}`;
+ panel.hidden=false;document.getElementById('fitnessSessionLayout').classList.add('has-details');
+ document.querySelectorAll('[data-action="fitness-test-details"]').forEach(b=>b.setAttribute('aria-expanded',String(b.dataset.id===String(id))));panel.focus();
+}
+function fitnessCloseTestDetails(){const panel=document.getElementById('fitnessTestDetails');if(panel)panel.hidden=true;document.getElementById('fitnessSessionLayout')?.classList.remove('has-details');const trigger=document.querySelector('[data-action="fitness-test-details"][aria-expanded="true"]');if(trigger){trigger.setAttribute('aria-expanded','false');trigger.focus();}}
 let fitnessPlanDraft=null;
 let fitnessSessionSaving=false;
 function fitnessPlanTests(id){return fitness.batteryTests.filter(x=>String(x.battery_id)===String(id)).sort((a,b)=>Number(a.sort_order)-Number(b.sort_order));}
 function fitnessPlansContent(){
- const rows=fitness.batteries.map(b=>{const tests=fitnessPlanTests(b.id);return `<div class="fitness-card"><div class="page-title-row"><div><h3>${esc(b.name)}</h3><div class="muted fitness-plan-description">${esc(b.description||'Sem descrição.')}</div></div><div class="buttons">${canFitnessManage()?`<button class="btn primary" data-action="fitness-new-assessment" data-id="${b.id}">Nova sessão</button>`:''}${currentUser?.role==='admin'?`<button class="btn" data-action="fitness-edit-battery" data-id="${b.id}">Editar plano</button>`:''}</div></div><ol class="fitness-plan-tests">${tests.map(bt=>{const t=fitness.tests.find(x=>String(x.id)===String(bt.test_id));return `<li><strong>${esc(t?.name||'Teste indisponível')}</strong><div class="muted">${esc(t?.unit||'')} · ${Number(t?.repetitions||1)} repetições</div><details><summary>Protocolo padronizado</summary><div class="protocol-box">${esc(t?.protocol||'Protocolo por definir.')}</div>${t?.instructions?`<div class="protocol-box">${esc(t.instructions)}</div>`:''}</details></li>`;}).join('')}</ol>${tests.length?'':'<div class="muted">Este plano ainda não tem testes.</div>'}</div>`;}).join('');
- return `<div class="page-title-row"><div><h3>Planos de avaliação</h3><div class="muted">Define a descrição e a sequência de testes. A data e o piloto são escolhidos ao criar uma sessão.</div></div>${currentUser?.role==='admin'?'<button class="btn primary" data-action="fitness-new-battery">Criar plano de avaliações</button>':''}</div><div class="fitness-list">${rows||'<div class="empty">Ainda não existem planos de avaliação.</div>'}</div>`;
+ const rows=fitness.batteries.map(b=>{const tests=fitnessPlanTests(b.id);return `<div class="fitness-card"><div class="page-title-row"><div><h3>${esc(b.name)}</h3><div class="muted fitness-plan-description">${esc(b.description||'Sem descrição.')}</div></div><div class="buttons">${canFitnessManage()?`<button class="btn primary" data-action="fitness-new-assessment" data-id="${b.id}">Nova sessão de protocolo</button>`:''}${currentUser?.role==='admin'?`<button class="btn" data-action="fitness-edit-battery" data-id="${b.id}">Editar protocolo</button>`:''}</div></div><ol class="fitness-plan-tests">${tests.map(bt=>{const t=fitness.tests.find(x=>String(x.id)===String(bt.test_id));return `<li><strong>${esc(t?.name||'Teste indisponível')}</strong><div class="muted">${esc(t?.unit||'')} · ${Number(t?.repetitions||1)} repetições</div><details><summary>Protocolo padronizado</summary><div class="protocol-box">${esc(t?.protocol||'Protocolo por definir.')}</div>${t?.instructions?`<div class="protocol-box">${esc(t.instructions)}</div>`:''}</details></li>`;}).join('')}</ol>${tests.length?'':'<div class="muted">Este protocolo ainda não tem testes.</div>'}</div>`;}).join('');
+ return `<div class="page-title-row"><div><h3>Protocolos de avaliação</h3><div class="muted">Define a descrição e a sequência de testes. A data e o piloto são escolhidos ao criar uma sessão.</div></div>${currentUser?.role==='admin'?'<button class="btn primary" data-action="fitness-new-battery">Criar protocolo de avaliação</button>':''}</div><div class="fitness-list">${rows||'<div class="empty">Ainda não existem protocolos de avaliação.</div>'}</div>`;
 }
 function fitnessRenderPlanEditor(){
  const el=document.getElementById('fbOrderedTests');if(!el||!fitnessPlanDraft)return;
- el.innerHTML=fitnessPlanDraft.tests.map((id,i)=>{const t=fitness.tests.find(t=>String(t.id)===id);return `<div class="fitness-plan-item"><div><strong>${i+1}. ${esc(t?.name||'Teste indisponível')}</strong><div class="muted">${esc(t?.unit||'')} · ${Number(t?.repetitions||1)} repetições</div><details><summary>Protocolo padronizado</summary><div class="protocol-box">${esc(t?.protocol||'Define o protocolo no catálogo antes de guardar o plano.')}</div>${t?.instructions?`<div class="protocol-box">${esc(t.instructions)}</div>`:''}</details></div><div class="buttons"><button class="btn" data-action="fitness-plan-move" data-index="${i}" data-direction="-1" ${i===0?'disabled':''} aria-label="Subir ${esc(t?.name||'teste')}">↑</button><button class="btn" data-action="fitness-plan-move" data-index="${i}" data-direction="1" ${i===fitnessPlanDraft.tests.length-1?'disabled':''} aria-label="Descer ${esc(t?.name||'teste')}">↓</button><button class="btn" data-action="fitness-plan-remove" data-index="${i}">Remover</button></div></div>`;}).join('')||'<div class="empty">Adiciona o primeiro teste do plano.</div>';
+ el.innerHTML=fitnessPlanDraft.tests.map((id,i)=>{const t=fitness.tests.find(t=>String(t.id)===id);return `<div class="fitness-plan-item"><div><strong>${i+1}. ${esc(t?.name||'Teste indisponível')}</strong><div class="muted">${esc(t?.unit||'')} · ${Number(t?.repetitions||1)} repetições</div><details><summary>Protocolo padronizado</summary><div class="protocol-box">${esc(t?.protocol||'Define o protocolo no catálogo antes de guardar o protocolo.')}</div>${t?.instructions?`<div class="protocol-box">${esc(t.instructions)}</div>`:''}</details></div><div class="buttons"><button class="btn" data-action="fitness-plan-move" data-index="${i}" data-direction="-1" ${i===0?'disabled':''} aria-label="Subir ${esc(t?.name||'teste')}">↑</button><button class="btn" data-action="fitness-plan-move" data-index="${i}" data-direction="1" ${i===fitnessPlanDraft.tests.length-1?'disabled':''} aria-label="Descer ${esc(t?.name||'teste')}">↓</button><button class="btn" data-action="fitness-plan-remove" data-index="${i}">Remover</button></div></div>`;}).join('')||'<div class="empty">Podes guardar o protocolo sem testes e definir a sequência mais tarde.</div>';
  const choice=document.getElementById('fbTestChoice');if(choice)for(const option of choice.options)option.disabled=fitnessPlanDraft.tests.includes(option.value);
 }
 function fitnessPlanChange(action,index,direction){
@@ -2625,6 +2676,7 @@ function canFitnessManage(){return isFitnessStaff();}
 function fitnessRole(){return currentUser?.role==='admin'?'ADMIN':(currentUser?.profile?.fitnessStaff?'STAFF':'PILOTO');}
 async function loadFitness(){
   if(fitness.loading)return;
+  const generation=fitnessLoadGeneration;
   fitness.loading=true;
   fitness.error=null;
   try{
@@ -2635,19 +2687,20 @@ async function loadFitness(){
       sb.from('fitness_assessments').select('*').order('performed_at',{ascending:false}),
       sb.from('fitness_results').select('*').order('created_at',{ascending:false})
     ]);
+    if(generation!==fitnessLoadGeneration)return;
     if(t.error||b.error||bt.error||a.error||r.error) throw (t.error||b.error||bt.error||a.error||r.error);
     fitness.tests=t.data||[];fitness.batteries=b.data||[];fitness.batteryTests=bt.data||[];fitness.assessments=a.data||[];fitness.results=r.data||[];fitness.loaded=true;
-  }catch(e){console.error('Fitness load',e);fitness.error='Não foi possível carregar a área de preparação física. Verifica a ligação e tenta novamente.';}
-  finally{fitness.loading=false;}
+  }catch(e){if(generation!==fitnessLoadGeneration)return;console.error('Fitness load',e);fitness.error='Não foi possível carregar a área de preparação física. Verifica a ligação e tenta novamente.';}
+  finally{if(generation===fitnessLoadGeneration)fitness.loading=false;}
 }
 function fitnessShell(content,active='dashboard'){
   return `<div class="fitness-wrap"><div class="fitness-head"><div><div class="eyebrow">MPRACINGDEVELOPMENT · FITNESS PERFORMANCE</div><h1>Preparação Física</h1><div class="muted">Baterias de testes, protocolos e evolução do piloto.</div></div><span class="rolebadge">${fitnessRole()}</span></div>${content}</div>`;
 }
-function fitnessAreaPage(){return `<div class="area-page"><div class="eyebrow">MPRACINGDEVELOPMENT</div><h1>Escolhe a área de trabalho</h1><div class="muted">Entra no ambiente que corresponde ao trabalho que vais realizar.</div><div class="area-grid"><button class="area-card" data-action="choose-area-set" data-area="track"><span>TRACK PERFORMANCE</span><small>Performance de pista, coaching e análise.</small></button><button class="area-card" data-action="choose-area-set" data-area="fitness"><span>FITNESS PERFORMANCE</span><small>Acompanhamento físico e baterias de testes.</small></button></div></div>`;}
+function fitnessAreaPage(){return `<div class="area-page"><div class="eyebrow">MPRACINGDEVELOPMENT</div><h1>Escolhe a área de trabalho</h1><div class="muted">Entra no ambiente que corresponde ao trabalho que vais realizar.</div><div class="area-grid"><button class="area-card" data-action="choose-area-set" data-area="track"><span>TRACK PERFORMANCE</span><small>Performance de pista, coaching e análise.</small></button><button class="area-card" data-action="choose-area-set" data-area="fitness"><span>PHYSICAL PREPARATION</span><small>Acompanhamento físico e baterias de testes.</small></button></div></div>`;}
 function fitnessDashboard(){
  const ownA=!canFitnessManage()?fitness.assessments.filter(a=>String(a.pilot_id)===String(currentUser.id)):fitness.assessments;
  const last=ownA[0];
- return fitnessShell(`<div class="fitness-grid"><div class="fitness-card"><div class="eyebrow">AVALIAÇÕES</div><div class="fitness-kpi">${ownA.length}</div><div class="muted">${currentUser?.role==='pilot'?'As minhas sessões':'Sessões de avaliação'}</div></div><div class="fitness-card"><div class="eyebrow">ÚLTIMA AVALIAÇÃO</div><div class="fitness-kpi small">${last?esc(last.name||'Bateria'): '—'}</div><div class="muted">${last?.performed_at?new Date(last.performed_at).toLocaleDateString('pt-PT'):'Sem avaliações'}</div></div><div class="fitness-card"><div class="eyebrow">PLANOS DE AVALIAÇÃO</div><div class="fitness-kpi">${fitness.batteries.length}</div><div class="muted">Planos disponíveis</div></div></div><div class="card" style="margin-top:16px"><div class="sectiontitle">Avaliações</div><div class="muted" style="margin-bottom:14px">Cria planos com testes ordenados e aplica-os em sessões por piloto.</div><button class="btn primary" data-action="fitness-page" data-page="fitness-assessments">Abrir avaliações</button></div>`,'dashboard');}
+ return fitnessShell(`<div class="fitness-grid"><div class="fitness-card"><div class="eyebrow">AVALIAÇÕES</div><div class="fitness-kpi">${ownA.length}</div><div class="muted">${currentUser?.role==='pilot'?'As minhas sessões':'Sessões de avaliação'}</div></div><div class="fitness-card"><div class="eyebrow">ÚLTIMA AVALIAÇÃO</div><div class="fitness-kpi small">${last?esc(last.name||'Bateria'): '—'}</div><div class="muted">${last?.performed_at?new Date(last.performed_at).toLocaleDateString('pt-PT'):'Sem avaliações'}</div></div><div class="fitness-card"><div class="eyebrow">PROTOCOLOS DE AVALIAÇÃO</div><div class="fitness-kpi">${fitness.batteries.length}</div><div class="muted">Protocolos disponíveis</div></div></div><div class="card" style="margin-top:16px"><div class="sectiontitle">Avaliações</div><div class="muted" style="margin-bottom:14px">Cria protocolos com testes ordenados e aplica-os em sessões por piloto.</div><button class="btn primary" data-action="fitness-page" data-page="fitness-assessments">Abrir avaliações</button></div>`,'dashboard');}
 function fitnessTestsPage(){
  const rows=fitness.tests.map(t=>`<div class="fitness-row"><div><strong>${esc(t.name)}</strong><div class="muted">${esc(t.test_type||'')} · ${esc(t.measurement_type||'')} · ${esc(t.equipment||'')} · ${esc(t.unit||'')}</div><div class="muted">${Number(t.repetitions||1)} repetições · ${esc(t.protocol||'')}</div></div><button class="btn" data-action="fitness-edit-test" data-id="${t.id}">Editar</button></div>`).join('');
  return fitnessShell(`<div class="page-title-row"><div><h2>Catálogo de testes</h2><div class="muted">Só Admin/Staff autorizado pode consultar. Apenas Admin altera os protocolos.</div></div>${currentUser?.role==='admin'?'<button class="btn primary" data-action="fitness-new-test">Novo teste</button>':''}</div><div class="fitness-list">${rows||'<div class="empty">Ainda não existem testes configurados.</div>'}</div>`,'tests');}
@@ -2656,12 +2709,19 @@ function fitnessAssessmentsPage(view){
  const manage=canFitnessManage();const tab=manage?(view||ui.fitnessEvaluationTab||'plans'):'sessions';
  const visible=fitness.assessments.filter(a=>manage||String(a.pilot_id)===String(currentUser.id));
  const rows=visible.map(a=>`<div class="fitness-row"><div><strong>${esc(a.name||'Sessão de avaliação')}</strong><div class="muted">${esc(a.pilot_name||'Piloto')} · ${a.performed_at?new Date(a.performed_at+'T12:00:00').toLocaleDateString('pt-PT'):''}</div></div><button class="btn" data-action="fitness-open-assessment" data-id="${a.id}">Abrir sessão</button></div>`).join('');
- const sessions=`<div class="page-title-row"><div><h3>${manage?'Sessões por piloto':'As minhas sessões'}</h3><div class="muted">Cada sessão associa um plano de avaliação a um piloto e a uma data.</div></div>${manage?'<button class="btn primary" data-action="fitness-new-assessment">Nova sessão</button>':''}</div><div class="fitness-list">${rows||'<div class="empty">Ainda não existem sessões de avaliação.</div>'}</div>`;
- return fitnessShell(`<h2>Avaliações</h2>${manage?`<div class="tabs" aria-label="Áreas de avaliação"><button class="tab ${tab==='plans'?'active':''}" aria-pressed="${tab==='plans'}" data-action="fitness-evaluation-tab" data-tab="plans">Planos de avaliação</button><button class="tab ${tab==='sessions'?'active':''}" aria-pressed="${tab==='sessions'}" data-action="fitness-evaluation-tab" data-tab="sessions">Sessões por piloto</button></div>`:''}${tab==='plans'?fitnessPlansContent():sessions}`,'assessments');
+ const sessions=`<div class="page-title-row"><div><h3>${manage?'Sessões por piloto':'As minhas sessões'}</h3><div class="muted">Cada sessão associa um protocolo de avaliação a um piloto e a uma data.</div></div>${manage?'<button class="btn primary" data-action="fitness-new-assessment">Nova sessão de protocolo</button>':''}</div><div class="fitness-list">${rows||'<div class="empty">Ainda não existem sessões de avaliação.</div>'}</div>`;
+ return fitnessShell(`<h2>Avaliações</h2>${manage?`<div class="tabs" aria-label="Áreas de avaliação"><button class="tab ${tab==='plans'?'active':''}" aria-pressed="${tab==='plans'}" data-action="fitness-evaluation-tab" data-tab="plans">Protocolos de avaliação</button><button class="tab ${tab==='sessions'?'active':''}" aria-pressed="${tab==='sessions'}" data-action="fitness-evaluation-tab" data-tab="sessions">Sessões por piloto</button></div>`:''}${tab==='plans'?fitnessPlansContent():sessions}`,'assessments');
 }
 function fitnessHistoryPage(){
- const isPilot=!canFitnessManage(); const rows=(isPilot?fitness.results.filter(r=>String(r.pilot_id)===String(currentUser.id)):fitness.results).map(r=>{const vals=Array.isArray(r.values)?r.values:[];return `<div class="fitness-row"><div><strong>${esc(r.test_name||'Teste')}</strong><div class="muted">${esc(r.unit||'')} · ${esc(r.pilot_name||'Piloto')} · ${vals.map(v=>esc(v)).join(' / ')}</div><div class="muted">${esc(r.notes||'')}</div></div></div>`}).join('');
- return fitnessShell(`<h2>Histórico de resultados</h2><div class="muted" style="margin-bottom:14px">Resultados guardados por avaliação e por teste.</div><div class="fitness-list">${rows||'<div class="empty">Sem resultados.</div>'}</div>`,'history');}
+ const manage=canFitnessManage();const selectedPilot=ui.fitnessHistoryPilot||'';const selectedProtocol=ui.fitnessHistoryProtocol||'';
+ const all=fitness.assessments.filter(a=>manage||String(a.pilot_id)===String(currentUser.id));
+ const pilots=[...new Map(all.map(a=>[String(a.pilot_id),a.pilot_name||'Piloto'])).entries()];
+ const protocols=[...new Map(all.map(a=>[String(a.battery_id),a.name||'Protocolo de avaliação'])).entries()];
+ const sessions=all.filter(a=>(!manage||!selectedPilot||String(a.pilot_id)===selectedPilot)&&(!selectedProtocol||String(a.battery_id)===selectedProtocol));
+ const groups=new Map();for(const a of sessions){const key=String(a.battery_id);if(!groups.has(key))groups.set(key,[]);groups.get(key).push(a);}
+ const body=[...groups.values()].map(items=>`<section class="fitness-card"><h3>${esc(items[0].name||'Protocolo de avaliação')}</h3><div class="fitness-list">${items.map(a=>{const results=fitness.results.filter(r=>String(r.assessment_id)===String(a.id));return `<article class="fitness-history-session"><div class="page-title-row"><div><strong>${esc(a.pilot_name||'Piloto')}</strong><div class="muted">Sessão de protocolo · ${esc(fitnessDate(a.performed_at))}</div></div><button class="btn" data-action="fitness-open-assessment" data-id="${a.id}">Abrir sessão</button></div><div class="fitness-history-values">${fitnessSessionTests(a).map(t=>{const r=results.find(r=>String(r.test_id)===String(t.id));return `<div><strong>${esc(r?.test_name||t.name)}</strong><span>${(r?.values||[]).map(v=>esc(fitnessFormatResult(v,r?.unit||t.unit))).join(' · ')||'Sem resultado'}</span></div>`;}).join('')||'<div class="muted">Sem testes nesta sessão.</div>'}</div>${a.notes?`<div class="protocol-box"><strong>Observações do protocolo</strong><br>${esc(a.notes)}</div>`:''}</article>`;}).join('')}</div></section>`).join('');
+ return fitnessShell(`<h2>Histórico por protocolo</h2><div class="muted">Resultados organizados por protocolo, piloto e sessão.</div><div class="fitness-history-filters">${manage?`<div class="field"><label for="fitnessHistoryPilot">Piloto</label><select id="fitnessHistoryPilot"><option value="">Todos os pilotos</option>${pilots.map(([id,name])=>`<option value="${id}" ${id===selectedPilot?'selected':''}>${esc(name)}</option>`).join('')}</select></div>`:''}<div class="field"><label for="fitnessHistoryProtocol">Protocolo de avaliação</label><select id="fitnessHistoryProtocol"><option value="">Todos os protocolos</option>${protocols.map(([id,name])=>`<option value="${id}" ${id===selectedProtocol?'selected':''}>${esc(name)}</option>`).join('')}</select></div></div><div class="fitness-list">${body||'<div class="empty">Sem sessões para esta seleção.</div>'}</div>`,'history');
+}
 function fitnessTestModal(t=null){
  if(currentUser?.role!=='admin')return;
  modal(`<h2>${t?'Editar teste':'Novo teste'}</h2><div class="field"><label>Nome</label><input id="ftName" value="${esc(t?.name||'')}"></div><div class="field"><label>Tipo de teste</label><input id="ftType" placeholder="Ex.: Isométrico" value="${esc(t?.test_type||'')}"></div><div class="field"><label>Tipo de medida</label><input id="ftMeasure" placeholder="Ex.: Força máxima" value="${esc(t?.measurement_type||'')}"></div><div class="field"><label>Equipamento</label><input id="ftEquipment" placeholder="Ex.: Dinamómetro" value="${esc(t?.equipment||'')}"></div><div class="field"><label>Unidade</label><input id="ftUnit" placeholder="Ex.: N, Nm, kg, cm, s" value="${esc(t?.unit||'')}"></div><div class="field"><label>Número de repetições</label><input id="ftReps" type="number" min="1" value="${Number(t?.repetitions||1)}"></div><div class="field"><label>Protocolo padronizado</label><textarea id="ftProtocol" rows="4">${esc(t?.protocol||'')}</textarea></div><div class="field"><label>Instruções</label><textarea id="ftInstructions" rows="3">${esc(t?.instructions||'')}</textarea></div><div class="modalactions"><button class="btn" data-action="close">Cancelar</button><button class="btn primary" data-action="fitness-save-test" data-id="${t?.id||''}">Guardar</button></div>`);
@@ -2671,46 +2731,73 @@ async function fitnessSaveTest(id){
 function fitnessBatteryModal(b=null){
  if(currentUser?.role!=='admin')return;
  fitnessPlanDraft={id:b?.id||'',tests:fitnessPlanTests(b?.id).map(x=>String(x.test_id))};
- modal(`<h2>${b?'Editar plano de avaliações':'Criar plano de avaliações'}</h2><div class="field"><label for="fbName">Nome do plano</label><input id="fbName" value="${esc(b?.name||'')}" placeholder="Ex.: Avaliação física inicial"></div><div class="field"><label for="fbDesc">Descrição do plano</label><textarea id="fbDesc" rows="3" placeholder="Objetivo e descrição desta bateria de testes">${esc(b?.description||'')}</textarea></div><div class="sectiontitle">Sequência de testes</div><p class="muted">Adiciona os testes pela ordem de execução. Cada teste usa o protocolo padronizado do catálogo.</p><div class="field"><label for="fbTestChoice">Adicionar teste do catálogo</label><select id="fbTestChoice"><option value="">Seleciona um teste</option>${fitness.tests.map(t=>`<option value="${t.id}">${esc(t.name)}</option>`).join('')}</select><button class="btn" data-action="fitness-plan-add-test">Adicionar teste</button></div><div id="fbOrderedTests" class="fitness-plan-editor"></div><div class="modalactions"><button class="btn" data-action="close">Cancelar</button><button class="btn primary" data-action="fitness-save-battery" data-id="${b?.id||''}">Guardar plano</button></div>`);
+ modal(`<h2>${b?'Editar protocolo de avaliação':'Criar protocolo de avaliação'}</h2><div class="field"><label for="fbName">Nome do protocolo</label><input id="fbName" value="${esc(b?.name||'')}" placeholder="Ex.: Avaliação física inicial"></div><div class="field"><label for="fbDesc">Descrição do protocolo</label><textarea id="fbDesc" rows="3" placeholder="Objetivo e descrição desta bateria de testes">${esc(b?.description||'')}</textarea></div><div class="sectiontitle">Sequência de testes</div><p class="muted">Adiciona os testes pela ordem de execução. Cada teste usa o protocolo padronizado do catálogo.</p><div class="field"><label for="fbTestChoice">Adicionar teste do catálogo</label><select id="fbTestChoice"><option value="">Seleciona um teste</option>${fitness.tests.map(t=>`<option value="${t.id}">${esc(t.name)}</option>`).join('')}</select><button class="btn" data-action="fitness-plan-add-test">Adicionar teste</button></div><div id="fbOrderedTests" class="fitness-plan-editor"></div><div class="modalactions"><button class="btn" data-action="close">Cancelar</button><button class="btn primary" data-action="fitness-save-battery" data-id="${b?.id||''}">Guardar protocolo</button></div>`);
  fitnessRenderPlanEditor();
 }
 async function fitnessSaveBattery(id){
  if(currentUser?.role!=='admin'||!fitnessPlanDraft||fitnessPlanDraft.saving)return;
  const name=document.getElementById('fbName').value.trim(),description=document.getElementById('fbDesc').value.trim(),tests=[...fitnessPlanDraft.tests];
- if(!name||!description){toast('Preenche o nome e a descrição do plano.');return;}
- if(!tests.length){toast('Adiciona pelo menos um teste ao plano.');return;}
- if(tests.some(id=>!fitness.tests.find(t=>String(t.id)===id)?.protocol?.trim())){toast('Todos os testes do plano precisam de um protocolo padronizado no catálogo.');return;}
+ if(!name){toast('Preenche o nome do protocolo.');return;}
+ if(tests.some(id=>!fitness.tests.find(t=>String(t.id)===id)?.protocol?.trim())){toast('Todos os testes do protocolo precisam de um protocolo padronizado no catálogo.');return;}
  fitnessPlanDraft.saving=true;
  let batteryId=id,linksRemoved=false;const previous=fitnessPlanTests(id).map(x=>({battery_id:x.battery_id,test_id:x.test_id,sort_order:x.sort_order}));
  try{
   if(id){const {error}=await sb.from('fitness_batteries').update({name,description}).eq('id',id);if(error)throw error;const deleted=await sb.from('fitness_battery_tests').delete().eq('battery_id',id);if(deleted.error)throw deleted.error;linksRemoved=true;}
   else{const {data,error}=await sb.from('fitness_batteries').insert({name,description,active:true}).select().single();if(error)throw error;batteryId=data.id;}
-  const {error}=await sb.from('fitness_battery_tests').insert(tests.map((tid,i)=>({battery_id:batteryId,test_id:tid,sort_order:i+1})));if(error)throw error;
+  if(tests.length){const {error}=await sb.from('fitness_battery_tests').insert(tests.map((tid,i)=>({battery_id:batteryId,test_id:tid,sort_order:i+1})));if(error)throw error;}
   closeModal();fitnessPlanDraft=null;fitness.loaded=false;await loadFitness();ui.page='fitness-assessments';ui.fitnessEvaluationTab='plans';render();
  }catch(error){
-  console.error('Guardar plano',error);
-  if(linksRemoved&&previous.length){const restored=await sb.from('fitness_battery_tests').insert(previous);if(restored.error){console.error('Restaurar testes',restored.error);toast('Não foi possível guardar. Verifica a sequência de testes do plano antes de criar sessões.');return;}}
+  console.error('Guardar protocolo',error);
+  if(linksRemoved&&previous.length){const restored=await sb.from('fitness_battery_tests').insert(previous);if(restored.error){console.error('Restaurar testes',restored.error);toast('Não foi possível guardar. Verifica a sequência de testes do protocolo antes de criar sessões.');return;}}
   if(!id&&batteryId){await sb.from('fitness_batteries').update({active:false}).eq('id',batteryId);}
-  toast('Não foi possível guardar o plano. Tenta novamente.');
+  toast('Não foi possível guardar o protocolo. Tenta novamente.');
  }finally{if(fitnessPlanDraft)fitnessPlanDraft.saving=false;}
 }
 function fitnessAssessmentModal(planId=''){
  if(!canFitnessManage())return;
  const pilots=(profileCache||[]).filter(u=>u.role==='pilot');const now=new Date();const today=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
- modal(`<h2>Nova sessão de avaliação</h2><div class="field"><label for="faPilot">Piloto</label><select id="faPilot"><option value="">Seleciona o piloto</option>${pilots.map(u=>`<option value="${u.id}" data-name="${esc(u.name)}">${esc(u.name)}</option>`).join('')}</select></div><div class="field"><label for="faBattery">Plano de avaliações</label><select id="faBattery"><option value="">Seleciona o plano</option>${fitness.batteries.map(b=>`<option value="${b.id}" ${String(b.id)===String(planId)?'selected':''}>${esc(b.name)}</option>`).join('')}</select></div><div id="faPlanPreview"></div><div class="field"><label for="faDate">Data da sessão</label><input id="faDate" type="date" required value="${today}"></div><div class="modalactions"><button class="btn" data-action="close">Cancelar</button><button class="btn primary" data-action="fitness-start-assessment">Criar sessão</button></div>`);
+ modal(`<h2>Nova sessão de protocolo</h2><div class="field"><label for="faPilot">Piloto</label><select id="faPilot"><option value="">Seleciona o piloto</option>${pilots.map(u=>`<option value="${u.id}" data-name="${esc(u.name)}">${esc(u.name)}</option>`).join('')}</select></div><div class="field"><label for="faBattery">Protocolo de avaliação</label><select id="faBattery"><option value="">Seleciona o protocolo</option>${fitness.batteries.map(b=>`<option value="${b.id}" ${String(b.id)===String(planId)?'selected':''}>${esc(b.name)}</option>`).join('')}</select></div><div id="faPlanPreview"></div><div class="field"><label for="faDate">Data da sessão</label><input id="faDate" type="date" required value="${today}"></div><div class="modalactions"><button class="btn" data-action="close">Cancelar</button><button class="btn primary" data-action="fitness-start-assessment">Criar sessão</button></div>`);
  fitnessSessionPlanPreview();
 }
 async function fitnessStartAssessment(){
  if(!canFitnessManage()||fitnessSessionSaving)return;
  const p=document.getElementById('faPilot'),b=document.getElementById('faBattery'),date=document.getElementById('faDate');
- if(!p.value||!b.value||!date.value||!date.checkValidity()){toast('Seleciona o piloto, o plano e uma data válida para a sessão.');return;}
- if(!fitnessPlanTests(b.value).length){toast('Adiciona testes ao plano antes de criar uma sessão.');return;}
+ if(!p.value||!b.value||!date.value||!date.checkValidity()){toast('Seleciona o piloto, o protocolo e uma data válida para a sessão.');return;}
+ const protocol=fitness.batteries.find(x=>String(x.id)===b.value);if(!protocol){toast('Seleciona um protocolo de avaliação.');return;}
+ const tests=fitnessPlanTests(b.value).map(bt=>fitness.tests.find(t=>String(t.id)===String(bt.test_id)));
+ if(!tests.length||tests.some(t=>!t)){toast('Adiciona testes ao protocolo antes de criar uma sessão.');return;}
  fitnessSessionSaving=true;
- try{const {data,error}=await sb.from('fitness_assessments').insert({pilot_id:p.value,pilot_name:p.selectedOptions[0].dataset.name||p.selectedOptions[0].textContent,battery_id:b.value,name:b.selectedOptions[0].textContent,performed_at:date.value}).select().single();if(error)throw error;closeModal();fitness.loaded=false;await loadFitness();ui.fitnessAssessment=data.id;ui.fitnessEvaluationTab='sessions';ui.page='fitness-assessment';render();}
- catch(error){console.error(error);toast('Não foi possível criar a sessão. Tenta novamente.');}finally{fitnessSessionSaving=false;}
+ try{const snapshot=tests.map(t=>({id:t.id,name:t.name,test_type:t.test_type,measurement_type:t.measurement_type,equipment:t.equipment,unit:t.unit,repetitions:t.repetitions,protocol:t.protocol,instructions:t.instructions}));
+ const {data,error}=await sb.from('fitness_assessments').insert({pilot_id:p.value,pilot_name:p.selectedOptions[0].dataset.name||p.selectedOptions[0].textContent,battery_id:b.value,name:protocol.name,performed_at:date.value,protocol_description:protocol.description||'',test_snapshot:snapshot,notes:''}).select().single();if(error)throw error;
+ closeModal();fitness.loaded=false;await loadFitness();ui.fitnessAssessment=data.id;ui.fitnessEvaluationTab='sessions';ui.page='fitness-assessment';render();}
+ catch(error){console.error(error);toast('Não foi possível criar a sessão. Confirma que a atualização SQL V95 foi aplicada.');}finally{fitnessSessionSaving=false;}
 }
-function fitnessAssessmentPage(){const a=fitness.assessments.find(x=>String(x.id)===String(ui.fitnessAssessment));if(!a)return fitnessAssessmentsPage();const list=fitness.batteryTests.filter(x=>String(x.battery_id)===String(a.battery_id)).sort((x,y)=>Number(x.sort_order)-Number(y.sort_order));const existing=fitness.results.filter(r=>String(r.assessment_id)===String(a.id));const body=list.map((bt,testIndex)=>{const t=fitness.tests.find(x=>String(x.id)===String(bt.test_id));const r=existing.find(x=>String(x.test_id)===String(bt.test_id));const vals=Array.isArray(r?.values)?r.values:[];return `<div class="fitness-test-card"><div><strong>${testIndex+1}. ${esc(t?.name||'Teste')}</strong><div class="muted">${esc(t?.test_type||'')} · ${esc(t?.equipment||'')} · ${esc(t?.unit||'')} · ${Number(t?.repetitions||1)} rep.</div><div class="eyebrow" style="margin-top:12px">Protocolo padronizado</div><div class="protocol-box">${esc(t?.protocol||'')}</div>${t?.instructions?`<div class="protocol-box">${esc(t.instructions)}</div>`:''}</div><div class="rep-grid">${Array.from({length:Number(t?.repetitions||1)},(_,i)=>`<input class="fitness-result" data-test="${t.id}" data-index="${i}" type="number" step="any" placeholder="Rep. ${i+1}" value="${vals[i]??''}">`).join('')}</div><textarea class="fitness-notes" data-notes="${t.id}" placeholder="Observações do teste">${esc(r?.notes||'')}</textarea></div>`}).join('');return fitnessShell(`<div class="page-title-row"><div><h2>${esc(a.name)}</h2><div class="muted">${esc(a.pilot_name||'')} · ${a.performed_at||''}</div></div><button class="btn" data-action="fitness-page" data-page="fitness-assessments">Voltar</button></div>${body||'<div class="empty">Esta bateria não tem testes.</div>'}<button class="btn primary" data-action="fitness-save-assessment" data-id="${a.id}">Guardar resultados</button>`,'assessments');}
-async function fitnessSaveAssessment(id){if(!canFitnessManage())return;const a=fitness.assessments.find(x=>String(x.id)===String(id));if(!a)return;const groups={};document.querySelectorAll('.fitness-result').forEach(i=>{groups[i.dataset.test]??=[];groups[i.dataset.test][Number(i.dataset.index)]=i.value===''?null:Number(i.value)});for(const [tid,values] of Object.entries(groups)){const test=fitness.tests.find(t=>String(t.id)===String(tid));const notes=document.querySelector(`[data-notes="${tid}"]`)?.value||'';const existing=fitness.results.find(r=>String(r.assessment_id)===String(id)&&String(r.test_id)===String(tid));const row={assessment_id:id,pilot_id:a.pilot_id,pilot_name:a.pilot_name,test_id:tid,test_name:test?.name||'',unit:test?.unit||'',values,notes};const q=existing?sb.from('fitness_results').update(row).eq('id',existing.id):sb.from('fitness_results').insert(row);const {error}=await q;if(error){console.error(error);toast('Erro ao guardar resultados.');return;}}fitness.loaded=false;await loadFitness();toast('Resultados guardados.');render();}
+function fitnessAssessmentPage(){
+ const a=fitness.assessments.find(x=>String(x.id)===String(ui.fitnessAssessment));if(!a)return fitnessAssessmentsPage('sessions');
+ if(!canFitnessManage()&&String(a.pilot_id)!==String(currentUser.id))return fitnessAssessmentsPage('sessions');
+ const editable=canFitnessManage(),tests=fitnessSessionTests(a),existing=fitness.results.filter(r=>String(r.assessment_id)===String(a.id));
+ const body=tests.map((t,index)=>{const r=existing.find(x=>String(x.test_id)===String(t.id)),values=Array.isArray(r?.values)?r.values:[],unit=fitnessUnit(r?.unit||t.unit);const count=Math.max(1,Number(t.repetitions)||1,values.length);
+ return `<article class="fitness-result-card"><div class="fitness-result-heading"><h3>${index+1}. ${esc(t.name||'Teste')}</h3><button class="btn" data-action="fitness-test-details" data-id="${t.id}" aria-controls="fitnessTestDetails" aria-expanded="false">Descrição do teste</button></div><div class="fitness-result-fields">${Array.from({length:count},(_,i)=>editable?`<label class="fitness-value-label"><span>${count>1?'Valor '+(i+1):'Resultado'}</span><span class="fitness-value-entry"><input class="fitness-result" data-test="${t.id}" data-index="${i}" aria-label="${esc(t.name)} — valor ${i+1}${unit?' em '+esc(unit):''}" type="number" step="any" inputmode="decimal" value="${esc(values[i]??'')}" placeholder="0">${unit?`<span class="fitness-value-unit">${esc(unit)}</span>`:''}</span></label>`:`<div class="fitness-saved-value">${esc(fitnessFormatResult(values[i],unit))}</div>`).join('')}</div></article>`;}).join('');
+ return fitnessShell(`<div class="page-title-row"><div><div class="eyebrow">Sessão de protocolo</div><h2>${esc(a.name||'Protocolo de avaliação')}</h2><div class="muted">${esc(a.pilot_name||'')} · ${esc(fitnessDate(a.performed_at))}</div></div><button class="btn" data-action="fitness-page" data-page="fitness-assessments">Voltar às avaliações</button></div><div id="fitnessSessionLayout" class="fitness-session-layout"><div>${body||'<div class="empty">Este protocolo ainda não tinha testes quando a sessão foi criada.</div>'}<div class="fitness-card fitness-protocol-notes"><label for="fitnessProtocolNotes"><strong>Observações do protocolo</strong></label>${editable?`<textarea id="fitnessProtocolNotes" rows="4" placeholder="Observações gerais desta sessão de protocolo">${esc(a.notes||'')}</textarea>`:`<div class="protocol-box">${esc(a.notes||'Sem observações.')}</div>`}</div>${editable?`<button class="btn primary" data-action="fitness-save-assessment" data-id="${a.id}">Guardar sessão</button>`:''}</div><aside id="fitnessTestDetails" class="fitness-test-details" aria-label="Descrição do teste" tabindex="-1" hidden></aside></div>`,'assessments');
+}
+async function fitnessSaveAssessment(id){
+ if(!canFitnessManage()||fitnessResultsSaving)return;
+ const a=fitness.assessments.find(x=>String(x.id)===String(id));if(!a)return;
+ const tests=fitnessSessionTests(a),groups={};let invalid=false;
+ document.querySelectorAll('.fitness-result').forEach(input=>{if(!input.checkValidity()||(input.value!==''&&!Number.isFinite(Number(input.value))))invalid=true;groups[input.dataset.test]??=[];groups[input.dataset.test][Number(input.dataset.index)]=input.value===''?null:Number(input.value);});
+ if(invalid){toast('Introduz valores numéricos válidos antes de guardar.');return;}
+ fitnessResultsSaving=true;
+ try{for(const [tid,values] of Object.entries(groups)){
+ const test=tests.find(t=>String(t.id)===String(tid));if(!test)throw new Error('Teste fora do protocolo da sessão.');
+ const existing=fitness.results.find(r=>String(r.assessment_id)===String(id)&&String(r.test_id)===tid);
+ const row={assessment_id:id,pilot_id:a.pilot_id,pilot_name:a.pilot_name,test_id:tid,test_name:test.name||'',unit:existing?.unit||test.unit||'',values};
+ const {error}=await sb.from('fitness_results').upsert(row,{onConflict:'assessment_id,test_id'});if(error)throw error;
+ }
+ const notes=document.getElementById('fitnessProtocolNotes')?.value||'';
+ const saved=await sb.from('fitness_assessments').update({notes}).eq('id',id).select('id');if(saved.error)throw saved.error;if(!saved.data?.length)throw new Error('Sessão não atualizada.');
+ fitness.loaded=false;await loadFitness();toast('Sessão guardada.');render();
+ }catch(error){console.error('Guardar sessão',error);toast('Não foi possível guardar toda a sessão. Mantivemos os valores no ecrã; tenta novamente.');}finally{fitnessResultsSaving=false;}
+}
 function fitnessStaffModal(){if(currentUser?.role!=='admin')return;const pilots=(profileCache||[]).filter(u=>u.role==='pilot');modal(`<h2>Staff de preparação física</h2><div class="muted" style="margin-bottom:12px">Seleciona quem pode trabalhar nas avaliações físicas. O acesso não dá permissões de Admin.</div><div class="check-grid">${pilots.map(u=>`<label class="checkitem"><input type="checkbox" value="${u.id}" ${u.profile?.fitnessStaff===true?'checked':''}><span><strong>${esc(u.name)}</strong><small>${esc(u.email||'')}</small></span></label>`).join('')}</div><div class="modalactions"><button class="btn" data-action="close">Cancelar</button><button class="btn primary" data-action="fitness-save-staff">Guardar</button></div>`);}
 async function fitnessSaveStaff(){if(currentUser?.role!=='admin')return;const ids=new Set([...document.querySelectorAll('.check-grid input:checked')].map(x=>String(x.value)));for(const u of (profileCache||[]).filter(x=>x.role==='pilot')){const profile={...(u.profile||{}),fitnessStaff:ids.has(String(u.id))};const {error}=await sb.from('profiles').update({profile,updated_at:new Date().toISOString()}).eq('id',u.id);if(error){console.error(error);toast('Erro ao atualizar staff.');return;}}await loadProfiles();closeModal();toast('Staff atualizado.');render();}
 function renderFitness(){if(!fitness.loaded){
@@ -2720,8 +2807,8 @@ function renderFitness(){if(!fitness.loaded){
 } if(ui.page==='fitness-dashboard')return fitnessDashboard();if(ui.page==='fitness-pilots')return fitnessPilotsPage();if(ui.page==='fitness-tests')return fitnessTestsPage();if(ui.page==='fitness-battery-config')return fitnessBatteriesPage();if(ui.page==='fitness-assessments')return fitnessAssessmentsPage();if(ui.page==='fitness-assessment')return fitnessAssessmentPage();if(ui.page==='fitness-history')return fitnessHistoryPage();if(ui.page==='fitness-staff')return fitnessStaffPage();return fitnessDashboard();}
 function render(){
   renderSidebar();
-  if(currentUser && !ui.area){document.getElementById('app').innerHTML=fitnessAreaPage();persistUi();return;}
-  if(currentUser && ui.area==='fitness'){document.getElementById('app').innerHTML=renderFitness();persistUi();return;}
+  if(currentUser && (!workspaceModeChosen||!ui.area)){ui.area=null;document.getElementById('app').innerHTML=fitnessUserbar()+fitnessAreaPage();persistUi();return;}
+  if(currentUser && ui.area==='fitness'){document.getElementById('app').innerHTML=fitnessUserbar()+renderFitness();persistUi();return;}
   renderCore();
 }
 
@@ -2797,8 +2884,10 @@ Object.assign(I18N.es,{'Links':'Enlaces','Media':'Media','Arquivo de provas':'Ar
 
 document.addEventListener('change',event=>{
   if(event.target.id==='langSelect'){setLanguage(event.target.value);return;}
+  if(event.target.id==='fitnessHistoryPilot'){ui.fitnessHistoryPilot=event.target.value;render();return;}
+  if(event.target.id==='fitnessHistoryProtocol'){ui.fitnessHistoryProtocol=event.target.value;render();return;}
   if(event.target.id==='faBattery'){fitnessSessionPlanPreview();return;}
-  if(event.target.id==='areaSelect'){ui.area=event.target.value==='fitness'?'fitness':'track';ui.page=ui.area==='fitness'?'fitness-dashboard':'dashboard';ui.editor=null;ui.selected=null;persistUi();render();return;}
+  if(event.target.id==='areaSelect'){workspaceModeChosen=true;ui.area=event.target.value==='fitness'?'fitness':'track';ui.page=ui.area==='fitness'?'fitness-dashboard':'dashboard';ui.editor=null;ui.selected=null;persistUi();render();return;}
   if(event.target.id==='activePilot'){ui.sessionPilot=event.target.value;ui.sessionPoint=0;render();}
   if(event.target.id==='profileBirthDate'){const age=calculateAge(event.target.value);const el=document.getElementById('profileAge');if(el)el.value=age||'';}
   if(event.target.id==='sessionChamp'){
@@ -3006,8 +3095,9 @@ window.addEventListener('pagehide',()=>persistUi());
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')persistUi();});
 
 // Fitness module actions are isolated from the existing Track Performance event system.
-document.addEventListener('click',async e=>{const a=e.target.closest('[data-action]');if(!a)return;const action=a.dataset.action;try{if(action==='fitness-evaluation-tab'){ui.fitnessEvaluationTab=a.dataset.tab==='sessions'?'sessions':'plans';ui.page='fitness-assessments';render();return;}if(action==='fitness-plan-add-test'){fitnessPlanChange('add');return;}if(action==='fitness-plan-move'){fitnessPlanChange('move',Number(a.dataset.index),Number(a.dataset.direction));return;}if(action==='fitness-plan-remove'){fitnessPlanChange('remove',Number(a.dataset.index));return;}if(action==='fitness-retry-load'){if(!currentUser || ui.area!=='fitness' || fitness.loading)return;fitness.error=null;render();return;}if(action==='choose-area'){ui.area=null;ui.page='dashboard';persistUi();render();return;}if(action==='choose-area-set'){ui.area=a.dataset.area;ui.page=a.dataset.area==='fitness'?'fitness-dashboard':'dashboard';persistUi();render();return;}if(action==='fitness-page'){ui.page=a.dataset.page;persistUi();render();return;}if(action==='fitness-new-test'){fitnessTestModal();return;}if(action==='fitness-edit-test'){fitnessTestModal(fitness.tests.find(x=>String(x.id)===String(a.dataset.id)));return;}if(action==='fitness-save-test'){await fitnessSaveTest(a.dataset.id||'');return;}if(action==='fitness-new-battery'){fitnessBatteryModal();return;}if(action==='fitness-edit-battery'){fitnessBatteryModal(fitness.batteries.find(x=>String(x.id)===String(a.dataset.id)));return;}if(action==='fitness-save-battery'){await fitnessSaveBattery(a.dataset.id||'');return;}if(action==='fitness-new-assessment'){fitnessAssessmentModal(a.dataset.id||'');return;}if(action==='fitness-start-assessment'){await fitnessStartAssessment();return;}if(action==='fitness-open-assessment'){ui.fitnessAssessment=a.dataset.id;ui.page='fitness-assessment';persistUi();render();return;}if(action==='fitness-save-assessment'){await fitnessSaveAssessment(a.dataset.id);return;}if(action==='fitness-staff'){fitnessStaffModal();return;}if(action==='fitness-save-staff'){await fitnessSaveStaff();return;}if(action==='fitness-pilot-history'){ui.page='fitness-history';persistUi();render();return;}}catch(err){console.error(err);toast('Ocorreu um erro.');}});
+document.addEventListener('click',async e=>{const a=e.target.closest('[data-action]');if(!a)return;const action=a.dataset.action;try{if(action==='fitness-test-details'){fitnessShowTestDetails(a.dataset.id);return;}if(action==='fitness-close-test-details'){fitnessCloseTestDetails();return;}if(action==='fitness-evaluation-tab'){ui.fitnessEvaluationTab=a.dataset.tab==='sessions'?'sessions':'plans';ui.page='fitness-assessments';render();return;}if(action==='fitness-plan-add-test'){fitnessPlanChange('add');return;}if(action==='fitness-plan-move'){fitnessPlanChange('move',Number(a.dataset.index),Number(a.dataset.direction));return;}if(action==='fitness-plan-remove'){fitnessPlanChange('remove',Number(a.dataset.index));return;}if(action==='fitness-retry-load'){if(!currentUser || ui.area!=='fitness' || fitness.loading)return;fitness.error=null;render();return;}if(action==='choose-area'){workspaceModeChosen=false;ui.area=null;ui.page='dashboard';persistUi();render();return;}if(action==='choose-area-set'){workspaceModeChosen=true;ui.area=a.dataset.area;ui.page=a.dataset.area==='fitness'?'fitness-dashboard':'dashboard';persistUi();render();return;}if(action==='fitness-page'){ui.page=a.dataset.page;persistUi();render();return;}if(action==='fitness-new-test'){fitnessTestModal();return;}if(action==='fitness-edit-test'){fitnessTestModal(fitness.tests.find(x=>String(x.id)===String(a.dataset.id)));return;}if(action==='fitness-save-test'){await fitnessSaveTest(a.dataset.id||'');return;}if(action==='fitness-new-battery'){fitnessBatteryModal();return;}if(action==='fitness-edit-battery'){fitnessBatteryModal(fitness.batteries.find(x=>String(x.id)===String(a.dataset.id)));return;}if(action==='fitness-save-battery'){await fitnessSaveBattery(a.dataset.id||'');return;}if(action==='fitness-new-assessment'){fitnessAssessmentModal(a.dataset.id||'');return;}if(action==='fitness-start-assessment'){await fitnessStartAssessment();return;}if(action==='fitness-open-assessment'){ui.fitnessAssessment=a.dataset.id;ui.page='fitness-assessment';persistUi();render();return;}if(action==='fitness-save-assessment'){await fitnessSaveAssessment(a.dataset.id);return;}if(action==='fitness-staff'){fitnessStaffModal();return;}if(action==='fitness-save-staff'){await fitnessSaveStaff();return;}if(action==='fitness-pilot-history'){ui.fitnessHistoryPilot=a.dataset.id;ui.fitnessHistoryProtocol='';ui.page='fitness-history';persistUi();render();return;}}catch(err){console.error(err);toast('Ocorreu um erro.');}});
 
+document.addEventListener('keydown',event=>{if(event.key==='Escape'&&ui.area==='fitness')fitnessCloseTestDetails();});
 render();
 subscribeAuth();
 bootCloud();
